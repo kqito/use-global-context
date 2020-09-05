@@ -1,1 +1,3 @@
-export const a = 10;
+import { createMultiContexts } from './createMultiContexts';
+
+export default createMultiContexts;

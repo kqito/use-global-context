@@ -1,5 +1,5 @@
 {
-  "name": "use-global-context",
+  "name": "react-multi-contexts",
   "version": "0.0.1",
   "description": "",
   "main": "dist/index.cjs.js",
@@ -27,14 +27,14 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/kqito/use-global-context.git"
+    "url": "git+https://github.com/kqito/react-multi-contexts.git"
   },
   "author": "Nakagawa kaito",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/kqito/use-global-context/issues"
+    "url": "https://github.com/kqito/react-multi-contexts/issues"
   },
-  "homepage": "https://github.com/kqito/use-global-context#readme",
+  "homepage": "https://github.com/kqito/react-multi-contexts#readme",
   "devDependencies": {
     "@babel/cli": "^7.8.3",
     "@babel/core": "^7.8.3",
@@ -67,7 +67,7 @@
     "eslint-plugin-react": "^7.18.0",
     "eslint-plugin-react-hooks": "^1.7.0",
     "husky": "^4.2.3",
-    "jest": "^24.9.0",
+    "jest": "^26.4.2",
     "jest-dom": "^4.0.0",
     "lint-staged": "^10.0.7",
     "np": "^5.2.1",
@@ -78,7 +78,7 @@
     "rimraf": "^3.0.0",
     "rollup": "^2.26.7",
     "rollup-plugin-typescript2": "^0.27.2",
-    "ts-jest": "^24.3.0",
+    "ts-jest": "^26.3.0",
     "typescript": "^4.0.2"
   },
   "peerDependencies": {
@@ -87,19 +87,6 @@
   "jest": {
     "setupFilesAfterEnv": [
       "<rootDir>setupTests.js"
-    ],
-    "transform": {
-      "^.+\\.ts?(x)$": "ts-jest",
-      "^.+\\.[tj]sx?$": "babel-jest"
-    },
-    "globals": {
-      "ts-jest": {
-        "tsConfig": "tsconfig.json"
-      }
-    },
-    "testMatch": [
-      "**/*.test.ts",
-      "**/*.test.tsx"
     ]
   },
   "lint-staged": {
