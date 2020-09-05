@@ -3,36 +3,41 @@ import typescript from 'rollup-plugin-typescript2';
 import babel from '@rollup/plugin-babel';
 import pkg from './package.json';
 
-/* eslint @typescript-eslint/no-var-requires: 0 */
-const { presets, plugins } = require('./babel.config.js');
-
 export default {
   input: 'src/index.ts',
   output: [
-    {
-      file: pkg.main,
-      format: 'cjs',
-    },
     {
       file: pkg.module,
       format: 'esm',
     },
   ],
   plugins: [
-    resolve({}),
+    resolve({
+      extensions: ['.mjs', '.js', '.json', '.node', '.ts', '.tsx'],
+    }),
     typescript({
       tsconfigOverride: {
         exclude: ['src/**/*.test.ts', 'src/**/*.test.tsx'],
       },
     }),
     babel({
+      extensions: ['.js', '.jsx', '.es6', '.es', '.mjs', 'ts', 'tsx'],
       babelHelpers: 'bundled',
-      presets,
-      plugins,
+      presets: [
+        [
+          '@babel/preset-env',
+          {
+            modules: false,
+          },
+        ],
+        '@babel/preset-react',
+        '@babel/preset-typescript',
+      ],
+      exclude: 'node_modules/**',
     }),
   ],
   external: [
     ...Object.keys(pkg.devDependencies || {}),
-    ...Object.keys(pkg.dependencies || {}),
+    ...Object.keys(pkg.peerDependencies || {}),
   ],
 };

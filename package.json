@@ -37,7 +37,6 @@
   "devDependencies": {
     "@babel/cli": "^7.11.6",
     "@babel/core": "^7.11.6",
-    "@babel/polyfill": "^7.11.5",
     "@babel/preset-env": "^7.11.5",
     "@babel/preset-react": "^7.10.4",
     "@babel/preset-typescript": "^7.10.4",
@@ -50,11 +49,6 @@
     "@types/react-dom": "^16.9.8",
     "@typescript-eslint/eslint-plugin": "^4.0.1",
     "@typescript-eslint/parser": "^4.0.1",
-    "babel-jest": "^26.3.0",
-    "babel-loader": "^8.1.0",
-    "babel-polyfill": "^6.26.0",
-    "babel-preset-env": "^1.7.0",
-    "core-js": "^3.6.5",
     "enzyme": "^3.11.0",
     "enzyme-adapter-react-16": "^1.15.4",
     "eslint": "^7.8.1",
@@ -101,5 +95,6 @@
       "pre-push": "npm test",
       "...": "..."
     }
-  }
+  },
+  "dependencies": {}
 }
