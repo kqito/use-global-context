@@ -22,21 +22,20 @@ const entries = <T extends Values>(values: T): Entries<T> =>
   Object.entries(values) as Entries<T>;
 
 export const createContexts = <T extends Values>(values: T) => {
-  const providerContexts: ProviderContexts<T> = entries(values).map(
-    ([displayName, value]) => {
-      const Context = React.createContext(value);
-      Context.displayName = displayName as string;
-
-      return { displayName, value, Context };
-    }
-  );
+  const providerContexts: ProviderContexts<T> = [];
 
   const Contexts = entries(values).reduce<ContextsType<T>>(
     (acc, [displayName, value]) => {
       const Context = React.createContext(value);
       Context.displayName = displayName as string;
-
       acc[displayName] = Context;
+
+      providerContexts.push({
+        displayName,
+        value,
+        Context,
+      });
+
       return acc;
     },
     {} as ContextsType<T>
