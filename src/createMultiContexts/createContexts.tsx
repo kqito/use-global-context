@@ -8,7 +8,7 @@ export type ContextProviderType = {
   children: React.ReactNode;
 };
 
-type ProviderContexts<T extends Values> = {
+export type ProviderContexts<T extends Values> = {
   displayName: keyof T;
   value: T[keyof T];
   Context: React.Context<T[keyof T]>;
@@ -42,19 +42,8 @@ export const createContexts = <T extends Values>(values: T) => {
     {} as ContextsType<T>
   );
 
-  const Providers = providerContexts.reduce<React.FC<ContextProviderType>>(
-    (Acc, { value, Context }) => {
-      const ContextProvider = () => (
-        <Context.Provider value={value}>{Acc}</Context.Provider>
-      );
-
-      return ContextProvider;
-    },
-    () => null
-  );
-
   return {
-    Providers,
+    providerContexts,
     Contexts,
   };
 };

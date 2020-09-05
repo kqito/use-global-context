@@ -1,4 +1,5 @@
 import React from 'react';
+import { createCombindedContextProviders } from './combineContextProvider';
 import {
   createContexts,
   ContextsType,
@@ -10,7 +11,8 @@ export type CreateMultiContexts = <T extends Record<string, unknown>>(
 ) => [React.FC<ContextProviderType>, ContextsType<T>];
 
 export const createMultiContexts: CreateMultiContexts = (values) => {
-  const { Providers, Contexts } = createContexts(values);
+  const { providerContexts, Contexts } = createContexts(values);
+  const ContextProviders = createCombindedContextProviders(providerContexts);
 
-  return [Providers, Contexts];
+  return [ContextProviders, Contexts];
 };
