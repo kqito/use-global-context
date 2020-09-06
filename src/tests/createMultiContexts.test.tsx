@@ -18,6 +18,10 @@ const createBooleanState = () => {
   return useState(false);
 };
 
+const createPrimitiveState = () => {
+  return 'primitive';
+};
+
 type User = {
   id: string;
   name: string;
@@ -67,14 +71,33 @@ const reducer: Reducer<User, UserAction> = (state, action) => {
 const createReducer = () => useReducer(reducer, initialState);
 
 describe('CreateMultiContexts', () => {
-  it('useState', () => {
-    const App = () => {
-      const [ContextProviders, Contexts] = createMultiContexts({
-        number: createNumberState(),
-        string: createStringState(),
-        bool: createBooleanState(),
-      });
+  it('Primitive', () => {
+    const [ContextProviders, Contexts] = createMultiContexts({
+      primitive: createPrimitiveState,
+    });
 
+    const App = () => {
+      const [string] = useContext(Contexts.primitive);
+
+      expect(string).toBe('primitive');
+
+      return <p>hi</p>;
+    };
+
+    render(
+      <ContextProviders>
+        <App />
+      </ContextProviders>
+    );
+  });
+  it('useState', () => {
+    const [ContextProviders, Contexts] = createMultiContexts({
+      number: createNumberState,
+      string: createStringState,
+      bool: createBooleanState,
+    });
+
+    const App = () => {
       const [num] = useContext(Contexts.number);
       const [str] = useContext(Contexts.string);
       const [bool] = useContext(Contexts.bool);
@@ -83,42 +106,32 @@ describe('CreateMultiContexts', () => {
       expect(str).toBe('');
       expect(bool).toBe(false);
 
-      return (
-        <ContextProviders>
-          <p>hi</p>
-        </ContextProviders>
-      );
+      return <p>hi</p>;
     };
 
-    render(<App />);
+    render(
+      <ContextProviders>
+        <App />
+      </ContextProviders>
+    );
   });
 
   it('useReducer', () => {
+    const [ContextProviders, Contexts] = createMultiContexts({
+      reduce: createReducer,
+    });
+
     const App = () => {
-      const [ContextProviders, Contexts] = createMultiContexts({
-        number: createNumberState(),
-        string: createStringState(),
-        bool: createBooleanState(),
-        reduce: createReducer(),
-      });
-
-      const [num] = useContext(Contexts.number);
-      const [str] = useContext(Contexts.string);
-      const [bool] = useContext(Contexts.bool);
-      const [state, dispatch] = useContext(Contexts.reduce);
-
-      expect(num).toBe(0);
-      expect(str).toBe('');
-      expect(bool).toBe(false);
+      const [state] = useContext(Contexts.reduce);
       expect(state).toBe(initialState);
 
-      return (
-        <ContextProviders>
-          <p>hi</p>
-        </ContextProviders>
-      );
+      return <p>hi</p>;
     };
 
-    render(<App />);
+    render(
+      <ContextProviders>
+        <App />
+      </ContextProviders>
+    );
   });
 });

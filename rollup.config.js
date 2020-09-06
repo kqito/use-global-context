@@ -3,6 +3,8 @@ import typescript from 'rollup-plugin-typescript2';
 import babel from '@rollup/plugin-babel';
 import pkg from './package.json';
 
+const { presets } = require('./babel.config');
+
 export default {
   input: 'src/index.ts',
   output: [
@@ -23,16 +25,7 @@ export default {
     babel({
       extensions: ['.js', '.jsx', '.es6', '.es', '.mjs', 'ts', 'tsx'],
       babelHelpers: 'bundled',
-      presets: [
-        [
-          '@babel/preset-env',
-          {
-            modules: false,
-          },
-        ],
-        '@babel/preset-react',
-        '@babel/preset-typescript',
-      ],
+      presets,
       exclude: 'node_modules/**',
     }),
   ],

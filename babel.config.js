@@ -1,13 +1,14 @@
+const isTest = process.env.NODE_ENV === 'TEST';
+
 const presets = [
   [
-    "@babel/preset-env",
+    '@babel/preset-env',
     {
-      useBuiltIns: "usage",
-      corejs: { version: 3, proposals: true }
-    }
+      modules: isTest ? 'commonjs' : false,
+    },
   ],
-  "@babel/preset-react",
-  "@babel/preset-typescript"
+  '@babel/preset-react',
+  '@babel/preset-typescript',
 ];
 
 const plugins = [];
