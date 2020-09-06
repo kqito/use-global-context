@@ -2,11 +2,12 @@ import React from 'react';
 import { createCombindedContextProviders } from './combineContextProvider';
 import {
   createContexts,
+  Values,
   ContextsType,
   ContextProviderType,
 } from './createContexts';
 
-export type CreateMultiContexts = <T extends Record<string, unknown>>(
+export type CreateMultiContexts = <T extends Values>(
   values: T
 ) => [React.FC<ContextProviderType>, ContextsType<T>];
 

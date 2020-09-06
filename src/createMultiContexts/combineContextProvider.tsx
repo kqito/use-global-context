@@ -13,7 +13,7 @@ export const createCombindedContextProviders = <T extends Values>(
       <>
         {providerContexts.reduceRight(
           (acc, { value, Context }) => (
-            <Context.Provider value={value}>{acc}</Context.Provider>
+            <Context.Provider value={value()}>{acc}</Context.Provider>
           ),
           children
         )}
