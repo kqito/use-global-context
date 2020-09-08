@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { createCombindedContextProviders } from '../core/combineContextProvider';
-import { createContexts, UseStateValues } from './createContexts';
+import { getUseStateContexts, UseStateValues } from './useStateContexts';
 
 export const createUseStateContexts = <T extends UseStateValues>(values: T) => {
-  const { contextProviderList, Contexts } = createContexts(values);
+  const { useStateValueList, Contexts } = getUseStateContexts(values);
   const ContextProviders = createCombindedContextProviders(
-    contextProviderList,
+    useStateValueList,
     useState
   );
 

@@ -9,7 +9,7 @@ export type UseStateContexts<T extends unknown> = {
   dispatch: Context<Dispatch<SetStateAction<T>>>;
 };
 
-export type UseStateContextProviderList<T extends UseStateValues> = {
+export type UseStateValueList<T extends UseStateValues> = {
   value: T[keyof T]['value'];
   Context: UseStateContexts<T[keyof T]['value']>;
 }[];
@@ -18,8 +18,8 @@ export type ContextsType<T extends UseStateValues> = {
   [P in keyof T]: UseStateContexts<T[P]['value']>;
 };
 
-export const createContexts = <T extends UseStateValues>(values: T) => {
-  const contextProviderList: UseStateContextProviderList<T> = [];
+export const getUseStateContexts = <T extends UseStateValues>(values: T) => {
+  const useStateValueList: UseStateValueList<T> = [];
 
   const Contexts = entries(values).reduce<ContextsType<T>>(
     (acc, [displayName, { value }]) => {
@@ -39,7 +39,7 @@ export const createContexts = <T extends UseStateValues>(values: T) => {
         dispatch: DispatchContext,
       };
 
-      contextProviderList.push({
+      useStateValueList.push({
         value,
         Context: {
           state: StateContext,
@@ -53,7 +53,7 @@ export const createContexts = <T extends UseStateValues>(values: T) => {
   );
 
   return {
-    contextProviderList,
+    useStateValueList,
     Contexts,
   };
 };
