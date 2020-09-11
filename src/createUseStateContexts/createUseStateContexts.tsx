@@ -1,13 +1,15 @@
 import { useState } from 'react';
-import { createCombindedContextProviders } from '../core/combineContextProvider';
-import { getUseStateContexts, UseStateValues } from './useStateContexts';
+import { createContextProvider } from '../core/createContextProvider';
+import { getUseStateContexts, UseStateArg } from './useStateContexts';
 
-export const createUseStateContexts = <T extends UseStateValues>(values: T) => {
-  const { useStateValueList, Contexts } = getUseStateContexts(values);
-  const ContextProviders = createCombindedContextProviders(
-    useStateValueList,
+export const createUseStateContexts = <T extends UseStateArg>(hooksArg: T) => {
+  const { useStateContexts, useStateContextsWithArg } = getUseStateContexts(
+    hooksArg
+  );
+  const ContextProviders = createContextProvider(
+    useStateContextsWithArg,
     useState
   );
 
-  return [ContextProviders, Contexts] as const;
+  return [ContextProviders, useStateContexts] as const;
 };
