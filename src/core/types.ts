@@ -14,8 +14,8 @@ export interface HooksContext<T extends unknown, R extends unknown> {
 
 export interface HooksContextWithArg<
   V extends unknown,
-  T extends unknown,
+  K extends unknown,
   R extends unknown
-> extends HooksContext<T, R> {
+> extends HooksContext<K, R> {
   hooksArg: V;
 }
