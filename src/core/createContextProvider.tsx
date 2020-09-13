@@ -1,14 +1,14 @@
 import React, { useState, useReducer } from 'react';
-import { HooksArg } from './types';
+import { Contexts } from './types';
 import { entries } from '../utils/entries';
 import {
   UseStateArg,
   UseStateContextsWithArg,
-} from '../createUseStateContexts/useStateContexts';
+} from '../createUseStateContexts/createUseStateContexts';
 import {
   UseReducerArg,
   UseReducerContextsWithArg,
-} from '../createUseReducerContexts/useReducerContexts';
+} from '../createUseReducerContexts/createUseReducerContexts';
 
 export type ContextProviderType = {
   children: React.ReactNode;
@@ -49,13 +49,11 @@ const renderUseReducerContexts = <T extends UseReducerArg>(
   );
 };
 
-export const createContextProvider = <T extends HooksArg<any>>(
+export const createContextProvider = <
+  T extends UseReducerContextsWithArg<any> | UseStateContextsWithArg<any>
+>(
   type: 'useState' | 'useReducer',
-  context: T extends UseReducerArg
-    ? UseReducerContextsWithArg<T>
-    : T extends UseStateArg
-    ? UseStateContextsWithArg<T>
-    : never
+  context: T
 ) => {
   const ContextProviders: React.FC<ContextProviderType> = ({ children }) => {
     return (

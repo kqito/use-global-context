@@ -5,9 +5,10 @@
   "module": "dist/index.esm.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "npm-run-all -s clean build:rollup",
+    "build": "npm-run-all -s type clean build:rollup",
     "build:rollup": "rollup -c",
     "test": "NODE_ENV=TEST jest",
+    "type": "tsc --noEmit",
     "format": "npm-run-all -s format:*",
     "format:fix": "prettier --write './src/**/*.{ts,tsx,js,jsx,json}'",
     "format:lint": "eslint ./src --ext .ts,.tsx",
