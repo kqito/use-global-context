@@ -1,7 +1,7 @@
-# react-multi-contexts
+# react-hook-contexts
 
-![build status](https://github.com/kqito/react-multi-contexts/workflows/Node.js%20CI/badge.svg)
-[![npm version](https://badge.fury.io/js/react-multi-contexts.svg)](https://badge.fury.io/js/react-multi-contexts)
+![build status](https://github.com/kqito/react-hook-contexts/workflows/Node.js%20CI/badge.svg)
+[![npm version](https://badge.fury.io/js/react-hook-contexts.svg)](https://badge.fury.io/js/react-hook-contexts)
 
 Easy state management for react using [context API](https://reactjs.org/docs/context.html).
 
@@ -14,12 +14,12 @@ Easy state management for react using [context API](https://reactjs.org/docs/con
 ## Installation
 You can install the package from npm.
 ```
-npm install react-multi-contexts
+npm install react-hook-contexts
 ```
 
 or using yarn.
 ```
-yarn add react-multi-contexts
+yarn add react-hook-contexts
 ```
 
 
@@ -29,7 +29,7 @@ yarn add react-multi-contexts
 
 ```javascript
 import React, { useContext } from "react";
-import { createUseStateContexts } from "react-multi-contexts";
+import { createUseStateContexts } from "react-hook-contexts";
 
 const [ContextProviders, Contexts] = createUseStateContexts({
   number: 0,
@@ -91,7 +91,7 @@ export default App;
 
 ```javascript
 import React, { useContext } from "react";
-import { createUseReducerContexts } from "react-multi-contexts";
+import { createUseReducerContexts } from "react-hook-contexts";
 
 const initialState = {
   count: 0,
