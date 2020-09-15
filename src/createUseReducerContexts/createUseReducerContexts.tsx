@@ -8,6 +8,16 @@ import {
 import { getHooksContexts } from '../core/createHooksContexts';
 
 type Reducer = React.Reducer<any, any> | React.ReducerWithoutAction<any>;
+type ReducerState<R> = R extends React.ReducerWithoutAction<any>
+  ? React.ReducerStateWithoutAction<R>
+  : R extends React.Reducer<any, any>
+  ? React.ReducerState<R>
+  : never;
+type ReducerDispatch<R> = R extends React.ReducerWithoutAction<any>
+  ? React.DispatchWithoutAction
+  : R extends React.Reducer<any, any>
+  ? React.Dispatch<React.ReducerAction<R>>
+  : never;
 
 export type UseReducerArg = Contexts<{
   reducer: Reducer;
@@ -17,8 +27,8 @@ export type UseReducerArg = Contexts<{
 
 export type UseReducerContexts<T extends UseReducerArg> = {
   [P in keyof T]: HooksContext<
-    React.ReducerState<T[P]['reducer']>,
-    React.Dispatch<React.ReducerAction<T[P]['reducer']>>
+    ReducerState<T[P]['reducer']>,
+    ReducerDispatch<T[P]['reducer']>
   >;
 };
 
@@ -46,8 +56,8 @@ export const createUseReducerContexts = <T extends UseReducerArg>(
 ) => {
   const { hooksContexts, hooksContextsWithArg } = getHooksContexts<
     UseReducerArg,
-    T[keyof T]['reducer'],
-    T[keyof T]['reducer'],
+    ReducerState<T[keyof T]['reducer']>,
+    ReducerDispatch<T[keyof T]['reducer']>,
     UseReducerContexts<T>,
     UseReducerContextsWithArg<T>
   >(contexts, option);

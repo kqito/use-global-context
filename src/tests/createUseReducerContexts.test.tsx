@@ -49,18 +49,18 @@ const reducer: React.Reducer<User, UserAction> = (state, action) => {
   }
 };
 
-const [
-  UseReducerContextProviders,
-  UseReducerContexts,
-] = createUseReducerContexts({
-  user: {
-    reducer,
-    initialState,
-  },
-});
-
 describe('createUseRedcuerContexts', () => {
   it('InitialState', () => {
+    const [
+      UseReducerContextProviders,
+      UseReducerContexts,
+    ] = createUseReducerContexts({
+      user: {
+        reducer,
+        initialState,
+      },
+    });
+
     const Container = () => {
       const user = useContext(UseReducerContexts.user.state);
       return (
@@ -82,6 +82,16 @@ describe('createUseRedcuerContexts', () => {
   });
 
   it('Dispatch', () => {
+    const [
+      UseReducerContextProviders,
+      UseReducerContexts,
+    ] = createUseReducerContexts({
+      user: {
+        reducer,
+        initialState,
+      },
+    });
+
     const Container = () => {
       const user = useContext(UseReducerContexts.user.state);
       const userDispatch = useContext(UseReducerContexts.user.dispatch);
@@ -113,5 +123,38 @@ describe('createUseRedcuerContexts', () => {
 
     expect(wrapper.find(sel('id')).text()).toBe('dispatched-id');
     expect(wrapper.find(sel('name')).text()).toBe('dispatched-name');
+  });
+
+  it('Without action', () => {
+    const withoutReducer: React.ReducerWithoutAction<number> = (count) =>
+      count + 1;
+
+    const [
+      UseReducerContextProviders,
+      UseReducerContexts,
+    ] = createUseReducerContexts({
+      counter: {
+        reducer: withoutReducer,
+        initialState: 0,
+      },
+    });
+
+    const Container = () => {
+      const count = useContext(UseReducerContexts.counter.state);
+      const increment = useContext(UseReducerContexts.counter.dispatch);
+      useEffect(() => {
+        increment();
+      }, []);
+
+      return <p data-testid="count">{count}</p>;
+    };
+
+    const wrapper = mount(
+      <UseReducerContextProviders>
+        <Container />
+      </UseReducerContextProviders>
+    );
+
+    expect(wrapper.find(sel('count')).text()).toBe('1');
   });
 });
