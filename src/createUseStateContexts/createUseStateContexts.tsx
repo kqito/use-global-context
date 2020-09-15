@@ -23,7 +23,17 @@ export type UseStateContextsWithArg<T extends UseStateArg> = {
   >;
 };
 
+/**
+ * *useState* to create multiple contexts.
+ * The created contexts are split into a state and a dispatch,
+ * respectively, to prevent unnecessary rendering.
+ */
 export const createUseStateContexts = <T extends UseStateArg>(
+  /**
+   *  Object's value is passed as an argument to useState.
+   *  Also, the object's key is set to the context's displayname.
+   *  *@see* https://reactjs.org/docs/context.html#contextdisplayname
+   */
   contexts: T,
   option?: Option
 ) => {

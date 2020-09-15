@@ -30,7 +30,17 @@ export type UseReducerContextsWithArg<T extends UseReducerArg> = {
   >;
 };
 
+/**
+ * *useReducer* to create multiple contexts.
+ * The created contexts are split into a state and a dispatch,
+ * respectively, to prevent unnecessary rendering.
+ */
 export const createUseReducerContexts = <T extends UseReducerArg>(
+  /**
+   *  Object's value is passed as an argument to useReducer.
+   *  Also, the object's key is set to the context's displayname.
+   *  *@see* https://reactjs.org/docs/context.html#contextdisplayname
+   */
   contexts: T,
   option?: Option
 ) => {
