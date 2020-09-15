@@ -1,6 +1,6 @@
 {
   "name": "react-hook-contexts",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "",
   "module": "dist/index.esm.js",
   "types": "dist/index.d.ts",
