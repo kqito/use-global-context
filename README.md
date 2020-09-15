@@ -37,7 +37,7 @@ const [ContextProviders, Contexts] = createUseStateContexts({
   boolean: false,
 });
 
-const App: React.FC = () => {
+const App = () => {
   return (
     <ContextProviders>
       <Counter />
@@ -144,7 +144,7 @@ export const [ContextProviders, Contexts] = createUseReducerContexts({
   },
 });
 
-const App: React.FC = () => {
+const App = () => {
   return (
     <ContextProviders>
       <Counter />
