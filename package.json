@@ -18,7 +18,10 @@
   },
   "keywords": [
     "react",
-    "context"
+    "context",
+    "react-state-management",
+    "useState",
+    "useReducer"
   ],
   "files": [
     "dist",
