@@ -1,5 +1,8 @@
 import { Dispatch, SetStateAction } from 'react';
-import { createContextProvider } from '../core/createContextProvider';
+import {
+  createContextProvider,
+  ContextProviderType,
+} from '../core/createContextProvider';
 import { getHooksContexts } from '../core/createHooksContexts';
 
 import {
@@ -36,7 +39,7 @@ export const createUseStateContexts = <T extends UseStateArg>(
    */
   contexts: T,
   option?: Option
-) => {
+): [React.FC<ContextProviderType>, UseStateContexts<T>] => {
   const { hooksContexts, hooksContextsWithArg } = getHooksContexts<
     UseStateArg,
     T[keyof T],
@@ -48,5 +51,5 @@ export const createUseStateContexts = <T extends UseStateArg>(
     UseStateContextsWithArg<UseStateArg>
   >('useState', hooksContextsWithArg);
 
-  return [ContextProviders, hooksContexts] as const;
+  return [ContextProviders, hooksContexts];
 };

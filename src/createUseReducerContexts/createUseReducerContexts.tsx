@@ -1,4 +1,7 @@
-import { createContextProvider } from '../core/createContextProvider';
+import {
+  createContextProvider,
+  ContextProviderType,
+} from '../core/createContextProvider';
 import {
   Contexts,
   HooksContext,
@@ -53,7 +56,7 @@ export const createUseReducerContexts = <T extends UseReducerArg>(
    */
   contexts: T,
   option?: Option
-) => {
+): [React.FC<ContextProviderType>, UseReducerContexts<T>] => {
   const { hooksContexts, hooksContextsWithArg } = getHooksContexts<
     UseReducerArg,
     ReducerState<T[keyof T]['reducer']>,
@@ -65,5 +68,5 @@ export const createUseReducerContexts = <T extends UseReducerArg>(
     UseReducerContextsWithArg<UseReducerArg>
   >('useReducer', hooksContextsWithArg);
 
-  return [ContextProviders, hooksContexts] as const;
+  return [ContextProviders, hooksContexts];
 };
