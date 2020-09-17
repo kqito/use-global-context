@@ -13,10 +13,10 @@ const initialState: User = {
   name: 'name',
 };
 
-enum ActionType {
-  UPDATE_PROFILE = 'UPDATE_PROFILE',
-  RESET_PROFILE = 'RESET_PROFILE',
-}
+const ActionType = {
+  UPDATE_PROFILE: 'UPDATE_PROFILE',
+  RESET_PROFILE: 'RESET_PROFILE',
+} as const;
 
 type UserAction = {
   type: keyof typeof ActionType;
