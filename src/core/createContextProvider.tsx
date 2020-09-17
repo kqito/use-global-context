@@ -1,5 +1,4 @@
 import React, { useState, useReducer } from 'react';
-import { Contexts } from './types';
 import { entries } from '../utils/entries';
 import {
   UseStateArg,
