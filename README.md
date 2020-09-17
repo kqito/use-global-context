@@ -2,8 +2,9 @@
 
 ![build status](https://github.com/kqito/react-hook-contexts/workflows/Node.js%20CI/badge.svg)
 [![npm version](https://badge.fury.io/js/react-hook-contexts.svg)](https://badge.fury.io/js/react-hook-contexts)
+![license](https://img.shields.io/github/license/kqito/react-hook-contexts)
 
-Easy state management for react using [context API](https://reactjs.org/docs/context.html).
+Easy global state management for react using `useState` or `useReducer` with [context API](https://reactjs.org/docs/context.html).
 
 ## Features
 - Easy state management with `useState` and `useReducer`.
