@@ -31,7 +31,7 @@ yarn add react-hook-contexts
 import React, { useContext } from "react";
 import { createUseStateContexts } from "react-hook-contexts";
 
-const [ContextProviders, Contexts] = createUseStateContexts({
+const [Contexts, ContextProviders] = createUseStateContexts({
   counter: 0,
   message: "",
   isActive: false,
@@ -129,7 +129,7 @@ const reducer: React.Reducer<typeof initialState, CounterAction> = (
   }
 };
 
-export const [ContextProviders, Contexts] = createUseReducerContexts({
+export const [Contexts, ContextProviders] = createUseReducerContexts({
   counter: {
     reducer,
     initialState,
@@ -175,7 +175,7 @@ export default App;
 
 ## Examples
 ### [CreateUseStateContexts example](https://codesandbox.io/s/react-hook-contexts-examplecreateusestatecontexts-p5ug4 "CodeSandBox")
-This is an example of a counter app that uses the `createUseStateContexts` API. 
+This is an example of a counter app that uses the `createUseStateContexts` API.
 
 Notice that each time you increase/decrease the count, only the render of the Counter comport is running. (No unnecessary renders are happening.)
 

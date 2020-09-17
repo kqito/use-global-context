@@ -39,15 +39,16 @@ export const createUseStateContexts = <T extends UseStateArg>(
    */
   contexts: T,
   option?: Option
-): [React.FC<ContextProviderType>, UseStateContexts<T>] => {
+): [UseStateContexts<T>, React.FC<ContextProviderType>] => {
   const { hooksContexts, hooksContextsWithArg } = getHooksContexts<
     UseStateArg,
     UseStateContexts<T>,
     UseStateContextsWithArg<T>
   >(contexts, option);
+
   const ContextProviders = createContextProvider<
     UseStateContextsWithArg<UseStateArg>
   >('useState', hooksContextsWithArg);
 
-  return [ContextProviders, hooksContexts];
+  return [hooksContexts, ContextProviders];
 };

@@ -3,7 +3,7 @@ import { mount } from 'enzyme';
 import { createUseStateContexts } from '../createUseStateContexts';
 
 const sel = (id: string): string => `[data-testid="${id}"]`;
-const [UseStateContextProviders, UseStateContexts] = createUseStateContexts({
+const [UseStateContexts, UseStateContextProviders] = createUseStateContexts({
   string: 'string',
 });
 

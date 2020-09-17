@@ -52,8 +52,8 @@ const reducer: React.Reducer<User, UserAction> = (state, action) => {
 describe('createUseRedcuerContexts', () => {
   it('InitialState', () => {
     const [
-      UseReducerContextProviders,
       UseReducerContexts,
+      UseReducerContextProviders,
     ] = createUseReducerContexts({
       user: {
         reducer,
@@ -83,8 +83,8 @@ describe('createUseRedcuerContexts', () => {
 
   it('Dispatch', () => {
     const [
-      UseReducerContextProviders,
       UseReducerContexts,
+      UseReducerContextProviders,
     ] = createUseReducerContexts({
       user: {
         reducer,
@@ -130,8 +130,8 @@ describe('createUseRedcuerContexts', () => {
       count + 1;
 
     const [
-      UseReducerContextProviders,
       UseReducerContexts,
+      UseReducerContextProviders,
     ] = createUseReducerContexts({
       counter: {
         reducer: withoutReducer,
