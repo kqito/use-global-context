@@ -1,7 +1,7 @@
 {
   "name": "react-hook-contexts",
   "version": "0.0.7",
-  "description": "",
+  "description": "Easy global state management for react using useState or useReducer with context API",
   "module": "dist/index.esm.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -96,7 +96,7 @@
   "husky": {
     "hooks": {
       "pre-commit": "lint-staged",
-      "pre-push": "npm test",
+      "pre-push": "yarn test",
       "...": "..."
     }
   },
