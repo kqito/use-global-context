@@ -32,9 +32,9 @@ import React, { useContext } from "react";
 import { createUseStateContexts } from "react-hook-contexts";
 
 const [ContextProviders, Contexts] = createUseStateContexts({
-  number: 0,
-  string: "",
-  boolean: false,
+  counter: 0,
+  message: "",
+  isActive: false,
 });
 
 const App = () => {
@@ -66,14 +66,14 @@ const App = () => {
 
 const Counter = () => {
   // You can get the state value of the context as follows
-  const counter = useContext(Contexts.number.state);
+  const counter = useContext(Contexts.counter.state);
 
   return <p>counter: {counter}</p>;
 };
 
 const CounterButton = () => {
   // It only gets the dispatch; separating the state and the dispatch prevents extra renders.
-  const setCounter = useContext(Contexts.number.dispatch);
+  const setCounter = useContext(Contexts.counter.dispatch);
 
   return (
     <>
