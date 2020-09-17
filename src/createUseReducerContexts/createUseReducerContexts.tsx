@@ -59,8 +59,6 @@ export const createUseReducerContexts = <T extends UseReducerArg>(
 ): [React.FC<ContextProviderType>, UseReducerContexts<T>] => {
   const { hooksContexts, hooksContextsWithArg } = getHooksContexts<
     UseReducerArg,
-    ReducerState<T[keyof T]['reducer']>,
-    ReducerDispatch<T[keyof T]['reducer']>,
     UseReducerContexts<T>,
     UseReducerContextsWithArg<T>
   >(contexts, option);

@@ -3,8 +3,6 @@ import { Contexts, Option } from './types';
 
 type GetHooksContexts = <
   T extends Contexts<any>,
-  State,
-  Dispatch,
   HooksContexts,
   HooksContextsWithArg
 >(
@@ -16,9 +14,7 @@ type GetHooksContexts = <
 };
 
 export const getHooksContexts: GetHooksContexts = <
-  ContextsType extends Contexts<any>,
-  State,
-  Dispatch
+  ContextsType extends Contexts<any>
 >(
   contexts: ContextsType
 ) => {
@@ -26,8 +22,8 @@ export const getHooksContexts: GetHooksContexts = <
   const hooksContextsWithArg: Record<string, any> = {};
 
   Object.entries(contexts).forEach(([displayName, hooksArg]) => {
-    const StateContext = createContext<State>(null as any);
-    const DispatchContext = createContext<Dispatch>(null as any);
+    const StateContext = createContext(null as any);
+    const DispatchContext = createContext(null as any);
 
     StateContext.displayName = displayName;
     DispatchContext.displayName = displayName;
