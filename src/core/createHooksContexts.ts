@@ -1,12 +1,8 @@
 import { createContext } from 'react';
 import { Contexts, Option } from './types';
 
-type GetHooksContexts = <
-  T extends Contexts<any>,
-  HooksContexts,
-  HooksContextsWithArg
->(
-  contexts: T,
+type GetHooksContexts = <HooksContexts, HooksContextsWithArg>(
+  contexts: Contexts<any>,
   option?: Option
 ) => {
   hooksContexts: HooksContexts;
