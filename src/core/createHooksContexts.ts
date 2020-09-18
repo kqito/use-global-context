@@ -1,4 +1,4 @@
-import { createContext } from 'react';
+import { createContext, useContext } from 'react';
 import { Contexts, Option } from './types';
 
 type GetHooksContexts = <HooksContexts, HooksContextsWithArg>(
@@ -25,8 +25,8 @@ export const getHooksContexts: GetHooksContexts = <
     DispatchContext.displayName = displayName;
 
     hooksContexts[displayName] = {
-      state: StateContext,
-      dispatch: DispatchContext,
+      state: () => useContext(StateContext),
+      dispatch: () => useContext(DispatchContext),
     };
     hooksContextsWithArg[displayName] = {
       hooksArg,

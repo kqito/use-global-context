@@ -8,15 +8,17 @@ export type Option = {
   displayName: any;
 };
 
-export interface HooksContext<T extends unknown, R extends unknown> {
-  state: Context<T>;
-  dispatch: Context<R>;
-}
+export type HooksContext<State extends unknown, Dispatch extends unknown> = {
+  state: () => State;
+  dispatch: () => Dispatch;
+};
 
-export interface HooksContextWithArg<
-  V extends unknown,
-  K extends unknown,
-  R extends unknown
-> extends HooksContext<K, R> {
-  hooksArg: V;
-}
+export type HooksContextWithArg<
+  HooksArg extends unknown,
+  State extends unknown,
+  Dispatch extends unknown
+> = {
+  hooksArg: HooksArg;
+  state: Context<State>;
+  dispatch: Context<Dispatch>;
+};

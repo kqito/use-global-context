@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { mount } from 'enzyme';
 import { createUseReducerContexts } from '../createUseReducerContexts';
 
@@ -62,7 +62,7 @@ describe('createUseRedcuerContexts', () => {
     });
 
     const Container = () => {
-      const user = useContext(UseReducerContexts.user.state);
+      const user = UseReducerContexts.user.state();
       return (
         <>
           <p data-testid="id">{user.id}</p>
@@ -93,8 +93,8 @@ describe('createUseRedcuerContexts', () => {
     });
 
     const Container = () => {
-      const user = useContext(UseReducerContexts.user.state);
-      const userDispatch = useContext(UseReducerContexts.user.dispatch);
+      const user = UseReducerContexts.user.state();
+      const userDispatch = UseReducerContexts.user.dispatch();
       useEffect(() => {
         userDispatch({
           type: 'UPDATE_PROFILE',
@@ -140,8 +140,8 @@ describe('createUseRedcuerContexts', () => {
     });
 
     const Container = () => {
-      const count = useContext(UseReducerContexts.counter.state);
-      const increment = useContext(UseReducerContexts.counter.dispatch);
+      const count = UseReducerContexts.counter.state();
+      const increment = UseReducerContexts.counter.dispatch();
       useEffect(() => {
         increment();
       }, []);

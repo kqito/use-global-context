@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { mount } from 'enzyme';
 import { createUseStateContexts } from '../createUseStateContexts';
 
@@ -10,7 +10,7 @@ const [UseStateContexts, UseStateContextProviders] = createUseStateContexts({
 describe('createUseRedcuerContexts', () => {
   it('InitialState', () => {
     const Container = () => {
-      const string = useContext(UseStateContexts.string.state);
+      const string = UseStateContexts.string.state();
       return (
         <>
           <p data-testid="string">{string}</p>
@@ -29,8 +29,9 @@ describe('createUseRedcuerContexts', () => {
 
   it('Dispatch', () => {
     const Container = () => {
-      const string = useContext(UseStateContexts.string.state);
-      const dispatch = useContext(UseStateContexts.string.dispatch);
+      const string = UseStateContexts.string.state();
+      const dispatch = UseStateContexts.string.dispatch();
+
       useEffect(() => {
         dispatch('dispatched-string');
       }, []);
