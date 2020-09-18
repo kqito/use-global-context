@@ -32,10 +32,14 @@ yarn add react-hook-contexts
 import React, { useContext } from "react";
 import { createUseStateContexts } from "react-hook-contexts";
 
+// You can add global state here. too easy !!
 const [Contexts, ContextProviders] = createUseStateContexts({
   counter: 0,
   message: "",
-  isActive: false,
+  user: {
+    id: '',
+    name: '',
+  },
 });
 
 const App = () => {
@@ -49,20 +53,20 @@ const App = () => {
   // To prevent unnecessary renders,
   // the context is automatically split in the virtual DOM as follows
   //
-  //   <NumberStateContext>
-  //     <NumberDispatchContext>
-  //       <StringStateContext>
-  //         <StringDispatchContext>
-  //           <BooleanStateContext>
-  //             <BooleanDispatchContext>
+  //   <CounterStateContext>
+  //     <CounterDispatchContext>
+  //       <MessageStateContext>
+  //         <MessageDispatchContext>
+  //           <UserStateContext>
+  //             <UserDispatchContext>
   //               <Counter />
   //               <CounterButton />
-  //             </BooleanDispatchContext>
-  //           </BooleanStateContext>
-  //         </StringDispatchContext>
-  //       </StringStateContext>
-  //     </NumberDispatchContext>
-  //   </NumberStateContext>
+  //             </UserDispatchContext>
+  //           </UserStateContext>
+  //         </MessageDispatchContext>
+  //       </MessageStateContext>
+  //     </CounterDispatchContext>
+  //   </CounterStateContext>
 };
 
 const Counter = () => {
