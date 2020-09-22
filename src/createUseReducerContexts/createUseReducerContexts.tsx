@@ -62,10 +62,10 @@ export const createUseReducerContexts = <T extends UseReducerArg>(
     contexts,
     option
   );
-  const useSelector = createUseContexts<UseContexts<T>>(contextValues);
+  const useContexts = createUseContexts<UseContexts<T>>(contextValues);
   const ContextProviders = createContextProvider<
     UseReducerContextValues<UseReducerArg>
   >('useReducer', contextValues);
 
-  return [useSelector, ContextProviders];
+  return [useContexts, ContextProviders];
 };
