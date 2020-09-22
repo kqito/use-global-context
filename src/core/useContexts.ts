@@ -1,4 +1,4 @@
-import React, { useContext, useLayoutEffect, useState, useRef } from 'react';
+import React, { useContext, useLayoutEffect, useRef } from 'react';
 import { HooksContextValues } from './types';
 
 const createUseSelector = <State>(context: React.Context<any>) => {

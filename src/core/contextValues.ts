@@ -12,11 +12,13 @@ const dispatchEventLister = (
   eventListener: React.Context<any>['eventListener']
 ) =>
   React.memo(({ value, children }: React.ProviderProps<any>) => {
-    if (eventListener) {
-      eventListener.forEach((listener) => {
-        listener(value);
-      });
-    }
+    React.useLayoutEffect(() => {
+      if (eventListener) {
+        eventListener.forEach((listener) => {
+          listener(value);
+        });
+      }
+    });
 
     return createElement(provider, { value }, children);
   });
