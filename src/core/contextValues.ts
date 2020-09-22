@@ -6,22 +6,29 @@ type GetHooksContexts = <HooksContextValues>(
   option?: Option
 ) => HooksContextValues;
 
-/* eslint react/display-name: 0 */
 const dispatchEventLister = (
-  provider: React.Provider<any>,
-  eventListener: React.Context<any>['eventListener']
-) =>
-  React.memo(({ value, children }: React.ProviderProps<any>) => {
-    React.useLayoutEffect(() => {
-      if (eventListener) {
-        eventListener.forEach((listener) => {
+  provider: React.Context<any>['Provider'],
+  eventListener: React.Context<any>['eventListener'],
+  displayName: string
+) => {
+  const dispatcher = React.memo(
+    ({ value, children }: React.ProviderProps<any>) => {
+      React.useLayoutEffect(() => {
+        eventListener?.forEach((listener) => {
           listener(value);
         });
-      }
-    });
+      });
 
-    return createElement(provider, { value }, children);
-  });
+      return createElement(provider, { value }, children);
+    }
+  );
+
+  // A bug where the displayname is anonymous will be fixed in react v17
+  // see: https://github.com/facebook/react/issues/18026#issuecomment-675900452
+  dispatcher.displayName = displayName;
+
+  return dispatcher;
+};
 
 export const createContextValues: GetHooksContexts = <
   ContextsType extends Contexts<any>
@@ -37,7 +44,8 @@ export const createContextValues: GetHooksContexts = <
     stateContext.eventListener = [];
     stateContext.Provider = dispatchEventLister(
       stateContext.Provider,
-      stateContext.eventListener
+      stateContext.eventListener,
+      displayName
     );
     stateContext.displayName = displayName;
     dispatchContext.displayName = displayName;
