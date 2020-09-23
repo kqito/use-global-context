@@ -1,6 +1,6 @@
 {
   "name": "react-hook-contexts",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Easy global state management for react using useState or useReducer with context API",
   "module": "dist/index.esm.js",
   "types": "dist/index.d.ts",
