@@ -1,21 +1,22 @@
 import React, { useEffect } from 'react';
 import { mount } from 'enzyme';
 import { createUseStateContexts } from '../createUseStateContexts';
+import { testId } from './utils';
 
-const sel = (id: string): string => `[data-testid="${id}"]`;
 const [UseStateContexts, UseStateContextProviders] = createUseStateContexts({
-  string: 'string',
+  message: '',
+  user: {
+    id: '',
+    name: '',
+    age: 0,
+  },
 });
 
-describe('createUseRedcuerContexts', () => {
+describe('createUseStateContexts', () => {
   it('InitialState', () => {
     const Container = () => {
-      const string = UseStateContexts.string.state();
-      return (
-        <>
-          <p data-testid="string">{string}</p>
-        </>
-      );
+      const message = UseStateContexts.message.state();
+      return <p data-testid="message">{message}</p>;
     };
 
     const wrapper = mount(
@@ -24,22 +25,18 @@ describe('createUseRedcuerContexts', () => {
       </UseStateContextProviders>
     );
 
-    expect(wrapper.find(sel('string')).text()).toBe('string');
+    expect(wrapper.find(testId('message')).text()).toBe('');
   });
 
   it('Dispatch', () => {
     const Container = () => {
-      const string = UseStateContexts.string.state();
-      const dispatch = UseStateContexts.string.dispatch();
+      const message = UseStateContexts.message.state();
+      const dispatch = UseStateContexts.message.dispatch();
 
       useEffect(() => {
-        dispatch('dispatched-string');
+        dispatch('message');
       }, []);
-      return (
-        <>
-          <p data-testid="string">{string}</p>
-        </>
-      );
+      return <p data-testid="message">{message}</p>;
     };
 
     const wrapper = mount(
@@ -48,6 +45,35 @@ describe('createUseRedcuerContexts', () => {
       </UseStateContextProviders>
     );
 
-    expect(wrapper.find(sel('string')).text()).toBe('dispatched-string');
+    expect(wrapper.find(testId('message')).text()).toBe('message');
+  });
+
+  it('UseSelector', () => {
+    const Container = () => {
+      const id = UseStateContexts.user.state((user) => user.id);
+      const nullable = UseStateContexts.user.state(() => null);
+      const string = UseStateContexts.user.state(() => '');
+      const dispatch = UseStateContexts.user.dispatch();
+
+      expect(nullable).toBe(null);
+      expect(string).toBe('');
+
+      useEffect(() => {
+        dispatch((user) => ({
+          ...user,
+          id: 'id',
+        }));
+      }, []);
+
+      return <p data-testid="id">{id}</p>;
+    };
+
+    const wrapper = mount(
+      <UseStateContextProviders>
+        <Container />
+      </UseStateContextProviders>
+    );
+
+    expect(wrapper.find(testId('id')).text()).toBe('id');
   });
 });

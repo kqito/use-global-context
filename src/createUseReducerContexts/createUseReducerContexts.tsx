@@ -1,14 +1,15 @@
 import {
   createContextProvider,
   ContextProviderType,
-} from '../core/createContextProvider';
+} from '../core/contextProvider';
 import {
   Contexts,
   HooksContext,
-  HooksContextWithArg,
+  HooksContextValues,
   Option,
 } from '../core/types';
-import { getHooksContexts } from '../core/createHooksContexts';
+import { createContextValues } from '../core/contextValues';
+import { createUseContexts } from '../core/useContexts';
 
 type Reducer = React.Reducer<any, any> | React.ReducerWithoutAction<any>;
 type ReducerState<R> = R extends React.ReducerWithoutAction<any>
@@ -28,15 +29,15 @@ export type UseReducerArg = Contexts<{
   initializer?: undefined;
 }>;
 
-export type UseReducerContexts<T extends UseReducerArg> = {
+export type UseContexts<T extends UseReducerArg> = {
   [P in keyof T]: HooksContext<
     ReducerState<T[P]['reducer']>,
     ReducerDispatch<T[P]['reducer']>
   >;
 };
 
-export type UseReducerContextsWithArg<T extends UseReducerArg> = {
-  [P in keyof T]: HooksContextWithArg<
+export type UseReducerContextValues<T extends UseReducerArg> = {
+  [P in keyof T]: HooksContextValues<
     { [K in keyof T[P]]: T[P][K] },
     React.ReducerState<T[P]['reducer']>,
     React.Dispatch<React.ReducerAction<T[P]['reducer']>>
@@ -56,15 +57,15 @@ export const createUseReducerContexts = <T extends UseReducerArg>(
    */
   contexts: T,
   option?: Option
-): [UseReducerContexts<T>, React.FC<ContextProviderType>] => {
-  const { hooksContexts, hooksContextsWithArg } = getHooksContexts<
-    UseReducerContexts<T>,
-    UseReducerContextsWithArg<T>
-  >(contexts, option);
-
+): [UseContexts<T>, React.FC<ContextProviderType>] => {
+  const contextValues = createContextValues<UseReducerContextValues<T>>(
+    contexts,
+    option
+  );
+  const useContexts = createUseContexts<UseContexts<T>>(contextValues);
   const ContextProviders = createContextProvider<
-    UseReducerContextsWithArg<UseReducerArg>
-  >('useReducer', hooksContextsWithArg);
+    UseReducerContextValues<UseReducerArg>
+  >('useReducer', contextValues);
 
-  return [hooksContexts, ContextProviders];
+  return [useContexts, ContextProviders];
 };

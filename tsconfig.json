@@ -14,7 +14,8 @@
     "sourceMap": false,
     "strict": true,
     "moduleResolution": "node",
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "typeRoots": ["./node_modules/@types", "src/types"]
   },
   "include": ["src/**/*"]
 }
