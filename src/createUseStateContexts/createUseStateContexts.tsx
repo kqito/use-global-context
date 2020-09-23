@@ -2,24 +2,24 @@ import { Dispatch, SetStateAction } from 'react';
 import {
   createContextProvider,
   ContextProviderType,
-} from '../core/createContextProvider';
-import { getHooksContexts } from '../core/createHooksContexts';
-
+} from '../core/contextProvider';
+import { createContextValues } from '../core/contextValues';
+import { createUseContexts } from '../core/useContexts';
 import {
   Contexts,
   HooksContext,
-  HooksContextWithArg,
+  HooksContextValues,
   Option,
 } from '../core/types';
 
 export type UseStateArg = Contexts<any>;
 
-export type UseStateContexts<T extends UseStateArg> = {
+export type UseContexts<T extends UseStateArg> = {
   [P in keyof T]: HooksContext<T[P], Dispatch<SetStateAction<T[P]>>>;
 };
 
-export type UseStateContextsWithArg<T extends UseStateArg> = {
-  [P in keyof T]: HooksContextWithArg<
+export type UseStateContextValues<T extends UseStateArg> = {
+  [P in keyof T]: HooksContextValues<
     T[P],
     T[P],
     Dispatch<SetStateAction<T[P]>>
@@ -39,15 +39,15 @@ export const createUseStateContexts = <T extends UseStateArg>(
    */
   contexts: T,
   option?: Option
-): [UseStateContexts<T>, React.FC<ContextProviderType>] => {
-  const { hooksContexts, hooksContextsWithArg } = getHooksContexts<
-    UseStateContexts<T>,
-    UseStateContextsWithArg<T>
-  >(contexts, option);
-
+): [UseContexts<T>, React.FC<ContextProviderType>] => {
+  const contextValues = createContextValues<UseStateContextValues<T>>(
+    contexts,
+    option
+  );
+  const useContexts = createUseContexts<UseContexts<T>>(contextValues);
   const ContextProviders = createContextProvider<
-    UseStateContextsWithArg<UseStateArg>
-  >('useState', hooksContextsWithArg);
+    UseStateContextValues<UseStateArg>
+  >('useState', contextValues);
 
-  return [hooksContexts, ContextProviders];
+  return [useContexts, ContextProviders];
 };
