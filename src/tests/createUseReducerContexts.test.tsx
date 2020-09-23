@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 import { mount } from 'enzyme';
 import { createUseReducerContexts } from '../createUseReducerContexts';
-import { testId } from './utils';
 
+const sel = (id: string): string => `[data-testid="${id}"]`;
 type User = {
   id: string;
   name: string;
@@ -77,8 +77,8 @@ describe('createUseRedcuerContexts', () => {
       </UseReducerContextProviders>
     );
 
-    expect(wrapper.find(testId('id')).text()).toBe('id');
-    expect(wrapper.find(testId('name')).text()).toBe('name');
+    expect(wrapper.find(sel('id')).text()).toBe('id');
+    expect(wrapper.find(sel('name')).text()).toBe('name');
   });
 
   it('Dispatch', () => {
@@ -121,8 +121,8 @@ describe('createUseRedcuerContexts', () => {
       </UseReducerContextProviders>
     );
 
-    expect(wrapper.find(testId('id')).text()).toBe('dispatched-id');
-    expect(wrapper.find(testId('name')).text()).toBe('dispatched-name');
+    expect(wrapper.find(sel('id')).text()).toBe('dispatched-id');
+    expect(wrapper.find(sel('name')).text()).toBe('dispatched-name');
   });
 
   it('Without action', () => {
@@ -155,45 +155,6 @@ describe('createUseRedcuerContexts', () => {
       </UseReducerContextProviders>
     );
 
-    expect(wrapper.find(testId('count')).text()).toBe('1');
-  });
-
-  it('UseSelector', () => {
-    const [
-      UseReducerContexts,
-      UseReducerContextProviders,
-    ] = createUseReducerContexts({
-      user: {
-        reducer,
-        initialState,
-      },
-    });
-
-    const Container = () => {
-      const id = UseReducerContexts.user.state((user) => user.id);
-      const dispatch = UseReducerContexts.user.dispatch();
-
-      useEffect(() => {
-        dispatch({
-          type: 'UPDATE_PROFILE',
-          payload: {
-            user: {
-              id: 'id',
-              name: '',
-            },
-          },
-        });
-      }, []);
-
-      return <p data-testid="id">{id}</p>;
-    };
-
-    const wrapper = mount(
-      <UseReducerContextProviders>
-        <Container />
-      </UseReducerContextProviders>
-    );
-
-    expect(wrapper.find(testId('id')).text()).toBe('id');
+    expect(wrapper.find(sel('count')).text()).toBe('1');
   });
 });

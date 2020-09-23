@@ -2,11 +2,11 @@ import React, { useState, useReducer } from 'react';
 import { entries } from '../utils/entries';
 import {
   UseStateArg,
-  UseStateContextValues,
+  UseStateContextsWithArg,
 } from '../createUseStateContexts/createUseStateContexts';
 import {
   UseReducerArg,
-  UseReducerContextValues,
+  UseReducerContextsWithArg,
 } from '../createUseReducerContexts/createUseReducerContexts';
 
 export type ContextProviderType = {
@@ -14,7 +14,7 @@ export type ContextProviderType = {
 };
 
 const renderUseStateContexts = <T extends UseStateArg>(
-  context: UseStateContextValues<T>,
+  context: UseStateContextsWithArg<T>,
   children: React.ReactNode
 ) => {
   return entries(context).reduceRight(
@@ -31,7 +31,7 @@ const renderUseStateContexts = <T extends UseStateArg>(
 };
 
 const renderUseReducerContexts = <T extends UseReducerArg>(
-  context: UseReducerContextValues<T>,
+  context: UseReducerContextsWithArg<T>,
   children: React.ReactNode
 ) => {
   return entries(context).reduceRight(
@@ -49,7 +49,7 @@ const renderUseReducerContexts = <T extends UseReducerArg>(
 };
 
 export const createContextProvider = <
-  T extends UseReducerContextValues<any> | UseStateContextValues<any>
+  T extends UseReducerContextsWithArg<any> | UseStateContextsWithArg<any>
 >(
   type: 'useState' | 'useReducer',
   context: T

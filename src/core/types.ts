@@ -8,15 +8,12 @@ export type Option = {
   displayName: any;
 };
 
-export type HooksContext<State, Dispatch> = {
-  state: {
-    (): State;
-    <SelectedState>(selector: (state: State) => SelectedState): SelectedState;
-  };
+export type HooksContext<State extends unknown, Dispatch extends unknown> = {
+  state: () => State;
   dispatch: () => Dispatch;
 };
 
-export type HooksContextValues<
+export type HooksContextWithArg<
   HooksArg extends unknown,
   State extends unknown,
   Dispatch extends unknown
