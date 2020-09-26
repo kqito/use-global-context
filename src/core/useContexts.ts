@@ -1,5 +1,22 @@
 import React, { useContext, useLayoutEffect, useRef, useState } from 'react';
-import { HooksContextValues } from './types';
+
+export type HooksContext<State, Dispatch> = {
+  state: {
+    (): State;
+    <SelectedState>(selector: (state: State) => SelectedState): SelectedState;
+  };
+  dispatch: () => Dispatch;
+};
+
+export type HooksContextValues<
+  HooksArg extends unknown,
+  State extends unknown,
+  Dispatch extends unknown
+> = {
+  hooksArg: HooksArg;
+  state: React.Context<State>;
+  dispatch: React.Context<Dispatch>;
+};
 
 // The useSelector logic is based on the following repository.
 // https://github.com/dai-shi/use-context-selector (MIT LICENSE)

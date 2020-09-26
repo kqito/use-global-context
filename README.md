@@ -4,13 +4,22 @@
 [![npm version](https://badge.fury.io/js/react-hook-contexts.svg)](https://badge.fury.io/js/react-hook-contexts)
 ![license](https://img.shields.io/github/license/kqito/react-hook-contexts)
 
-Easy global state management for react using `useState` or `useReducer` with [context API](https://reactjs.org/docs/context.html).
+Easy global state management for react using [`useState`](https://reactjs.org/docs/hooks-reference.html#usestate) or [`useReducer`](https://reactjs.org/docs/hooks-reference.html#usereducer) with [`context API`](https://reactjs.org/docs/context.html).
 
 ## Features
 - Easy state management with `useState` and `useReducer`.
-- Generate multiple Contexts with the single function.
+- Generate multiple contexts with the single function.
 - Optimally split context to prevent unnecessary renders.
 - `useSelector` function.
+
+## Why
+The [`context API`](https://reactjs.org/docs/context.html) allows you to create a simple store in combination with hooks such as [`useState`](https://reactjs.org/docs/hooks-reference.html#usestate) and [`useReducer`](https://reactjs.org/docs/hooks-reference.html#usereducer).
+
+However, it can lead to unnecessary renders if you don't split the context with proper granularity. It also doesn't have a feature like redux's useSelector. That means you have to memo. Please see [the solutions](https://github.com/facebook/react/issues/15156#issuecomment-474590693).
+
+On the other hand, while redux is appropriate for managing large amounts of state, I don't think it's necessary for small projects to adopt such a large library.
+
+This library is intended to avoid the implementation costs of redux and also to prevent unnecessary renders, which is a problem with the context API.
 
 ## Installation
 You can install the package from npm.
@@ -130,7 +139,7 @@ const appName = Contexts.app.state(app => app.name)
 // "react-hook-contexts"
 
 const appDispatch = Contexts.app.dispatch()
-// React.Dispatch<React.SetStateAction<AppState>>
+// The dispatch function
 ```
 
 ### `createUseReducer` API
@@ -180,29 +189,21 @@ export const [Contexts, ContextProviders] = createUseReducerContexts({
   counter: {
     reducer,
     initialState,
-  },
-  hogeCounter: {
-    reducer,
-    initialState,
-  },
-  hugeCounter: {
-    reducer,
-    initialState,
-  },
+  }
 });
 ```
 
 The usage is the same as [`useCreateReducerContexts` API](https://github.com/kqito/react-hook-contexts/tree/feature/add-use-selector#createusestatecontexts-api).
 
 ## Examples
-### [CreateUseStateContexts example](https://codesandbox.io/s/react-hook-contexts-examplecreateusestatecontexts-p5ug4 "CodeSandBox")
+### [CreateUseStateContexts API example](https://codesandbox.io/s/react-hook-contexts-examplecreateusestatecontexts-p5ug4 "CodeSandBox")
 This is an example of a counter app that uses the `createUseStateContexts` API.
 
 Notice that each time you increase/decrease the count, only the render of the Counter comport is running. (No unnecessary renders are happening.)
 
 
 ------------
-### [CreateUseReducerContexts example](https://codesandbox.io/s/react-hook-contexts-examplecreateusereducercontexts-xfdxc?file=/src/App.tsx "CodeSandBox")
+### [CreateUseReducerContexts API example](https://codesandbox.io/s/react-hook-contexts-examplecreateusereducercontexts-xfdxc?file=/src/App.tsx "CodeSandBox")
 Similar to the example above, this is an example of a counter app using the `createUseReducerContexts` API.
 
 

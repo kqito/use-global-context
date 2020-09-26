@@ -2,14 +2,13 @@ import {
   createContextProvider,
   ContextProviderType,
 } from '../core/contextProvider';
+import { createContextValues, Contexts } from '../core/contextValues';
 import {
-  Contexts,
+  createUseContexts,
   HooksContext,
   HooksContextValues,
-  Option,
-} from '../core/types';
-import { createContextValues } from '../core/contextValues';
-import { createUseContexts } from '../core/useContexts';
+} from '../core/useContexts';
+import { Options } from '../core/options';
 
 type Reducer = React.Reducer<any, any> | React.ReducerWithoutAction<any>;
 type ReducerState<R> = R extends React.ReducerWithoutAction<any>
@@ -56,11 +55,11 @@ export const createUseReducerContexts = <T extends UseReducerArg>(
    *  *@see* https://reactjs.org/docs/context.html#contextdisplayname
    */
   contexts: T,
-  option?: Option
+  options?: Options
 ): [UseContexts<T>, React.FC<ContextProviderType>] => {
   const contextValues = createContextValues<UseReducerContextValues<T>>(
     contexts,
-    option
+    options
   );
   const useContexts = createUseContexts<UseContexts<T>>(contextValues);
   const ContextProviders = createContextProvider<

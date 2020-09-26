@@ -1,9 +1,13 @@
 import React, { createContext, createElement } from 'react';
-import { Contexts, Option } from './types';
+import { Options } from './options';
+
+export interface Contexts<T> {
+  [displayName: string]: T;
+}
 
 type GetHooksContexts = <HooksContextValues>(
   contexts: Contexts<any>,
-  option?: Option
+  options?: Options
 ) => HooksContextValues;
 
 const dispatchEventLister = (
