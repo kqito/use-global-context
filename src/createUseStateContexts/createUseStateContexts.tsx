@@ -3,14 +3,13 @@ import {
   createContextProvider,
   ContextProviderType,
 } from '../core/contextProvider';
-import { createContextValues } from '../core/contextValues';
-import { createUseContexts } from '../core/useContexts';
+import { createContextValues, Contexts } from '../core/contextValues';
 import {
-  Contexts,
+  createUseContexts,
   HooksContext,
   HooksContextValues,
-  Option,
-} from '../core/types';
+} from '../core/useContexts';
+import { Options } from '../core/options';
 
 export type UseStateArg = Contexts<any>;
 
@@ -38,11 +37,11 @@ export const createUseStateContexts = <T extends UseStateArg>(
    *  *@see* https://reactjs.org/docs/context.html#contextdisplayname
    */
   contexts: T,
-  option?: Option
+  options?: Options
 ): [UseContexts<T>, React.FC<ContextProviderType>] => {
   const contextValues = createContextValues<UseStateContextValues<T>>(
     contexts,
-    option
+    options
   );
   const useContexts = createUseContexts<UseContexts<T>>(contextValues);
   const ContextProviders = createContextProvider<
