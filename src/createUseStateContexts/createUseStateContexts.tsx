@@ -4,19 +4,13 @@ import {
   ContextProviderType,
 } from '../core/contextProvider';
 import { createContextValues, Contexts } from '../core/contextValues';
-import {
-  createUseContexts,
-  HooksContext,
-  HooksContextValues,
-} from '../core/useContexts';
+import { createStore, HooksContext, HooksContextValues } from '../core/store';
 import { Options } from '../core/options';
 
 export type UseStateArg = Contexts<any>;
-
 export type UseContexts<T extends UseStateArg> = {
   [P in keyof T]: HooksContext<T[P], Dispatch<SetStateAction<T[P]>>>;
 };
-
 export type UseStateContextValues<T extends UseStateArg> = {
   [P in keyof T]: HooksContextValues<
     T[P],
@@ -43,10 +37,10 @@ export const createUseStateContexts = <T extends UseStateArg>(
     contexts,
     options
   );
-  const useContexts = createUseContexts<UseContexts<T>>(contextValues);
+  const store = createStore<UseContexts<T>>(contextValues);
   const ContextProviders = createContextProvider<
     UseStateContextValues<UseStateArg>
   >('useState', contextValues);
 
-  return [useContexts, ContextProviders];
+  return [store, ContextProviders];
 };

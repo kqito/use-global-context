@@ -3,11 +3,7 @@ import {
   ContextProviderType,
 } from '../core/contextProvider';
 import { createContextValues, Contexts } from '../core/contextValues';
-import {
-  createUseContexts,
-  HooksContext,
-  HooksContextValues,
-} from '../core/useContexts';
+import { createStore, HooksContext, HooksContextValues } from '../core/store';
 import { Options } from '../core/options';
 
 type Reducer = React.Reducer<any, any> | React.ReducerWithoutAction<any>;
@@ -27,14 +23,12 @@ export type UseReducerArg = Contexts<{
   initialState: any;
   initializer?: undefined;
 }>;
-
-export type UseContexts<T extends UseReducerArg> = {
+export type Store<T extends UseReducerArg> = {
   [P in keyof T]: HooksContext<
     ReducerState<T[P]['reducer']>,
     ReducerDispatch<T[P]['reducer']>
   >;
 };
-
 export type UseReducerContextValues<T extends UseReducerArg> = {
   [P in keyof T]: HooksContextValues<
     { [K in keyof T[P]]: T[P][K] },
@@ -56,15 +50,15 @@ export const createUseReducerContexts = <T extends UseReducerArg>(
    */
   contexts: T,
   options?: Options
-): [UseContexts<T>, React.FC<ContextProviderType>] => {
+): [Store<T>, React.FC<ContextProviderType>] => {
   const contextValues = createContextValues<UseReducerContextValues<T>>(
     contexts,
     options
   );
-  const useContexts = createUseContexts<UseContexts<T>>(contextValues);
+  const store = createStore<Store<T>>(contextValues);
   const ContextProviders = createContextProvider<
     UseReducerContextValues<UseReducerArg>
   >('useReducer', contextValues);
 
-  return [useContexts, ContextProviders];
+  return [store, ContextProviders];
 };

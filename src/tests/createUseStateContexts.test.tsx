@@ -3,7 +3,7 @@ import { mount } from 'enzyme';
 import { createUseStateContexts } from '../createUseStateContexts';
 import { testId } from './utils';
 
-const [UseStateContexts, UseStateContextProviders] = createUseStateContexts({
+const [store, UseStateContextProviders] = createUseStateContexts({
   message: '',
   user: {
     id: '',
@@ -15,7 +15,7 @@ const [UseStateContexts, UseStateContextProviders] = createUseStateContexts({
 describe('createUseStateContexts', () => {
   it('InitialState', () => {
     const Container = () => {
-      const message = UseStateContexts.message.state();
+      const message = store.message.state();
       return <p data-testid="message">{message}</p>;
     };
 
@@ -30,8 +30,8 @@ describe('createUseStateContexts', () => {
 
   it('Dispatch', () => {
     const Container = () => {
-      const message = UseStateContexts.message.state();
-      const dispatch = UseStateContexts.message.dispatch();
+      const message = store.message.state();
+      const dispatch = store.message.dispatch();
 
       useEffect(() => {
         dispatch('message');
@@ -50,10 +50,10 @@ describe('createUseStateContexts', () => {
 
   it('UseSelector', () => {
     const Container = () => {
-      const id = UseStateContexts.user.state((user) => user.id);
-      const nullable = UseStateContexts.user.state(() => null);
-      const string = UseStateContexts.user.state(() => '');
-      const dispatch = UseStateContexts.user.dispatch();
+      const id = store.user.state((user) => user.id);
+      const nullable = store.user.state(() => null);
+      const string = store.user.state(() => '');
+      const dispatch = store.user.dispatch();
 
       expect(nullable).toBe(null);
       expect(string).toBe('');

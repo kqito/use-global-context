@@ -76,18 +76,18 @@ const createUseSelector = <State>(context: React.Context<any>) => {
   return useSelector;
 };
 
-export const createUseContexts = <T>(contextValues: {
+export const createStore = <T>(contextValues: {
   [displayName: string]: HooksContextValues<any, any, any>;
 }): T => {
-  const useContexts: Record<string, any> = {};
+  const store: Record<string, any> = {};
   Object.entries(contextValues).forEach(
     ([displayName, { state, dispatch }]) => {
-      useContexts[displayName] = {
+      store[displayName] = {
         state: createUseSelector(state),
         dispatch: () => useContext(dispatch),
       };
     }
   );
 
-  return useContexts as any;
+  return store as any;
 };
