@@ -39,13 +39,13 @@ yarn add react-hook-contexts
 import React from "react";
 import { createUseStateContexts } from "react-hook-contexts";
 
-// You can add global state here. too easy !!
-const [Contexts, ContextProviders] = createUseStateContexts({
+// You can add global state here. easy !!
+const [store, ContextProviders] = createUseStateContexts({
   counter: 0,
   message: "",
   app: {
     name: "react-hook-contexts",
-    description: "Easy global state management library",
+    description: "A easy global state management library",
   },
 });
 
@@ -80,14 +80,14 @@ const App = () => {
 
 const Counter = () => {
   // You can get the state value of the context as follows
-  const counter = Contexts.counter.state();
+  const counter = store.counter.state();
 
   return <p>counter: {counter}</p>;
 };
 
 const CounterButton = () => {
   // It only gets the dispatch; separating the state and the dispatch prevents extra renders.
-  const setCounter = Contexts.counter.dispatch();
+  const setCounter = store.counter.dispatch();
 
   return (
     <>
@@ -100,7 +100,7 @@ const CounterButton = () => {
 const AppName = () => {
   // Like the redux useSelector API, you can retrieve only the state you need.
   // And there are no unnecessary renders.
-  const name = Contexts.app.state((app) => app.name);
+  const name = store.app.state((app) => app.name);
 
   return <p>App: {name}</p>;
 };
@@ -116,12 +116,12 @@ export default App;
 import React from "react";
 import { createUseStateContexts } from "react-hook-contexts";
 
-const [Contexts, ContextProviders] = createUseStateContexts({
+const [store, ContextProviders] = createUseStateContexts({
   counter: 0,
   message: "",
   app: {
     name: "react-hook-contexts",
-    description: "Easy global state management library",
+    description: "A easy global state management library",
   }
 });
 ```
@@ -129,17 +129,25 @@ const [Contexts, ContextProviders] = createUseStateContexts({
 You can use it as follows.
 
 ```javascript
-const appState = Contexts.app.state();
+const counter = store.counter.state();
+// 0
+
+const message = store.message.state();
+// ""
+
+const appState = store.app.state();
 // {
 //   name: "react-hook-contexts",
-//   description: "Easy global state management library",
+//   description: "A easy global state management library",
 // }
 
-const appName = Contexts.app.state(app => app.name)
+const appName = store.app.state(app => app.name)
 // "react-hook-contexts"
 
-const appDispatch = Contexts.app.dispatch()
-// The dispatch function
+const counterDispatch = store.counter.dispatch()
+const messageDispatch = store.message.dispatch()
+const appDispatch = store.app.dispatch()
+// Each of the dispatch functions
 ```
 
 ### `createUseReducer` API
@@ -185,7 +193,7 @@ const reducer: React.Reducer<typeof initialState, CounterAction> = (
   }
 };
 
-export const [Contexts, ContextProviders] = createUseReducerContexts({
+export const [store, ContextProviders] = createUseReducerContexts({
   counter: {
     reducer,
     initialState,
