@@ -51,10 +51,7 @@ const reducer: React.Reducer<User, UserAction> = (state, action) => {
 
 describe('createUseRedcuerContexts', () => {
   it('InitialState', () => {
-    const [
-      UseReducerContexts,
-      UseReducerContextProviders,
-    ] = createUseReducerContexts({
+    const [store, UseReducerContextProviders] = createUseReducerContexts({
       user: {
         reducer,
         initialState,
@@ -62,7 +59,7 @@ describe('createUseRedcuerContexts', () => {
     });
 
     const Container = () => {
-      const user = UseReducerContexts.user.state();
+      const user = store.user.state();
       return (
         <>
           <p data-testid="id">{user.id}</p>
@@ -82,10 +79,7 @@ describe('createUseRedcuerContexts', () => {
   });
 
   it('Dispatch', () => {
-    const [
-      UseReducerContexts,
-      UseReducerContextProviders,
-    ] = createUseReducerContexts({
+    const [store, UseReducerContextProviders] = createUseReducerContexts({
       user: {
         reducer,
         initialState,
@@ -93,8 +87,8 @@ describe('createUseRedcuerContexts', () => {
     });
 
     const Container = () => {
-      const user = UseReducerContexts.user.state();
-      const userDispatch = UseReducerContexts.user.dispatch();
+      const user = store.user.state();
+      const userDispatch = store.user.dispatch();
       useEffect(() => {
         userDispatch({
           type: 'UPDATE_PROFILE',
@@ -129,10 +123,7 @@ describe('createUseRedcuerContexts', () => {
     const withoutReducer: React.ReducerWithoutAction<number> = (count) =>
       count + 1;
 
-    const [
-      UseReducerContexts,
-      UseReducerContextProviders,
-    ] = createUseReducerContexts({
+    const [store, UseReducerContextProviders] = createUseReducerContexts({
       counter: {
         reducer: withoutReducer,
         initialState: 0,
@@ -140,8 +131,8 @@ describe('createUseRedcuerContexts', () => {
     });
 
     const Container = () => {
-      const count = UseReducerContexts.counter.state();
-      const increment = UseReducerContexts.counter.dispatch();
+      const count = store.counter.state();
+      const increment = store.counter.dispatch();
       useEffect(() => {
         increment();
       }, []);
@@ -159,10 +150,7 @@ describe('createUseRedcuerContexts', () => {
   });
 
   it('UseSelector', () => {
-    const [
-      UseReducerContexts,
-      UseReducerContextProviders,
-    ] = createUseReducerContexts({
+    const [store, UseReducerContextProviders] = createUseReducerContexts({
       user: {
         reducer,
         initialState,
@@ -170,8 +158,8 @@ describe('createUseRedcuerContexts', () => {
     });
 
     const Container = () => {
-      const id = UseReducerContexts.user.state((user) => user.id);
-      const dispatch = UseReducerContexts.user.dispatch();
+      const id = store.user.state((user) => user.id);
+      const dispatch = store.user.dispatch();
 
       useEffect(() => {
         dispatch({
