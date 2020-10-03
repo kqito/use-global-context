@@ -3,7 +3,20 @@ import { mount } from 'enzyme';
 import { createUseStateContexts } from '../createUseStateContexts';
 import { testId } from './utils';
 
-const [store, UseStateContextProviders] = createUseStateContexts({
+type State = {
+  counter: number;
+  message: string;
+  user: {
+    id: string;
+    name: string;
+    age: number;
+  };
+};
+
+const [store, UseStateContextProviders, currentState] = createUseStateContexts<
+  State
+>({
+  counter: 0,
   message: '',
   user: {
     id: '',
@@ -75,5 +88,49 @@ describe('createUseStateContexts', () => {
     );
 
     expect(wrapper.find(testId('id')).text()).toBe('id');
+  });
+
+  it('CurrentState', () => {
+    const Container = () => {
+      const counter = store.counter.state();
+      const counterDispatch = store.counter.dispatch();
+
+      useEffect(() => {
+        expect(currentState.counter).toBe(0);
+        counterDispatch(100);
+      }, []);
+
+      return <p data-testid="id">{counter}</p>;
+    };
+
+    mount(
+      <UseStateContextProviders>
+        <Container />
+      </UseStateContextProviders>
+    );
+
+    expect(currentState.counter).toBe(100);
+  });
+
+  it('InitialState', () => {
+    const initialState = {
+      counter: 100,
+    };
+
+    const Container = () => {
+      const counter = store.counter.state();
+      const message = store.message.state();
+
+      expect(counter).toBe(100);
+      expect(message).toBe('');
+
+      return null;
+    };
+
+    mount(
+      <UseStateContextProviders value={initialState as any}>
+        <Container />
+      </UseStateContextProviders>
+    );
   });
 });

@@ -184,4 +184,80 @@ describe('createUseRedcuerContexts', () => {
 
     expect(wrapper.find(testId('id')).text()).toBe('id');
   });
+
+  it('CurrentState', () => {
+    const [
+      store,
+      UseReducerContextProviders,
+      currentState,
+    ] = createUseReducerContexts({
+      user: {
+        reducer,
+        initialState,
+      },
+    });
+
+    const Container = () => {
+      const id = store.user.state((user) => user.id);
+      const userDispatch = store.user.dispatch();
+
+      useEffect(() => {
+        userDispatch({
+          type: 'UPDATE_PROFILE',
+          payload: {
+            user: {
+              id: 'dispatched-id',
+              name: '',
+            },
+          },
+        });
+      }, []);
+
+      return <p data-testid="id">{id}</p>;
+    };
+
+    mount(
+      <UseReducerContextProviders>
+        <Container />
+      </UseReducerContextProviders>
+    );
+
+    const expectCurrentState = {
+      user: {
+        id: 'dispatched-id',
+        name: '',
+      },
+    };
+    expect(currentState).toStrictEqual(expectCurrentState);
+  });
+
+  it('InitialState', () => {
+    const [store, UseReducerContextProviders] = createUseReducerContexts({
+      user: {
+        reducer,
+        initialState,
+      },
+    });
+
+    const Container = () => {
+      const id = store.user.state((user) => user.id);
+
+      expect(id).toBe('dispatched-id');
+
+      return <p data-testid="id">{id}</p>;
+    };
+
+    const value = {
+      user: {
+        id: 'dispatched-id',
+        name: '',
+      },
+    };
+
+    mount(
+      <UseReducerContextProviders value={value}>
+        <Container />
+      </UseReducerContextProviders>
+    );
+  });
 });
