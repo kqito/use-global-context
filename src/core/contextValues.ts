@@ -46,7 +46,7 @@ export const createContextValues: GetHooksContexts = <
     const stateContext = createContext(null as any, () => 0);
     const dispatchContext = createContext(null as any);
 
-    stateContext.eventListener = [];
+    stateContext.eventListener = new Set();
     stateContext.Provider = dispatchEventLister(
       stateContext.Provider,
       stateContext.eventListener,

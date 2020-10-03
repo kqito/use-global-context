@@ -38,14 +38,13 @@ const createUseSelector = <State>(context: React.Context<any>) => {
       selectedValue: any;
     } | null>(null);
 
-    const { eventListener } = context;
     const callback = selector || defaultSelector;
     const selectedValue = callback(value);
-
     useUniversalLayoutEffect(() => {
       prev.current = { value, selectedValue };
     });
 
+    const { eventListener } = context;
     useUniversalLayoutEffect(() => {
       const refresh = (nextValue: State) => {
         if (!prev.current) {
@@ -62,12 +61,9 @@ const createUseSelector = <State>(context: React.Context<any>) => {
         update(nextValue);
       };
 
-      eventListener?.push(refresh);
-
+      eventListener?.add(refresh);
       return () => {
-        context.eventListener = eventListener?.filter(
-          (listener) => listener !== refresh
-        );
+        eventListener?.delete(refresh);
       };
     }, [eventListener]);
 

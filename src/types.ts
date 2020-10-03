@@ -10,6 +10,6 @@ declare module 'react' {
     Provider: React.Provider<T>;
     Consumer: React.Consumer<T>;
     displayName?: string;
-    eventListener?: ((value: T) => void)[];
+    eventListener?: Set<(value: T) => void>;
   }
 }
