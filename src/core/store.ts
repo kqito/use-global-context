@@ -1,4 +1,5 @@
-import React, { useContext, useLayoutEffect, useRef, useState } from 'react';
+import React, { useContext, useRef, useState } from 'react';
+import { useUniversalLayoutEffect } from './useUniversalLayoutEffect';
 
 export type HooksContext<State, Dispatch> = {
   state: {
@@ -41,11 +42,11 @@ const createUseSelector = <State>(context: React.Context<any>) => {
     const callback = selector || defaultSelector;
     const selectedValue = callback(value);
 
-    useLayoutEffect(() => {
+    useUniversalLayoutEffect(() => {
       prev.current = { value, selectedValue };
     });
 
-    useLayoutEffect(() => {
+    useUniversalLayoutEffect(() => {
       const refresh = (nextValue: State) => {
         if (!prev.current) {
           return;

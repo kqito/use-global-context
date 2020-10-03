@@ -1,4 +1,5 @@
 import React, { createContext, createElement } from 'react';
+import { useUniversalLayoutEffect } from './useUniversalLayoutEffect';
 import { Options } from './options';
 
 export interface Contexts<T> {
@@ -17,7 +18,7 @@ const dispatchEventLister = (
 ) => {
   const dispatcher = React.memo(
     ({ value, children }: React.ProviderProps<any>) => {
-      React.useLayoutEffect(() => {
+      useUniversalLayoutEffect(() => {
         eventListener?.forEach((listener) => {
           listener(value);
         });
