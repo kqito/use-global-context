@@ -1,21 +1,22 @@
-import { Dispatch, SetStateAction } from 'react';
-import {
-  createContextProvider,
-  ContextProviderType,
-} from '../core/contextProvider';
+import React, { useState } from 'react';
+import { entries } from '../utils/entries';
+import { ContextProvider } from '../core/contextProvider';
 import { createContextValues, Contexts } from '../core/contextValues';
 import { createStore, HooksContext, HooksContextValues } from '../core/store';
 import { Options } from '../core/options';
 
 export type UseStateArg = Contexts<any>;
 export type UseContexts<T extends UseStateArg> = {
-  [P in keyof T]: HooksContext<T[P], Dispatch<SetStateAction<T[P]>>>;
+  [P in keyof T]: HooksContext<
+    T[P],
+    React.Dispatch<React.SetStateAction<T[P]>>
+  >;
 };
 export type UseStateContextValues<T extends UseStateArg> = {
   [P in keyof T]: HooksContextValues<
     T[P],
     T[P],
-    Dispatch<SetStateAction<T[P]>>
+    React.Dispatch<React.SetStateAction<T[P]>>
   >;
 };
 
@@ -32,15 +33,43 @@ export const createUseStateContexts = <T extends UseStateArg>(
    */
   contexts: T,
   options?: Options
-): [UseContexts<T>, React.FC<ContextProviderType>] => {
+): [UseContexts<T>, React.FC<ContextProvider<T>>, T] => {
   const contextValues = createContextValues<UseStateContextValues<T>>(
     contexts,
     options
   );
   const store = createStore<UseContexts<T>>(contextValues);
-  const ContextProviders = createContextProvider<
-    UseStateContextValues<UseStateArg>
-  >('useState', contextValues);
+  const currentState: T = contexts;
+  const ContextProviders: React.FC<ContextProvider<T>> = ({
+    children,
+    value,
+  }: ContextProvider<T>) => {
+    return (
+      <>
+        {entries(contextValues).reduceRight(
+          (
+            acc,
+            [displayName, { hooksArg, state: State, dispatch: Dispatch }]
+          ) => {
+            const initialValue =
+              value && value[displayName] && value[displayName] !== undefined
+                ? value[displayName]
+                : hooksArg;
 
-  return [store, ContextProviders];
+            const [state, dispatch] = useState(initialValue);
+            currentState[displayName] = state;
+
+            return (
+              <State.Provider value={state}>
+                <Dispatch.Provider value={dispatch}>{acc}</Dispatch.Provider>
+              </State.Provider>
+            );
+          },
+          children
+        )}
+      </>
+    );
+  };
+
+  return [store, ContextProviders, currentState];
 };
