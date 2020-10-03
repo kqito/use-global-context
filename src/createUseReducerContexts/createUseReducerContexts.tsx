@@ -1,7 +1,6 @@
-import {
-  createContextProvider,
-  ContextProviderType,
-} from '../core/contextProvider';
+import React, { useReducer } from 'react';
+import { entries } from '../utils/entries';
+import { ContextProvider } from '../core/contextProvider';
 import { createContextValues, Contexts } from '../core/contextValues';
 import { createStore, HooksContext, HooksContextValues } from '../core/store';
 import { Options } from '../core/options';
@@ -29,6 +28,9 @@ export type Store<T extends UseReducerArg> = {
     ReducerDispatch<T[P]['reducer']>
   >;
 };
+export type CurrentState<T extends UseReducerArg> = {
+  [P in keyof T]: T[P]['initialState'];
+};
 export type UseReducerContextValues<T extends UseReducerArg> = {
   [P in keyof T]: HooksContextValues<
     { [K in keyof T[P]]: T[P][K] },
@@ -50,15 +52,56 @@ export const createUseReducerContexts = <T extends UseReducerArg>(
    */
   contexts: T,
   options?: Options
-): [Store<T>, React.FC<ContextProviderType>] => {
+): [Store<T>, React.FC<ContextProvider<CurrentState<T>>>, CurrentState<T>] => {
   const contextValues = createContextValues<UseReducerContextValues<T>>(
     contexts,
     options
   );
   const store = createStore<Store<T>>(contextValues);
-  const ContextProviders = createContextProvider<
-    UseReducerContextValues<UseReducerArg>
-  >('useReducer', contextValues);
+  const currentState: CurrentState<T> = entries(contexts).reduceRight(
+    (acc, [displayName, hooksArg]) => {
+      acc[displayName] = hooksArg.initialState;
 
-  return [store, ContextProviders];
+      return acc;
+    },
+    {} as CurrentState<T>
+  );
+  const ContextProviders: React.FC<ContextProvider<CurrentState<T>>> = ({
+    children,
+    value,
+  }: ContextProvider<CurrentState<T>>) => {
+    return (
+      <>
+        {entries(contextValues).reduceRight(
+          (
+            acc,
+            [displayName, { hooksArg, state: State, dispatch: Dispatch }]
+          ) => {
+            const { reducer, initialState, initializer } = hooksArg;
+            const initialValue =
+              value && value[displayName] !== undefined
+                ? value[displayName]
+                : initialState;
+
+            const [useReducerState, useReducerDispatch] = useReducer(
+              reducer,
+              initialValue,
+              initializer
+            );
+            currentState[displayName] = useReducerState;
+            return (
+              <State.Provider value={useReducerState}>
+                <Dispatch.Provider value={useReducerDispatch}>
+                  {acc}
+                </Dispatch.Provider>
+              </State.Provider>
+            );
+          },
+          children
+        )}
+      </>
+    );
+  };
+
+  return [store, ContextProviders, currentState];
 };
