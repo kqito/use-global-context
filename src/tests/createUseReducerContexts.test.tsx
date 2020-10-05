@@ -171,6 +171,15 @@ describe('createUseRedcuerContexts', () => {
             },
           },
         });
+        dispatch({
+          type: 'UPDATE_PROFILE',
+          payload: {
+            user: {
+              id: 'id',
+              name: '',
+            },
+          },
+        });
       }, []);
 
       return <p data-testid="id">{id}</p>;

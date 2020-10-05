@@ -13,20 +13,18 @@ type State = {
   };
 };
 
-const [store, UseStateContextProviders, currentState] = createUseStateContexts<
-  State
->({
-  counter: 0,
-  message: '',
-  user: {
-    id: '',
-    name: '',
-    age: 0,
-  },
-});
-
 describe('createUseStateContexts', () => {
   it('InitialState', () => {
+    const [store, UseStateContextProviders] = createUseStateContexts<State>({
+      counter: 0,
+      message: '',
+      user: {
+        id: '',
+        name: '',
+        age: 0,
+      },
+    });
+
     const Container = () => {
       const message = store.message.state();
       return <p data-testid="message">{message}</p>;
@@ -42,6 +40,16 @@ describe('createUseStateContexts', () => {
   });
 
   it('Dispatch', () => {
+    const [store, UseStateContextProviders] = createUseStateContexts<State>({
+      counter: 0,
+      message: '',
+      user: {
+        id: '',
+        name: '',
+        age: 0,
+      },
+    });
+
     const Container = () => {
       const message = store.message.state();
       const dispatch = store.message.dispatch();
@@ -62,6 +70,16 @@ describe('createUseStateContexts', () => {
   });
 
   it('UseSelector', () => {
+    const [store, UseStateContextProviders] = createUseStateContexts<State>({
+      counter: 0,
+      message: '',
+      user: {
+        id: '',
+        name: '',
+        age: 0,
+      },
+    });
+
     const Container = () => {
       const id = store.user.state((user) => user.id);
       const nullable = store.user.state(() => null);
@@ -91,6 +109,20 @@ describe('createUseStateContexts', () => {
   });
 
   it('CurrentState', () => {
+    const [
+      store,
+      UseStateContextProviders,
+      currentState,
+    ] = createUseStateContexts<State>({
+      counter: 0,
+      message: '',
+      user: {
+        id: '',
+        name: '',
+        age: 0,
+      },
+    });
+
     const Container = () => {
       const counter = store.counter.state();
       const counterDispatch = store.counter.dispatch();
@@ -113,6 +145,16 @@ describe('createUseStateContexts', () => {
   });
 
   it('InitialState', () => {
+    const [store, UseStateContextProviders] = createUseStateContexts<State>({
+      counter: 0,
+      message: '',
+      user: {
+        id: '',
+        name: '',
+        age: 0,
+      },
+    });
+
     const initialState = {
       counter: 100,
     };
