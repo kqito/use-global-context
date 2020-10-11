@@ -1,23 +1,14 @@
-import React, { useState } from 'react';
-import { entries } from '../utils/entries';
-import { ContextProvider } from '../core/contextProvider';
-import { createContextValues, Contexts } from '../core/contextValues';
-import { createStore, HooksContext, HooksContextValues } from '../core/store';
-import { Options } from '../core/options';
+import React from 'react';
+import {
+  createUseStateContext,
+  createUseStateServerSideContext,
+} from './createContext';
+import { UseStateStore } from './store';
+import { ContextProvider } from '../core/createContext';
+import { isBrowser } from '../utils/environment';
 
-export type UseStateArg = Contexts<any>;
-export type UseContexts<T extends UseStateArg> = {
-  [P in keyof T]: HooksContext<
-    T[P],
-    React.Dispatch<React.SetStateAction<T[P]>>
-  >;
-};
-export type UseStateContextValues<T extends UseStateArg> = {
-  [P in keyof T]: HooksContextValues<
-    T[P],
-    T[P],
-    React.Dispatch<React.SetStateAction<T[P]>>
-  >;
+export type UseStateContextSource = {
+  [displayName: string]: any;
 };
 
 /**
@@ -25,51 +16,17 @@ export type UseStateContextValues<T extends UseStateArg> = {
  * The created contexts are split into a state and a dispatch,
  * respectively, to prevent unnecessary rendering.
  */
-export const createUseStateContexts = <T extends UseStateArg>(
+export const createUseStateContexts = <T extends UseStateContextSource>(
   /**
    *  Object's value is passed as an argument to useState.
    *  Also, the object's key is set to the context's displayname.
    *  *@see* https://reactjs.org/docs/context.html#contextdisplayname
    */
-  contexts: T,
-  options?: Options
-): [UseContexts<T>, React.FC<ContextProvider<T>>, T] => {
-  const contextValues = createContextValues<UseStateContextValues<T>>(
-    contexts,
-    options
-  );
-  const store = createStore<UseContexts<T>>(contextValues);
-  const currentState: T = contexts;
-  const ContextProviders: React.FC<ContextProvider<T>> = ({
-    children,
-    value,
-  }: ContextProvider<T>) => {
-    return (
-      <>
-        {entries(contextValues).reduceRight(
-          (
-            acc,
-            [displayName, { hooksArg, state: State, dispatch: Dispatch }]
-          ) => {
-            const initialValue =
-              value && value[displayName] && value[displayName] !== undefined
-                ? value[displayName]
-                : hooksArg;
+  contextSource: T
+): [UseStateStore<T>, React.FC<ContextProvider<T>>, () => T] => {
+  const { store, contextProvider, getState } = isBrowser
+    ? createUseStateContext(contextSource)
+    : createUseStateServerSideContext(contextSource);
 
-            const [state, dispatch] = useState(initialValue);
-            currentState[displayName] = state;
-
-            return (
-              <State.Provider value={state}>
-                <Dispatch.Provider value={dispatch}>{acc}</Dispatch.Provider>
-              </State.Provider>
-            );
-          },
-          children
-        )}
-      </>
-    );
-  };
-
-  return [store, ContextProviders, currentState];
+  return [store, contextProvider, getState];
 };

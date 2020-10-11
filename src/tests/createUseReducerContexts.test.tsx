@@ -171,6 +171,15 @@ describe('createUseRedcuerContexts', () => {
             },
           },
         });
+        dispatch({
+          type: 'UPDATE_PROFILE',
+          payload: {
+            user: {
+              id: 'id',
+              name: '',
+            },
+          },
+        });
       }, []);
 
       return <p data-testid="id">{id}</p>;
@@ -185,11 +194,11 @@ describe('createUseRedcuerContexts', () => {
     expect(wrapper.find(testId('id')).text()).toBe('id');
   });
 
-  it('CurrentState', () => {
+  it('getState', () => {
     const [
       store,
       UseReducerContextProviders,
-      currentState,
+      getState,
     ] = createUseReducerContexts({
       user: {
         reducer,
@@ -228,7 +237,7 @@ describe('createUseRedcuerContexts', () => {
         name: '',
       },
     };
-    expect(currentState).toStrictEqual(expectCurrentState);
+    expect(getState()).toStrictEqual(expectCurrentState);
   });
 
   it('InitialState', () => {

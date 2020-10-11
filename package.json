@@ -1,6 +1,6 @@
 {
   "name": "react-hook-contexts",
-  "version": "0.1.6",
+  "version": "0.2.0",
   "description": "Easy global state management for react using useState or useReducer with context API",
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
@@ -8,7 +8,9 @@
   "scripts": {
     "build": "npm-run-all -s type clean build:rollup",
     "build:rollup": "rollup -c",
-    "test": "NODE_ENV=TEST jest",
+    "test": "npm-run-all -s test:client test:server",
+    "test:client": "cross-env NODE_ENV=TEST jest",
+    "test:server": "cross-env NODE_ENV=TEST TEST_SERVER_SIDE=true jest",
     "type": "tsc --noEmit",
     "format": "npm-run-all -s format:*",
     "format:fix": "prettier --write './src/**/*.{ts,tsx,js,jsx,json}'",
@@ -54,6 +56,7 @@
     "@typescript-eslint/eslint-plugin": "^4.0.1",
     "@typescript-eslint/parser": "^4.0.1",
     "babel-jest": "^26.3.0",
+    "cross-env": "^7.0.2",
     "enzyme": "^3.11.0",
     "enzyme-adapter-react-16": "^1.15.4",
     "eslint": "^7.8.1",

@@ -8,9 +8,9 @@
 
 ## Features
 - Easy state management with `useState` and `useReducer`.
-- Generate multiple contexts with the single function.
 - Optimally split context to prevent unnecessary renders.
 - `useSelector` function.
+- Support for SSR.
 
 ## Why
 The [`context API`](https://reactjs.org/docs/context.html) allows you to create a simple store in combination with hooks such as [`useState`](https://reactjs.org/docs/hooks-reference.html#usestate) and [`useReducer`](https://reactjs.org/docs/hooks-reference.html#usereducer).
