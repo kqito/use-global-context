@@ -194,11 +194,11 @@ describe('createUseRedcuerContexts', () => {
     expect(wrapper.find(testId('id')).text()).toBe('id');
   });
 
-  it('CurrentState', () => {
+  it('getState', () => {
     const [
       store,
       UseReducerContextProviders,
-      currentState,
+      getState,
     ] = createUseReducerContexts({
       user: {
         reducer,
@@ -237,7 +237,7 @@ describe('createUseRedcuerContexts', () => {
         name: '',
       },
     };
-    expect(currentState).toStrictEqual(expectCurrentState);
+    expect(getState()).toStrictEqual(expectCurrentState);
   });
 
   it('InitialState', () => {

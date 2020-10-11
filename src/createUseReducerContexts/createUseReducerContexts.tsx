@@ -36,18 +36,11 @@ export const createUseReducerContexts = <T extends UseReducerContextSource>(
 ): [
   UseReducerStore<T>,
   React.FC<ContextProvider<CurrentState<T>>>,
-  CurrentState<T>
+  () => CurrentState<T>
 ] => {
-  const currentState: CurrentState<T> = entries(contextSource).reduce(
-    (acc, [displayName, { initialState }]) => {
-      acc[displayName] = initialState;
-      return acc;
-    },
-    {} as CurrentState<T>
-  );
-  const { store, contextProvider } = isBrowser
-    ? createUseReducerContext(contextSource, currentState)
-    : createUseReducerServerSideContext(contextSource, currentState);
+  const { store, contextProvider, getState } = isBrowser
+    ? createUseReducerContext(contextSource)
+    : createUseReducerServerSideContext(contextSource);
 
-  return [store, contextProvider, currentState];
+  return [store, contextProvider, getState];
 };

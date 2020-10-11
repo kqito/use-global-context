@@ -75,7 +75,7 @@ export const createUseSelector = <State>(
       return () => {
         context.eventListener?.delete(refresh);
       };
-    });
+    }, [context]);
 
     return selectedState;
   }

@@ -72,7 +72,8 @@ export const createBaseContext = <T extends ContextSource>(
 export const createServerSideContext = <
   T extends Record<string, any> = Record<string, any>
 >(
-  initialState: T
+  getState: () => T,
+  resetState: () => void
 ) => {
   const context = React.createContext<T>(null as any);
   context.eventListener = new Set();
@@ -82,10 +83,14 @@ export const createServerSideContext = <
     children,
     value,
   }: ContextProvider<T>) => {
-    const initialValue = {
-      ...initialState,
-      ...(value || {}),
-    };
+    const initialValue = value
+      ? {
+          ...getState(),
+          ...value,
+        }
+      : getState();
+
+    resetState();
 
     return <Provider value={initialValue}>{children}</Provider>;
   };

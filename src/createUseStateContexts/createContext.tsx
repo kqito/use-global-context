@@ -6,6 +6,7 @@ import {
   createServerSideContext,
   ContextProvider,
 } from '../core/createContext';
+import { createCurrentState } from '../core/currentState';
 import { entries } from '../utils/entries';
 
 export type UseStateContext<T extends UseStateContextSource> = {
@@ -16,10 +17,10 @@ export type UseStateContext<T extends UseStateContextSource> = {
 };
 
 export const createUseStateContext = <T extends UseStateContextSource>(
-  source: T,
-  currentState: T
+  contextSource: T
 ) => {
-  const context = createBaseContext<UseStateContext<T>>(source);
+  const { getState, setState } = createCurrentState(contextSource);
+  const context = createBaseContext<UseStateContext<T>>(contextSource);
   const store = createStore(context);
   const contextProvider: React.FC<ContextProvider<T>> = ({
     children,
@@ -32,10 +33,10 @@ export const createUseStateContext = <T extends UseStateContextSource>(
             const initialValue =
               value && value[displayName] !== undefined
                 ? value[displayName]
-                : source[displayName];
+                : contextSource[displayName];
 
             const [state, dispatch] = useState(initialValue);
-            currentState[displayName] = state;
+            setState(state, displayName);
 
             return (
               <State.Provider value={state}>
@@ -53,20 +54,31 @@ export const createUseStateContext = <T extends UseStateContextSource>(
     context,
     store,
     contextProvider,
+    getState,
   };
 };
 
 export const createUseStateServerSideContext = <
   T extends UseStateContextSource
 >(
-  currentState: T
+  contextSource: T
 ) => {
-  const { context, contextProvider } = createServerSideContext(currentState);
-  const store = createServerSideStore(context, currentState);
+  const { getState, setState, resetState } = createCurrentState(contextSource);
+  const { context, contextProvider } = createServerSideContext(
+    getState,
+    resetState
+  );
+  const store = createServerSideStore(
+    context,
+    contextSource,
+    getState,
+    setState
+  );
 
   return {
     context,
     store,
     contextProvider,
+    getState,
   };
 };

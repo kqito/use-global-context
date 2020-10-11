@@ -23,7 +23,11 @@ export type UseReducerStore<T extends UseReducerContextSource> = {
 };
 
 export const createUseServerSideDispatch = <T extends UseReducerContextSource>(
-  currentState: CurrentState<T>,
+  getState: () => CurrentState<T>,
+  setState: (
+    value: CurrentState<T>[keyof T],
+    key: keyof CurrentState<T>
+  ) => void,
   displayName: keyof CurrentState<T>,
   reducer: T[keyof T]['reducer'],
   eventListener: React.Context<CurrentState<T>>['eventListener']
@@ -32,15 +36,15 @@ export const createUseServerSideDispatch = <T extends UseReducerContextSource>(
     action?: React.ReducerAction<typeof reducer>
   ): void => {
     /* eslint no-param-reassign: 0 */
-    const state = currentState[displayName];
+    const currentState = getState()[displayName];
     if (reducer.length === 1) {
-      currentState[displayName] = reducer(state, undefined);
+      setState(reducer(currentState, undefined), displayName);
     } else {
-      currentState[displayName] = reducer(state, action);
+      setState(reducer(currentState, action), displayName);
     }
 
     eventListener?.forEach((listener) => {
-      listener(currentState[displayName]);
+      listener(currentState);
     });
   };
 
@@ -64,21 +68,26 @@ export const createStore = <T extends UseReducerContextSource>(
 
 export const createServerSideStore = <T extends UseReducerContextSource>(
   context: React.Context<CurrentState<T>>,
-  contextSource: T,
-  currentState: CurrentState<T>
+  source: T,
+  getState: () => CurrentState<T>,
+  setState: (
+    value: CurrentState<T>[keyof T],
+    key: keyof CurrentState<T>
+  ) => void
 ): UseReducerStore<T> => {
   const store: UseReducerStore<T> = {} as UseReducerStore<T>;
 
-  entries(currentState).forEach(([displayName]) => {
+  entries(source).forEach(([displayName]) => {
     store[displayName] = {
       state: createUseSelector(context, (c) => {
         return useContext(c)[displayName];
       }),
       dispatch: () =>
         createUseServerSideDispatch(
-          currentState,
+          getState,
+          setState,
           displayName,
-          contextSource[displayName].reducer,
+          source[displayName].reducer,
           context.eventListener
         ),
     };

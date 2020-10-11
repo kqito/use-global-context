@@ -23,11 +23,10 @@ export const createUseStateContexts = <T extends UseStateContextSource>(
    *  *@see* https://reactjs.org/docs/context.html#contextdisplayname
    */
   contextSource: T
-): [UseStateStore<T>, React.FC<ContextProvider<T>>, T] => {
-  const currentState: T = contextSource;
-  const { store, contextProvider } = isBrowser
-    ? createUseStateContext(contextSource, currentState)
-    : createUseStateServerSideContext(currentState);
+): [UseStateStore<T>, React.FC<ContextProvider<T>>, () => T] => {
+  const { store, contextProvider, getState } = isBrowser
+    ? createUseStateContext(contextSource)
+    : createUseStateServerSideContext(contextSource);
 
-  return [store, contextProvider, currentState];
+  return [store, contextProvider, getState];
 };

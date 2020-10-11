@@ -27,7 +27,8 @@ export const createSSRContext = <T>() => {
 };
 
 export const createUseServerSideDispatch = <T extends UseStateContextSource>(
-  currentState: T,
+  getState: () => T,
+  setState: (value: T[keyof T], key: keyof T) => void,
   displayName: keyof T,
   eventListener: React.Context<T>['eventListener']
 ): React.Dispatch<React.SetStateAction<T[keyof T]>> => {
@@ -40,14 +41,16 @@ export const createUseServerSideDispatch = <T extends UseStateContextSource>(
   function useServerSideDispatch(
     state: T[keyof T] | ((prevState: T[keyof T]) => T[keyof T])
   ): void {
+    const currentState = getState()[displayName];
+
     if (isFunction<(prevState: T[keyof T]) => T[keyof T]>(state)) {
-      currentState[displayName] = state(currentState[displayName]);
+      setState(state(currentState), displayName);
     } else {
-      currentState[displayName] = state;
+      setState(state, displayName);
     }
 
     eventListener?.forEach((listener) => {
-      listener(currentState[displayName]);
+      listener(currentState);
     });
   }
 
@@ -71,18 +74,21 @@ export const createStore = <T extends UseStateContextSource>(
 
 export const createServerSideStore = <T extends UseStateContextSource>(
   context: React.Context<T>,
-  currentState: T
+  source: T,
+  getState: () => T,
+  setState: (value: T[keyof T], key: keyof T) => void
 ): UseStateStore<T> => {
   const store: UseStateStore<T> = {} as UseStateStore<T>;
 
-  entries(currentState).forEach(([displayName]) => {
+  entries(source).forEach(([displayName]) => {
     store[displayName] = {
       state: createUseSelector(context, (c) => {
         return useContext(c)[displayName];
       }),
       dispatch: () =>
         createUseServerSideDispatch(
-          currentState,
+          getState,
+          setState,
           displayName,
           context.eventListener
         ),

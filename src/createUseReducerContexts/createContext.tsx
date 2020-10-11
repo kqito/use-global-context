@@ -9,6 +9,7 @@ import {
   createServerSideContext,
   ContextProvider,
 } from '../core/createContext';
+import { createCurrentState } from '../core/currentState';
 import { entries } from '../utils/entries';
 
 export type AnyReducer<S = any, A = any> =
@@ -32,11 +33,26 @@ export type UseReducerContext<T extends UseReducerContextSource> = {
   };
 };
 
+const getInitialState = <T extends UseReducerContextSource>(
+  contextSource: T
+): CurrentState<T> => {
+  return entries(contextSource).reduce(
+    (acc, [displayName, { initialState }]) => {
+      acc[displayName] = initialState;
+      return acc;
+    },
+    {} as CurrentState<T>
+  );
+};
+
 export const createUseReducerContext = <T extends UseReducerContextSource>(
-  source: T,
-  currentState: CurrentState<T>
+  contextSource: T
 ) => {
-  const context = createBaseContext<T>(source);
+  const { getState, setState } = createCurrentState(
+    getInitialState(contextSource)
+  );
+
+  const context = createBaseContext<T>(contextSource);
   const store = createStore(context);
   const contextProvider: React.FC<ContextProvider<CurrentState<T>>> = ({
     children,
@@ -46,7 +62,9 @@ export const createUseReducerContext = <T extends UseReducerContextSource>(
       <>
         {entries(context).reduceRight(
           (acc, [displayName, { state: State, dispatch: Dispatch }]) => {
-            const { reducer, initialState, initializer } = source[displayName];
+            const { reducer, initialState, initializer } = contextSource[
+              displayName
+            ];
             const initialValue =
               value && value[displayName] !== undefined
                 ? value[displayName]
@@ -57,7 +75,8 @@ export const createUseReducerContext = <T extends UseReducerContextSource>(
               initialValue,
               initializer
             );
-            currentState[displayName] = useReducerState;
+            setState(useReducerState, displayName);
+
             return (
               <State.Provider value={useReducerState}>
                 <Dispatch.Provider value={useReducerDispatch}>
@@ -73,24 +92,34 @@ export const createUseReducerContext = <T extends UseReducerContextSource>(
   };
 
   return {
-    context,
     store,
     contextProvider,
+    getState,
   };
 };
 
 export const createUseReducerServerSideContext = <
   T extends UseReducerContextSource
 >(
-  source: T,
-  currentState: CurrentState<T>
+  contextSource: T
 ) => {
-  const { context, contextProvider } = createServerSideContext(currentState);
-  const store = createServerSideStore(context, source, currentState);
+  const { getState, setState, resetState } = createCurrentState(
+    getInitialState(contextSource)
+  );
+  const { context, contextProvider } = createServerSideContext(
+    getState,
+    resetState
+  );
+  const store = createServerSideStore(
+    context,
+    contextSource,
+    getState,
+    setState
+  );
 
   return {
-    context,
     store,
     contextProvider,
+    getState,
   };
 };

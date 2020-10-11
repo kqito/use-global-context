@@ -109,11 +109,9 @@ describe('createUseStateContexts', () => {
   });
 
   it('CurrentState', () => {
-    const [
-      store,
-      UseStateContextProviders,
-      currentState,
-    ] = createUseStateContexts<State>({
+    const [store, UseStateContextProviders, getState] = createUseStateContexts<
+      State
+    >({
       counter: 0,
       message: '',
       user: {
@@ -128,7 +126,7 @@ describe('createUseStateContexts', () => {
       const counterDispatch = store.counter.dispatch();
 
       useEffect(() => {
-        expect(currentState.counter).toBe(0);
+        expect(getState().counter).toBe(0);
         counterDispatch(100);
       }, []);
 
@@ -141,7 +139,7 @@ describe('createUseStateContexts', () => {
       </UseStateContextProviders>
     );
 
-    expect(currentState.counter).toBe(100);
+    expect(getState().counter).toBe(100);
   });
 
   it('InitialState', () => {
