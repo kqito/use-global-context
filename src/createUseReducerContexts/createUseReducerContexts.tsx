@@ -1,13 +1,7 @@
 import React from 'react';
-import {
-  createUseReducerContext,
-  createUseReducerServerSideContext,
-  AnyReducer,
-} from './createContext';
+import { createUseReducerContext, AnyReducer } from './createContext';
 import { UseReducerStore } from './store';
 import { ContextProvider } from '../core/createContext';
-import { isBrowser } from '../utils/environment';
-import { entries } from '../utils/entries';
 
 export type UseReducerContextSource = {
   [displayName: string]: {
@@ -38,9 +32,9 @@ export const createUseReducerContexts = <T extends UseReducerContextSource>(
   React.FC<ContextProvider<CurrentState<T>>>,
   () => CurrentState<T>
 ] => {
-  const { store, contextProvider, getState } = isBrowser
-    ? createUseReducerContext(contextSource)
-    : createUseReducerServerSideContext(contextSource);
+  const { store, contextProvider, getState } = createUseReducerContext(
+    contextSource
+  );
 
   return [store, contextProvider, getState];
 };

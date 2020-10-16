@@ -3,13 +3,11 @@ import {
   UseReducerContextSource,
   CurrentState,
 } from './createUseReducerContexts';
-import { createStore, createServerSideStore } from './store';
-import {
-  createBaseContext,
-  createServerSideContext,
-  ContextProvider,
-} from '../core/createContext';
+import { createStore } from './store';
+import { createBaseContext, ContextProvider } from '../core/createContext';
 import { createCurrentState } from '../core/currentState';
+import { Subscription } from '../core/subscription';
+import { isBrowser } from '../utils/environment';
 import { entries } from '../utils/entries';
 
 export type AnyReducer<S = any, A = any> =
@@ -45,6 +43,35 @@ const getInitialState = <T extends UseReducerContextSource>(
   );
 };
 
+const createUseServerSideDispatch = <T extends UseReducerContextSource>(
+  getState: () => CurrentState<T>,
+  setState: (
+    value: CurrentState<T>[keyof T],
+    key: keyof CurrentState<T>
+  ) => void,
+  displayName: keyof CurrentState<T>,
+  reducer: T[keyof T]['reducer'],
+  subscription: Subscription
+): ReducerDispatch<typeof reducer> => {
+  const useServerSideDispatch = (
+    action?: React.ReducerAction<typeof reducer>
+  ): void => {
+    /* eslint no-param-reassign: 0 */
+    const currentState = getState()[displayName];
+    if (reducer.length === 1) {
+      setState(reducer(currentState, undefined), displayName);
+    } else {
+      setState(reducer(currentState, action), displayName);
+    }
+
+    subscription.forEach((listener) => {
+      listener();
+    });
+  };
+
+  return useServerSideDispatch as any;
+};
+
 export const createUseReducerContext = <T extends UseReducerContextSource>(
   contextSource: T
 ) => {
@@ -53,14 +80,14 @@ export const createUseReducerContext = <T extends UseReducerContextSource>(
   );
 
   const context = createBaseContext<T>(contextSource);
-  const store = createStore(context);
+  const store = createStore(context, getState);
   const contextProvider: React.FC<ContextProvider<CurrentState<T>>> = ({
     children,
     value,
   }: ContextProvider<CurrentState<T>>) => {
     return (
       <>
-        {entries(context).reduceRight(
+        {entries(context.store).reduceRight(
           (acc, [displayName, { state: State, dispatch: Dispatch }]) => {
             const { reducer, initialState, initializer } = contextSource[
               displayName
@@ -70,18 +97,28 @@ export const createUseReducerContext = <T extends UseReducerContextSource>(
                 ? value[displayName]
                 : initialState;
 
-            const [useReducerState, useReducerDispatch] = useReducer(
+            const [clientSideState, clientSideDispatch] = useReducer(
               reducer,
               initialValue,
               initializer
             );
-            setState(useReducerState, displayName);
+
+            const state = isBrowser ? clientSideState : initialValue;
+            const dispatch = isBrowser
+              ? clientSideDispatch
+              : createUseServerSideDispatch(
+                  getState,
+                  setState,
+                  displayName,
+                  contextSource[displayName].reducer,
+                  context.subscription
+                );
+
+            setState(state, displayName);
 
             return (
-              <State.Provider value={useReducerState}>
-                <Dispatch.Provider value={useReducerDispatch}>
-                  {acc}
-                </Dispatch.Provider>
+              <State.Provider value={state}>
+                <Dispatch.Provider value={dispatch}>{acc}</Dispatch.Provider>
               </State.Provider>
             );
           },
@@ -90,32 +127,6 @@ export const createUseReducerContext = <T extends UseReducerContextSource>(
       </>
     );
   };
-
-  return {
-    store,
-    contextProvider,
-    getState,
-  };
-};
-
-export const createUseReducerServerSideContext = <
-  T extends UseReducerContextSource
->(
-  contextSource: T
-) => {
-  const { getState, setState, resetState } = createCurrentState(
-    getInitialState(contextSource)
-  );
-  const { context, contextProvider } = createServerSideContext(
-    getState,
-    resetState
-  );
-  const store = createServerSideStore(
-    context,
-    contextSource,
-    getState,
-    setState
-  );
 
   return {
     store,

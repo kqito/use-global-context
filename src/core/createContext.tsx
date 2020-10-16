@@ -1,4 +1,5 @@
 import React, { createContext, createElement } from 'react';
+import { Subscription } from './subscription';
 import { entries } from '../utils/entries';
 import { useIsomorphicLayoutEffect } from './useIsomorphicLayoutEffect';
 
@@ -10,24 +11,27 @@ export type ContextProvider<T> = {
 export type ContextSource = {
   [displayName: string]: any;
 };
-
 export type BaseContext<T extends ContextSource> = {
-  [P in keyof T]: {
-    state: React.Context<any>;
-    dispatch: React.Context<any>;
+  store: {
+    [P in keyof T]: {
+      state: React.Context<any>;
+      dispatch: React.Context<any>;
+    };
   };
+  subscription: Subscription;
 };
 
 const dispatchEventLister = (
   provider: React.Context<any>['Provider'],
-  eventListener: React.Context<any>['eventListener'],
+  eventListener: Set<() => void>,
   displayName: string
 ) => {
   const dispatcher = React.memo(
     ({ value, children }: React.ProviderProps<any>) => {
       useIsomorphicLayoutEffect(() => {
         eventListener?.forEach((listener) => {
-          listener(value);
+          // listener(value);
+          listener();
         });
       });
 
@@ -45,58 +49,28 @@ const dispatchEventLister = (
 export const createBaseContext = <T extends ContextSource>(
   contextSource: T
 ): BaseContext<T> => {
-  const baseContext: BaseContext<T> = {} as BaseContext<T>;
+  const baseContext = { store: {} } as BaseContext<T>;
+
+  const subscription = new Set<() => void>();
+  baseContext.subscription = subscription;
 
   entries(contextSource).forEach(([displayName]) => {
     const stateContext = createContext(null as any, () => 0);
     const dispatchContext = createContext(null as any);
 
-    stateContext.eventListener = new Set();
     stateContext.Provider = dispatchEventLister(
       stateContext.Provider,
-      stateContext.eventListener,
+      subscription,
       displayName as string
     );
     stateContext.displayName = displayName as string;
     dispatchContext.displayName = displayName as string;
 
-    baseContext[displayName] = {
+    baseContext.store[displayName] = {
       state: stateContext,
       dispatch: dispatchContext,
     };
   });
 
   return baseContext;
-};
-
-export const createServerSideContext = <
-  T extends Record<string, any> = Record<string, any>
->(
-  getState: () => T,
-  resetState: () => void
-) => {
-  const context = React.createContext<T>(null as any);
-  context.eventListener = new Set();
-  const { Provider } = context;
-
-  const contextProvider: React.FC<ContextProvider<T>> = ({
-    children,
-    value,
-  }: ContextProvider<T>) => {
-    const initialValue = value
-      ? {
-          ...getState(),
-          ...value,
-        }
-      : getState();
-
-    resetState();
-
-    return <Provider value={initialValue}>{children}</Provider>;
-  };
-
-  return {
-    context,
-    contextProvider,
-  };
 };

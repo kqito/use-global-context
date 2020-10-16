@@ -14,7 +14,7 @@ type State = {
 };
 
 describe('createUseStateContexts', () => {
-  it('InitialState', () => {
+  it('Initial state', () => {
     const [store, UseStateContextProviders] = createUseStateContexts<State>({
       counter: 0,
       message: '',
@@ -142,7 +142,7 @@ describe('createUseStateContexts', () => {
     expect(getState().counter).toBe(100);
   });
 
-  it('InitialState', () => {
+  it('Initial Value', () => {
     const [store, UseStateContextProviders] = createUseStateContexts<State>({
       counter: 0,
       message: '',
