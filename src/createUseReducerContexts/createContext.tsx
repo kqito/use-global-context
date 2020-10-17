@@ -88,7 +88,7 @@ export const createUseReducerContext = <T extends UseReducerContextSource>(
   }: ContextProvider<CurrentState<T>>) => {
     return (
       <>
-        {entries(context.store).reduceRight(
+        {entries(context).reduceRight(
           (acc, [displayName, { state: State, dispatch: Dispatch }]) => {
             const { reducer, initialState, initializer } = contextSource[
               displayName
@@ -124,8 +124,11 @@ export const createUseReducerContext = <T extends UseReducerContextSource>(
   >> = ({ children, value }: ContextProvider<CurrentState<T>>) => {
     return (
       <>
-        {entries(context.store).reduceRight(
-          (acc, [displayName, { state: State, dispatch: Dispatch }]) => {
+        {entries(context).reduceRight(
+          (
+            acc,
+            [displayName, { state: State, dispatch: Dispatch, subscription }]
+          ) => {
             const { initialState } = contextSource[displayName];
             const initialValue =
               value && value[displayName] !== undefined
@@ -141,7 +144,7 @@ export const createUseReducerContext = <T extends UseReducerContextSource>(
               setCurrentState,
               displayName,
               contextSource[displayName].reducer,
-              context.subscription
+              subscription
             );
 
             const getState = useCallback(() => {

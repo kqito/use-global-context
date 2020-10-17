@@ -29,26 +29,28 @@ export const createStore = <T extends UseReducerContextSource>(
 ): UseReducerStore<T> => {
   const store: UseReducerStore<T> = {} as UseReducerStore<T>;
 
-  entries(baseContext.store).forEach(([displayName, { state, dispatch }]) => {
-    const getStateContextValue = () => {
-      const getStateValue = useContext(state);
-      return getStateValue();
-    };
+  entries(baseContext).forEach(
+    ([displayName, { state, dispatch, subscription }]) => {
+      const getStateContextValue = () => {
+        const getStateValue = useContext(state);
+        return getStateValue();
+      };
 
-    const getCurrentStateValue = () => {
-      const currentState = getCurrentState();
-      return currentState[displayName];
-    };
+      const getCurrentStateValue = () => {
+        const currentState = getCurrentState();
+        return currentState[displayName];
+      };
 
-    store[displayName] = {
-      state: createUseSelector(
-        getStateContextValue,
-        baseContext.subscription,
-        getCurrentStateValue
-      ),
-      dispatch: () => useContext(dispatch),
-    };
-  });
+      store[displayName] = {
+        state: createUseSelector(
+          getStateContextValue,
+          subscription,
+          getCurrentStateValue
+        ),
+        dispatch: () => useContext(dispatch),
+      };
+    }
+  );
 
   return store;
 };

@@ -12,13 +12,11 @@ export type ContextSource = {
   [displayName: string]: any;
 };
 export type BaseContext<T extends ContextSource> = {
-  store: {
-    [P in keyof T]: {
-      state: React.Context<any>;
-      dispatch: React.Context<any>;
-    };
+  [P in keyof T]: {
+    state: React.Context<any>;
+    dispatch: React.Context<any>;
+    subscription: Subscription;
   };
-  subscription: Subscription;
 };
 
 const dispatchEventLister = (
@@ -48,14 +46,12 @@ const dispatchEventLister = (
 export const createBaseContext = <T extends ContextSource>(
   contextSource: T
 ): BaseContext<T> => {
-  const baseContext = { store: {} } as BaseContext<T>;
-
-  const subscription = new Set<() => void>();
-  baseContext.subscription = subscription;
+  const baseContext = {} as BaseContext<T>;
 
   entries(contextSource).forEach(([displayName]) => {
     const stateContext = createContext(null as any, () => 0);
     const dispatchContext = createContext(null as any);
+    const subscription: Subscription = new Set<() => void>();
 
     stateContext.Provider = dispatchEventLister(
       stateContext.Provider,
@@ -65,9 +61,10 @@ export const createBaseContext = <T extends ContextSource>(
     stateContext.displayName = displayName as string;
     dispatchContext.displayName = displayName as string;
 
-    baseContext.store[displayName] = {
+    baseContext[displayName] = {
       state: stateContext,
       dispatch: dispatchContext,
+      subscription,
     };
   });
 

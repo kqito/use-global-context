@@ -1,4 +1,4 @@
-import React, { useContext, useRef, useReducer } from 'react';
+import { useRef, useReducer } from 'react';
 import { Subscription } from './subscription';
 import { useIsomorphicLayoutEffect } from './useIsomorphicLayoutEffect';
 import { log } from '../utils/log';

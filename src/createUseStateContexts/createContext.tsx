@@ -66,7 +66,7 @@ export const createUseStateContext = <T extends UseStateContextSource>(
   }: ContextProvider<T>) => {
     return (
       <>
-        {entries(context.store).reduceRight(
+        {entries(context).reduceRight(
           (acc, [displayName, { state: State, dispatch: Dispatch }]) => {
             const initialValue =
               value && value[displayName] !== undefined
@@ -96,8 +96,11 @@ export const createUseStateContext = <T extends UseStateContextSource>(
   }: ContextProvider<T>) => {
     return (
       <>
-        {entries(context.store).reduceRight(
-          (acc, [displayName, { state: State, dispatch: Dispatch }]) => {
+        {entries(context).reduceRight(
+          (
+            acc,
+            [displayName, { state: State, dispatch: Dispatch, subscription }]
+          ) => {
             const initialValue =
               value && value[displayName] !== undefined
                 ? value[displayName]
@@ -111,7 +114,7 @@ export const createUseStateContext = <T extends UseStateContextSource>(
               getCurrentState,
               setCurrentState,
               displayName,
-              context.subscription
+              subscription
             );
 
             const getState = useCallback(() => {
