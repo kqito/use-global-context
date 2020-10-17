@@ -1,11 +1,7 @@
 import React from 'react';
-import {
-  createUseStateContext,
-  createUseStateServerSideContext,
-} from './createContext';
+import { createUseStateContext } from './createContext';
 import { UseStateStore } from './store';
 import { ContextProvider } from '../core/createContext';
-import { isBrowser } from '../utils/environment';
 
 export type UseStateContextSource = {
   [displayName: string]: any;
@@ -24,9 +20,9 @@ export const createUseStateContexts = <T extends UseStateContextSource>(
    */
   contextSource: T
 ): [UseStateStore<T>, React.FC<ContextProvider<T>>, () => T] => {
-  const { store, contextProvider, getState } = isBrowser
-    ? createUseStateContext(contextSource)
-    : createUseStateServerSideContext(contextSource);
+  const { store, contextProvider, getState } = createUseStateContext(
+    contextSource
+  );
 
   return [store, contextProvider, getState];
 };

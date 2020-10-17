@@ -1,4 +1,5 @@
-import React, { useContext, useRef, useReducer } from 'react';
+import { useRef, useReducer } from 'react';
+import { Subscription } from './subscription';
 import { useIsomorphicLayoutEffect } from './useIsomorphicLayoutEffect';
 import { log } from '../utils/log';
 
@@ -6,8 +7,9 @@ import { log } from '../utils/log';
 // https://github.com/reduxjs/react-redux (MIT LICENSE)
 // https://github.com/dai-shi/use-context-selector (MIT LICENSE)
 export const createUseSelector = <State>(
-  context: React.Context<any>,
-  contextSelector?: (c: React.Context<any>) => State
+  getContextValue: () => State,
+  subscription: Subscription,
+  getState: () => State
 ) => {
   const defaultSelector = (state: State) => state;
 
@@ -18,9 +20,7 @@ export const createUseSelector = <State>(
   function useSelector<SelectedState>(
     selector?: (state: State) => SelectedState
   ) {
-    const storeState = contextSelector
-      ? contextSelector(context)
-      : (useContext(context) as State);
+    const state = getContextValue();
     const storeSelector = selector || defaultSelector;
     const [, forceRender] = useReducer((s) => s + 1, 0);
 
@@ -34,9 +34,9 @@ export const createUseSelector = <State>(
     try {
       if (
         storeSelector !== latestSelector.current ||
-        storeState !== latestStoreState.current
+        state !== latestStoreState.current
       ) {
-        selectedState = storeSelector(storeState) as SelectedState;
+        selectedState = storeSelector(state) as SelectedState;
       }
     } catch (err) {
       log.error(err);
@@ -44,12 +44,13 @@ export const createUseSelector = <State>(
 
     useIsomorphicLayoutEffect(() => {
       latestSelector.current = storeSelector;
-      latestStoreState.current = storeState;
+      latestStoreState.current = state;
       latestSelectedState.current = selectedState;
     });
 
     useIsomorphicLayoutEffect(() => {
-      const refresh = (nextStoreValue: State) => {
+      const refresh = () => {
+        const nextStore = getState();
         if (
           latestSelector.current === undefined ||
           latestSelectedState.current === undefined
@@ -58,7 +59,7 @@ export const createUseSelector = <State>(
         }
 
         try {
-          const newSelectedState = latestSelector.current(nextStoreValue);
+          const newSelectedState = latestSelector.current(nextStore);
           if (newSelectedState === latestSelectedState.current) {
             return;
           }
@@ -71,11 +72,11 @@ export const createUseSelector = <State>(
         forceRender();
       };
 
-      context.eventListener?.add(refresh);
+      subscription.add(refresh);
       return () => {
-        context.eventListener?.delete(refresh);
+        subscription.delete(refresh);
       };
-    }, [context]);
+    }, [getContextValue, subscription]);
 
     return selectedState;
   }

@@ -50,7 +50,7 @@ const reducer: React.Reducer<User, UserAction> = (state, action) => {
 };
 
 describe('createUseRedcuerContexts', () => {
-  it('InitialState', () => {
+  it('Initial state', () => {
     const [store, UseReducerContextProviders] = createUseReducerContexts({
       user: {
         reducer,
@@ -240,7 +240,7 @@ describe('createUseRedcuerContexts', () => {
     expect(getState()).toStrictEqual(expectCurrentState);
   });
 
-  it('InitialState', () => {
+  it('Initial value', () => {
     const [store, UseReducerContextProviders] = createUseReducerContexts({
       user: {
         reducer,
