@@ -23,14 +23,13 @@ export type BaseContext<T extends ContextSource> = {
 
 const dispatchEventLister = (
   provider: React.Context<any>['Provider'],
-  eventListener: Set<() => void>,
+  subscription: Subscription,
   displayName: string
 ) => {
   const dispatcher = React.memo(
     ({ value, children }: React.ProviderProps<any>) => {
       useIsomorphicLayoutEffect(() => {
-        eventListener?.forEach((listener) => {
-          // listener(value);
+        subscription.forEach((listener) => {
           listener();
         });
       });

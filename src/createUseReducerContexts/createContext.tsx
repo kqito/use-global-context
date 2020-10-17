@@ -1,9 +1,10 @@
-import React, { useReducer } from 'react';
+import React, { useReducer, useCallback } from 'react';
 import {
   UseReducerContextSource,
   CurrentState,
 } from './createUseReducerContexts';
 import { createStore } from './store';
+import { useIsomorphicLayoutEffect } from '../core/useIsomorphicLayoutEffect';
 import { createBaseContext, ContextProvider } from '../core/createContext';
 import { createCurrentState } from '../core/currentState';
 import { Subscription } from '../core/subscription';
@@ -44,8 +45,8 @@ const getInitialState = <T extends UseReducerContextSource>(
 };
 
 const createUseServerSideDispatch = <T extends UseReducerContextSource>(
-  getState: () => CurrentState<T>,
-  setState: (
+  getCurrentState: () => CurrentState<T>,
+  setCurrentState: (
     value: CurrentState<T>[keyof T],
     key: keyof CurrentState<T>
   ) => void,
@@ -57,11 +58,11 @@ const createUseServerSideDispatch = <T extends UseReducerContextSource>(
     action?: React.ReducerAction<typeof reducer>
   ): void => {
     /* eslint no-param-reassign: 0 */
-    const currentState = getState()[displayName];
+    const currentState = getCurrentState()[displayName];
     if (reducer.length === 1) {
-      setState(reducer(currentState, undefined), displayName);
+      setCurrentState(reducer(currentState, undefined), displayName);
     } else {
-      setState(reducer(currentState, action), displayName);
+      setCurrentState(reducer(currentState, action), displayName);
     }
 
     subscription.forEach((listener) => {
@@ -75,12 +76,12 @@ const createUseServerSideDispatch = <T extends UseReducerContextSource>(
 export const createUseReducerContext = <T extends UseReducerContextSource>(
   contextSource: T
 ) => {
-  const { getState, setState } = createCurrentState(
+  const { getCurrentState, setCurrentState } = createCurrentState(
     getInitialState(contextSource)
   );
 
   const context = createBaseContext<T>(contextSource);
-  const store = createStore(context, getState);
+  const store = createStore(context, getCurrentState);
   const contextProvider: React.FC<ContextProvider<CurrentState<T>>> = ({
     children,
     value,
@@ -97,27 +98,59 @@ export const createUseReducerContext = <T extends UseReducerContextSource>(
                 ? value[displayName]
                 : initialState;
 
-            const [clientSideState, clientSideDispatch] = useReducer(
+            const [state, dispatch] = useReducer(
               reducer,
               initialValue,
               initializer
             );
+            const getState = useCallback(() => state, [state]);
 
-            const state = isBrowser ? clientSideState : initialValue;
-            const dispatch = isBrowser
-              ? clientSideDispatch
-              : createUseServerSideDispatch(
-                  getState,
-                  setState,
-                  displayName,
-                  contextSource[displayName].reducer,
-                  context.subscription
-                );
-
-            setState(state, displayName);
+            setCurrentState(state, displayName);
 
             return (
-              <State.Provider value={state}>
+              <State.Provider value={getState}>
+                <Dispatch.Provider value={dispatch}>{acc}</Dispatch.Provider>
+              </State.Provider>
+            );
+          },
+          children
+        )}
+      </>
+    );
+  };
+
+  const contextServerSideProvider: React.FC<ContextProvider<
+    CurrentState<T>
+  >> = ({ children, value }: ContextProvider<CurrentState<T>>) => {
+    return (
+      <>
+        {entries(context.store).reduceRight(
+          (acc, [displayName, { state: State, dispatch: Dispatch }]) => {
+            const { initialState } = contextSource[displayName];
+            const initialValue =
+              value && value[displayName] !== undefined
+                ? value[displayName]
+                : initialState;
+
+            useIsomorphicLayoutEffect(() => {
+              setCurrentState(initialValue, displayName);
+            }, []);
+
+            const dispatch = createUseServerSideDispatch(
+              getCurrentState,
+              setCurrentState,
+              displayName,
+              contextSource[displayName].reducer,
+              context.subscription
+            );
+
+            const getState = useCallback(() => {
+              const currentState = getCurrentState();
+              return currentState[displayName];
+            }, [getCurrentState, displayName]);
+
+            return (
+              <State.Provider value={getState}>
                 <Dispatch.Provider value={dispatch}>{acc}</Dispatch.Provider>
               </State.Provider>
             );
@@ -130,7 +163,7 @@ export const createUseReducerContext = <T extends UseReducerContextSource>(
 
   return {
     store,
-    contextProvider,
-    getState,
+    contextProvider: isBrowser ? contextProvider : contextServerSideProvider,
+    getState: getCurrentState,
   };
 };

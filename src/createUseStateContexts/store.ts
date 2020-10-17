@@ -18,17 +18,27 @@ export type UseStateStore<T extends UseStateContextSource> = {
 };
 
 export const createStore = <T extends UseStateContextSource>(
-  context: BaseContext<UseStateContext<T>>,
-  getState: () => T
+  baseContext: BaseContext<UseStateContext<T>>,
+  getCurrentState: () => T
 ): UseStateStore<T> => {
   const store: UseStateStore<T> = {} as UseStateStore<T>;
 
-  entries(context.store).forEach(([displayName, { state, dispatch }]) => {
+  entries(baseContext.store).forEach(([displayName, { state, dispatch }]) => {
+    const getStateContextValue = () => {
+      const getStateValue = useContext(state);
+      return getStateValue();
+    };
+
+    const getCurrentStateValue = () => {
+      const currentState = getCurrentState();
+      return currentState[displayName];
+    };
+
     store[displayName] = {
       state: createUseSelector(
-        () => useContext(state),
-        context.subscription,
-        () => getState()[displayName]
+        getStateContextValue,
+        baseContext.subscription,
+        getCurrentStateValue
       ),
       dispatch: () => useContext(dispatch),
     };

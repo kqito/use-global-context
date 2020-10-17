@@ -60,7 +60,6 @@ export const createUseSelector = <State>(
 
         try {
           const newSelectedState = latestSelector.current(nextStore);
-          console.log('selectedstate', newSelectedState);
           if (newSelectedState === latestSelectedState.current) {
             return;
           }

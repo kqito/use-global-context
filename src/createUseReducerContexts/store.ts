@@ -25,16 +25,26 @@ export type UseReducerStore<T extends UseReducerContextSource> = {
 
 export const createStore = <T extends UseReducerContextSource>(
   baseContext: BaseContext<T>,
-  getState: () => CurrentState<T>
+  getCurrentState: () => CurrentState<T>
 ): UseReducerStore<T> => {
   const store: UseReducerStore<T> = {} as UseReducerStore<T>;
 
   entries(baseContext.store).forEach(([displayName, { state, dispatch }]) => {
+    const getStateContextValue = () => {
+      const getStateValue = useContext(state);
+      return getStateValue();
+    };
+
+    const getCurrentStateValue = () => {
+      const currentState = getCurrentState();
+      return currentState[displayName];
+    };
+
     store[displayName] = {
       state: createUseSelector(
-        () => useContext(state),
+        getStateContextValue,
         baseContext.subscription,
-        () => getState()[displayName]
+        getCurrentStateValue
       ),
       dispatch: () => useContext(dispatch),
     };
