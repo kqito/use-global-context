@@ -1,6 +1,6 @@
 import React from 'react';
 import { createUseStateContext } from './createContext';
-import { UseStateStore } from './store';
+import { UseGlobalState, UseGlobalDispatch } from './hook';
 import { ContextProvider } from '../core/createContext';
 
 export type UseStateContextSource = {
@@ -19,10 +19,18 @@ export const createUseStateContexts = <T extends UseStateContextSource>(
    *  *@see* https://reactjs.org/docs/context.html#contextdisplayname
    */
   contextSource: T
-): [UseStateStore<T>, React.FC<ContextProvider<T>>, () => T] => {
-  const { store, contextProvider, getState } = createUseStateContext(
-    contextSource
-  );
+): [
+  UseGlobalState<T>,
+  UseGlobalDispatch<T>,
+  React.FC<ContextProvider<T>>,
+  () => T
+] => {
+  const {
+    useGlobalState,
+    useGlobalDispatch,
+    contextProvider,
+    getState,
+  } = createUseStateContext(contextSource);
 
-  return [store, contextProvider, getState];
+  return [useGlobalState, useGlobalDispatch, contextProvider, getState];
 };
