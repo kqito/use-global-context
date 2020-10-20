@@ -1,28 +1,20 @@
 import React from 'react';
-import { createUseReducerContext, AnyReducer } from './createContext';
+import { createContext } from './createContext';
 import { UseGlobalState, UseGlobalDispatch } from './hook';
 import { ContextProvider } from '../core/createContext';
 
-export type UseReducerContextSource = {
-  [displayName: string]: {
-    reducer: AnyReducer;
-    initialState: any;
-    initializer?: undefined;
-  };
-};
-
-export type CurrentState<T extends UseReducerContextSource> = {
-  [P in keyof T]: T[P]['initialState'];
+export type UseStateContextSource = {
+  [displayName: string]: any;
 };
 
 /**
- * *useReducer* to create multiple contexts.
+ * *useState* to create multiple contexts.
  * The created contexts are split into a state and a dispatch,
  * respectively, to prevent unnecessary rendering.
  */
-export const createUseReducerContexts = <T extends UseReducerContextSource>(
+export const createUseStateContext = <T extends UseStateContextSource>(
   /**
-   *  Object's value is passed as an argument to useReducer.
+   *  Object's value is passed as an argument to useState.
    *  Also, the object's key is set to the context's displayname.
    *  *@see* https://reactjs.org/docs/context.html#contextdisplayname
    */
@@ -30,15 +22,15 @@ export const createUseReducerContexts = <T extends UseReducerContextSource>(
 ): [
   UseGlobalState<T>,
   UseGlobalDispatch<T>,
-  React.FC<ContextProvider<CurrentState<T>>>,
-  () => CurrentState<T>
+  React.FC<ContextProvider<T>>,
+  () => T
 ] => {
   const {
     useGlobalState,
     useGlobalDispatch,
     contextProvider,
     getState,
-  } = createUseReducerContext(contextSource);
+  } = createContext(contextSource);
 
   return [useGlobalState, useGlobalDispatch, contextProvider, getState];
 };

@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { mount } from 'enzyme';
-import { createUseReducerContexts } from '../createUseReducerContexts';
+import { createUseReducerContext } from '../createUseReducerContext';
 import { testId } from './utils';
 
 type User = {
@@ -49,13 +49,13 @@ const reducer: React.Reducer<User, UserAction> = (state, action) => {
   }
 };
 
-describe('createUseRedcuerContexts', () => {
+describe('createUseRedcuerContext', () => {
   it('Initial state', () => {
     const [
       useGlobalState,
       ,
       UseReducerContextProvider,
-    ] = createUseReducerContexts({
+    ] = createUseReducerContext({
       user: {
         reducer,
         initialState,
@@ -87,7 +87,7 @@ describe('createUseRedcuerContexts', () => {
       useGlobalState,
       useGlobalDispatch,
       UseReducerContextProvider,
-    ] = createUseReducerContexts({
+    ] = createUseReducerContext({
       user: {
         reducer,
         initialState,
@@ -135,7 +135,7 @@ describe('createUseRedcuerContexts', () => {
       useGlobalState,
       useGlobalDispatch,
       UseReducerContextProvider,
-    ] = createUseReducerContexts({
+    ] = createUseReducerContext({
       counter: {
         reducer: withoutReducer,
         initialState: 0,
@@ -166,7 +166,7 @@ describe('createUseRedcuerContexts', () => {
       useGlobalState,
       useGlobalDispatch,
       UseReducerContextProvider,
-    ] = createUseReducerContexts({
+    ] = createUseReducerContext({
       user: {
         reducer,
         initialState,
@@ -216,7 +216,7 @@ describe('createUseRedcuerContexts', () => {
       useGlobalDispatch,
       UseReducerContextProvider,
       getState,
-    ] = createUseReducerContexts({
+    ] = createUseReducerContext({
       user: {
         reducer,
         initialState,
@@ -262,7 +262,7 @@ describe('createUseRedcuerContexts', () => {
       useGlobalState,
       ,
       UseReducerContextProvider,
-    ] = createUseReducerContexts({
+    ] = createUseReducerContext({
       user: {
         reducer,
         initialState,

@@ -2,7 +2,7 @@ import React, { useReducer, useCallback } from 'react';
 import {
   UseReducerContextSource,
   CurrentState,
-} from './createUseReducerContexts';
+} from './createUseReducerContext';
 import { createStore, UseGlobalDispatch } from './hook';
 import { useIsomorphicLayoutEffect } from '../core/useIsomorphicLayoutEffect';
 import { createBaseContext, ContextProvider } from '../core/createContext';
@@ -73,7 +73,7 @@ const createUseServerSideDispatch = <T extends UseReducerContextSource>(
   return useServerSideDispatch as any;
 };
 
-export const createUseReducerContext = <T extends UseReducerContextSource>(
+export const createContext = <T extends UseReducerContextSource>(
   contextSource: T
 ) => {
   const { getCurrentState, setCurrentState } = createCurrentState(
