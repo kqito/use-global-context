@@ -1,6 +1,6 @@
 import React from 'react';
 import { createUseReducerContext, AnyReducer } from './createContext';
-import { UseReducerStore } from './store';
+import { UseGlobalState, UseGlobalDispatch } from './hook';
 import { ContextProvider } from '../core/createContext';
 
 export type UseReducerContextSource = {
@@ -28,13 +28,17 @@ export const createUseReducerContexts = <T extends UseReducerContextSource>(
    */
   contextSource: T
 ): [
-  UseReducerStore<T>,
+  UseGlobalState<T>,
+  UseGlobalDispatch<T>,
   React.FC<ContextProvider<CurrentState<T>>>,
   () => CurrentState<T>
 ] => {
-  const { store, contextProvider, getState } = createUseReducerContext(
-    contextSource
-  );
+  const {
+    useGlobalState,
+    useGlobalDispatch,
+    contextProvider,
+    getState,
+  } = createUseReducerContext(contextSource);
 
-  return [store, contextProvider, getState];
+  return [useGlobalState, useGlobalDispatch, contextProvider, getState];
 };
