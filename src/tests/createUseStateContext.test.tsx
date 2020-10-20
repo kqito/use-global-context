@@ -28,7 +28,7 @@ describe('createUseStateContext', () => {
     });
 
     const Container = () => {
-      const message = useGlobalState.message();
+      const message = useGlobalState((state) => state.message);
       return <p data-testid="message">{message}</p>;
     };
 
@@ -57,7 +57,7 @@ describe('createUseStateContext', () => {
     });
 
     const Container = () => {
-      const message = useGlobalState.message();
+      const message = useGlobalState((state) => state.message);
       const dispatch = useGlobalDispatch();
       useEffect(() => {
         dispatch.message('message');
@@ -90,9 +90,9 @@ describe('createUseStateContext', () => {
     });
 
     const Container = () => {
-      const id = useGlobalState.user((user) => user.id);
-      const nullable = useGlobalState.user(() => null);
-      const string = useGlobalState.user(() => '');
+      const id = useGlobalState((state) => state.user.id);
+      const nullable = useGlobalState(() => null);
+      const string = useGlobalState(() => '');
       const dispatch = useGlobalDispatch();
 
       expect(nullable).toBe(null);
@@ -134,7 +134,7 @@ describe('createUseStateContext', () => {
     });
 
     const Container = () => {
-      const counter = useGlobalState.counter();
+      const counter = useGlobalState((state) => state.counter);
       const dispatch = useGlobalDispatch();
 
       useEffect(() => {
@@ -172,8 +172,8 @@ describe('createUseStateContext', () => {
     };
 
     const Container = () => {
-      const counter = useGlobalState.counter();
-      const message = useGlobalState.message();
+      const counter = useGlobalState((state) => state.counter);
+      const message = useGlobalState((state) => state.message);
 
       expect(counter).toBe(100);
       expect(message).toBe('');

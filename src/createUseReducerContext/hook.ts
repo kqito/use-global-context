@@ -4,17 +4,16 @@ import {
   CurrentState,
 } from './createUseReducerContext';
 import { ReducerState, ReducerDispatch } from './createContext';
-import { StateContexts, DispatchContext } from '../core/createContext';
+import { Subscription } from '../core/subscription';
 import { createUseSelector } from '../core/useSelector';
-import { entries } from '../utils/entries';
 
 export type UseGlobalState<T extends UseReducerContextSource> = {
-  [P in keyof T]: {
-    (): ReducerState<T[P]['reducer']>;
-    <SelectedState>(
-      selector: (state: ReducerState<T[P]['reducer']>) => SelectedState
-    ): SelectedState;
-  };
+  (): { [P in keyof T]: ReducerState<T[P]['reducer']> };
+  <SelectedState>(
+    selector: (
+      state: { [P in keyof T]: ReducerState<T[P]['reducer']> }
+    ) => SelectedState
+  ): SelectedState;
 };
 
 export type UseGlobalDispatch<T extends UseReducerContextSource> = () => {
@@ -22,31 +21,21 @@ export type UseGlobalDispatch<T extends UseReducerContextSource> = () => {
 };
 
 export const createStore = <T extends UseReducerContextSource>(
-  stateContexts: StateContexts<T>,
-  dispatchContext: DispatchContext<T>,
+  stateContext: React.Context<any>,
+  dispatchContext: React.Context<any>,
+  subscription: Subscription,
   getCurrentState: () => CurrentState<T>
 ) => {
-  const useGlobalState = {} as UseGlobalState<T>;
+  const useGlobalState = createUseSelector(
+    stateContext,
+    getCurrentState,
+    subscription
+  ) as UseGlobalState<CurrentState<T>>;
   const useGlobalDispatch = (() =>
     useContext(dispatchContext)) as UseGlobalDispatch<T>;
 
-  entries(stateContexts).forEach(([displayName, context]) => {
-    const getStateContextValue = () => {
-      const getStateValue = useContext(context.state);
-      return getStateValue();
-    };
-
-    const getCurrentStateValue = () => {
-      const currentState = getCurrentState();
-      return currentState[displayName];
-    };
-
-    useGlobalState[displayName] = createUseSelector(
-      getStateContextValue,
-      context.subscription,
-      getCurrentStateValue
-    );
-  });
-
-  return { useGlobalState, useGlobalDispatch };
+  return {
+    useGlobalState,
+    useGlobalDispatch,
+  };
 };
