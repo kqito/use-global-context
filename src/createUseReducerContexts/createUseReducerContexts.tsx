@@ -1,6 +1,6 @@
 import React from 'react';
-import { createContext, AnyReducer } from './createContext';
-import { UseGlobalState, UseGlobalDispatch } from './hook';
+import { createUseReducerContext, AnyReducer } from './createContext';
+import { UseReducerStore } from './store';
 import { ContextProvider } from '../core/createContext';
 
 export type UseReducerContextSource = {
@@ -20,7 +20,7 @@ export type CurrentState<T extends UseReducerContextSource> = {
  * The created contexts are split into a state and a dispatch,
  * respectively, to prevent unnecessary rendering.
  */
-export const createUseReducerContext = <T extends UseReducerContextSource>(
+export const createUseReducerContexts = <T extends UseReducerContextSource>(
   /**
    *  Object's value is passed as an argument to useReducer.
    *  Also, the object's key is set to the context's displayname.
@@ -28,17 +28,13 @@ export const createUseReducerContext = <T extends UseReducerContextSource>(
    */
   contextSource: T
 ): [
-  UseGlobalState<T>,
-  UseGlobalDispatch<T>,
+  UseReducerStore<T>,
   React.FC<ContextProvider<CurrentState<T>>>,
   () => CurrentState<T>
 ] => {
-  const {
-    useGlobalState,
-    useGlobalDispatch,
-    contextProvider,
-    getState,
-  } = createContext(contextSource);
+  const { store, contextProvider, getState } = createUseReducerContext(
+    contextSource
+  );
 
-  return [useGlobalState, useGlobalDispatch, contextProvider, getState];
+  return [store, contextProvider, getState];
 };

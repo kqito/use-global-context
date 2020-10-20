@@ -2,8 +2,8 @@ import React, { useReducer, useCallback } from 'react';
 import {
   UseReducerContextSource,
   CurrentState,
-} from './createUseReducerContext';
-import { createStore, UseGlobalDispatch } from './hook';
+} from './createUseReducerContexts';
+import { createStore } from './store';
 import { useIsomorphicLayoutEffect } from '../core/useIsomorphicLayoutEffect';
 import { createBaseContext, ContextProvider } from '../core/createContext';
 import { createCurrentState } from '../core/currentState';
@@ -73,31 +73,23 @@ const createUseServerSideDispatch = <T extends UseReducerContextSource>(
   return useServerSideDispatch as any;
 };
 
-export const createContext = <T extends UseReducerContextSource>(
+export const createUseReducerContext = <T extends UseReducerContextSource>(
   contextSource: T
 ) => {
   const { getCurrentState, setCurrentState } = createCurrentState(
     getInitialState(contextSource)
   );
 
-  const { stateContexts, dispatchContext } = createBaseContext<T>(
-    contextSource
-  );
-  const { useGlobalState, useGlobalDispatch } = createStore(
-    stateContexts,
-    dispatchContext,
-    getCurrentState
-  );
-  const globalDispatch = {} as ReturnType<UseGlobalDispatch<T>>;
-  const DispatchProvider = dispatchContext.Provider;
+  const context = createBaseContext<T>(contextSource);
+  const store = createStore(context, getCurrentState);
   const contextProvider: React.FC<ContextProvider<CurrentState<T>>> = ({
     children,
     value,
   }: ContextProvider<CurrentState<T>>) => {
     return (
       <>
-        {entries(stateContexts).reduceRight(
-          (acc, [displayName, { state: State }]) => {
+        {entries(context).reduceRight(
+          (acc, [displayName, { state: State, dispatch: Dispatch }]) => {
             const { reducer, initialState, initializer } = contextSource[
               displayName
             ];
@@ -106,22 +98,22 @@ export const createContext = <T extends UseReducerContextSource>(
                 ? value[displayName]
                 : initialState;
 
-            const [hookState, hookDispatch] = useReducer(
+            const [state, dispatch] = useReducer(
               reducer,
               initialValue,
               initializer
             );
-            useIsomorphicLayoutEffect(() => {
-              globalDispatch[displayName] = hookDispatch as any;
-            }, []);
+            const getState = useCallback(() => state, [state]);
 
-            const getState = useCallback(() => hookState, [hookState]);
+            setCurrentState(state, displayName);
 
-            setCurrentState(hookState, displayName);
-
-            return <State.Provider value={getState}>{acc}</State.Provider>;
+            return (
+              <State.Provider value={getState}>
+                <Dispatch.Provider value={dispatch}>{acc}</Dispatch.Provider>
+              </State.Provider>
+            );
           },
-          <DispatchProvider value={globalDispatch}>{children}</DispatchProvider>
+          children
         )}
       </>
     );
@@ -132,8 +124,11 @@ export const createContext = <T extends UseReducerContextSource>(
   >> = ({ children, value }: ContextProvider<CurrentState<T>>) => {
     return (
       <>
-        {entries(stateContexts).reduceRight(
-          (acc, [displayName, { state: State, subscription }]) => {
+        {entries(context).reduceRight(
+          (
+            acc,
+            [displayName, { state: State, dispatch: Dispatch, subscription }]
+          ) => {
             const { initialState } = contextSource[displayName];
             const initialValue =
               value && value[displayName] !== undefined
@@ -142,31 +137,35 @@ export const createContext = <T extends UseReducerContextSource>(
 
             useIsomorphicLayoutEffect(() => {
               setCurrentState(initialValue, displayName);
-              globalDispatch[displayName] = createUseServerSideDispatch(
-                getCurrentState,
-                setCurrentState,
-                displayName,
-                contextSource[displayName].reducer,
-                subscription
-              );
             }, []);
+
+            const dispatch = createUseServerSideDispatch(
+              getCurrentState,
+              setCurrentState,
+              displayName,
+              contextSource[displayName].reducer,
+              subscription
+            );
 
             const getState = useCallback(() => {
               const currentState = getCurrentState();
               return currentState[displayName];
             }, [getCurrentState, displayName]);
 
-            return <State.Provider value={getState}>{acc}</State.Provider>;
+            return (
+              <State.Provider value={getState}>
+                <Dispatch.Provider value={dispatch}>{acc}</Dispatch.Provider>
+              </State.Provider>
+            );
           },
-          <DispatchProvider value={globalDispatch}>{children}</DispatchProvider>
+          children
         )}
       </>
     );
   };
 
   return {
-    useGlobalState,
-    useGlobalDispatch,
+    store,
     contextProvider: isBrowser ? contextProvider : contextServerSideProvider,
     getState: getCurrentState,
   };
