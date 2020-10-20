@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { mount } from 'enzyme';
-import { createUseStateContext } from '../createUseStateContext';
+import { createUseStateContexts } from '../createUseStateContexts';
 import { testId } from './utils';
 
 type State = {
@@ -13,11 +13,9 @@ type State = {
   };
 };
 
-describe('createUseStateContext', () => {
+describe('createUseStateContexts', () => {
   it('Initial state', () => {
-    const [useGlobalState, , UseStateContextProvider] = createUseStateContext<
-      State
-    >({
+    const [store, UseStateContextProviders] = createUseStateContexts<State>({
       counter: 0,
       message: '',
       user: {
@@ -28,25 +26,21 @@ describe('createUseStateContext', () => {
     });
 
     const Container = () => {
-      const message = useGlobalState.message();
+      const message = store.message.state();
       return <p data-testid="message">{message}</p>;
     };
 
     const wrapper = mount(
-      <UseStateContextProvider>
+      <UseStateContextProviders>
         <Container />
-      </UseStateContextProvider>
+      </UseStateContextProviders>
     );
 
     expect(wrapper.find(testId('message')).text()).toBe('');
   });
 
   it('Dispatch', () => {
-    const [
-      useGlobalState,
-      useGlobalDispatch,
-      UseStateContextProvider,
-    ] = createUseStateContext<State>({
+    const [store, UseStateContextProviders] = createUseStateContexts<State>({
       counter: 0,
       message: '',
       user: {
@@ -57,29 +51,26 @@ describe('createUseStateContext', () => {
     });
 
     const Container = () => {
-      const message = useGlobalState.message();
-      const dispatch = useGlobalDispatch();
+      const message = store.message.state();
+      const dispatch = store.message.dispatch();
+
       useEffect(() => {
-        dispatch.message('message');
+        dispatch('message');
       }, []);
       return <p data-testid="message">{message}</p>;
     };
 
     const wrapper = mount(
-      <UseStateContextProvider>
+      <UseStateContextProviders>
         <Container />
-      </UseStateContextProvider>
+      </UseStateContextProviders>
     );
 
     expect(wrapper.find(testId('message')).text()).toBe('message');
   });
 
   it('UseSelector', () => {
-    const [
-      useGlobalState,
-      useGlobalDispatch,
-      UseStateContextProvider,
-    ] = createUseStateContext<State>({
+    const [store, UseStateContextProviders] = createUseStateContexts<State>({
       counter: 0,
       message: '',
       user: {
@@ -90,16 +81,16 @@ describe('createUseStateContext', () => {
     });
 
     const Container = () => {
-      const id = useGlobalState.user((user) => user.id);
-      const nullable = useGlobalState.user(() => null);
-      const string = useGlobalState.user(() => '');
-      const dispatch = useGlobalDispatch();
+      const id = store.user.state((user) => user.id);
+      const nullable = store.user.state(() => null);
+      const string = store.user.state(() => '');
+      const dispatch = store.user.dispatch();
 
       expect(nullable).toBe(null);
       expect(string).toBe('');
 
       useEffect(() => {
-        dispatch.user((user) => ({
+        dispatch((user) => ({
           ...user,
           id: 'id',
         }));
@@ -109,21 +100,18 @@ describe('createUseStateContext', () => {
     };
 
     const wrapper = mount(
-      <UseStateContextProvider>
+      <UseStateContextProviders>
         <Container />
-      </UseStateContextProvider>
+      </UseStateContextProviders>
     );
 
     expect(wrapper.find(testId('id')).text()).toBe('id');
   });
 
   it('CurrentState', () => {
-    const [
-      useGlobalState,
-      useGlobalDispatch,
-      UseStateContextProvider,
-      getState,
-    ] = createUseStateContext<State>({
+    const [store, UseStateContextProviders, getState] = createUseStateContexts<
+      State
+    >({
       counter: 0,
       message: '',
       user: {
@@ -134,30 +122,28 @@ describe('createUseStateContext', () => {
     });
 
     const Container = () => {
-      const counter = useGlobalState.counter();
-      const dispatch = useGlobalDispatch();
+      const counter = store.counter.state();
+      const counterDispatch = store.counter.dispatch();
 
       useEffect(() => {
         expect(getState().counter).toBe(0);
-        dispatch.counter(100);
+        counterDispatch(100);
       }, []);
 
       return <p data-testid="id">{counter}</p>;
     };
 
     mount(
-      <UseStateContextProvider>
+      <UseStateContextProviders>
         <Container />
-      </UseStateContextProvider>
+      </UseStateContextProviders>
     );
 
     expect(getState().counter).toBe(100);
   });
 
   it('Initial Value', () => {
-    const [useGlobalState, , UseStateContextProvider] = createUseStateContext<
-      State
-    >({
+    const [store, UseStateContextProviders] = createUseStateContexts<State>({
       counter: 0,
       message: '',
       user: {
@@ -172,8 +158,8 @@ describe('createUseStateContext', () => {
     };
 
     const Container = () => {
-      const counter = useGlobalState.counter();
-      const message = useGlobalState.message();
+      const counter = store.counter.state();
+      const message = store.message.state();
 
       expect(counter).toBe(100);
       expect(message).toBe('');
@@ -182,9 +168,9 @@ describe('createUseStateContext', () => {
     };
 
     mount(
-      <UseStateContextProvider value={initialState as any}>
+      <UseStateContextProviders value={initialState as any}>
         <Container />
-      </UseStateContextProvider>
+      </UseStateContextProviders>
     );
   });
 });
