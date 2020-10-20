@@ -1,6 +1,6 @@
 import React from 'react';
-import { createUseStateContext } from './createContext';
-import { UseStateStore } from './store';
+import { createContext } from './createContext';
+import { UseGlobalState, UseGlobalDispatch } from './hook';
 import { ContextProvider } from '../core/createContext';
 
 export type UseStateContextSource = {
@@ -12,17 +12,25 @@ export type UseStateContextSource = {
  * The created contexts are split into a state and a dispatch,
  * respectively, to prevent unnecessary rendering.
  */
-export const createUseStateContexts = <T extends UseStateContextSource>(
+export const createUseStateContext = <T extends UseStateContextSource>(
   /**
    *  Object's value is passed as an argument to useState.
    *  Also, the object's key is set to the context's displayname.
    *  *@see* https://reactjs.org/docs/context.html#contextdisplayname
    */
   contextSource: T
-): [UseStateStore<T>, React.FC<ContextProvider<T>>, () => T] => {
-  const { store, contextProvider, getState } = createUseStateContext(
-    contextSource
-  );
+): [
+  UseGlobalState<T>,
+  UseGlobalDispatch<T>,
+  React.FC<ContextProvider<T>>,
+  () => T
+] => {
+  const {
+    useGlobalState,
+    useGlobalDispatch,
+    contextProvider,
+    getState,
+  } = createContext(contextSource);
 
-  return [store, contextProvider, getState];
+  return [useGlobalState, useGlobalDispatch, contextProvider, getState];
 };

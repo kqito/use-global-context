@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
-import { UseStateContextSource } from './createUseStateContexts';
-import { createStore } from './store';
+import { UseStateContextSource } from './createUseStateContext';
+import { createStore, UseGlobalDispatch } from './hook';
 import { useIsomorphicLayoutEffect } from '../core/useIsomorphicLayoutEffect';
 import { createBaseContext, ContextProvider } from '../core/createContext';
 import { Subscription } from '../core/subscription';
@@ -52,39 +52,48 @@ const createUseServerSideDispatch = <T extends UseStateContextSource>(
   return useServerSideDispatch as any;
 };
 
-export const createUseStateContext = <T extends UseStateContextSource>(
+export const createContext = <T extends UseStateContextSource>(
   contextSource: T
 ) => {
   const { getCurrentState, setCurrentState } = createCurrentState(
     contextSource
   );
-  const context = createBaseContext<UseStateContext<T>>(contextSource);
-  const store = createStore(context, getCurrentState);
+  const { stateContexts, dispatchContext } = createBaseContext<
+    UseStateContext<T>
+  >(contextSource);
+  const { useGlobalState, useGlobalDispatch } = createStore(
+    stateContexts,
+    dispatchContext,
+    getCurrentState
+  );
+
+  const globalDispatch = {} as ReturnType<UseGlobalDispatch<T>>;
+  const DispatchProvider = dispatchContext.Provider;
   const contextProvider: React.FC<ContextProvider<T>> = ({
     children,
     value,
   }: ContextProvider<T>) => {
     return (
       <>
-        {entries(context).reduceRight(
-          (acc, [displayName, { state: State, dispatch: Dispatch }]) => {
+        {entries(stateContexts).reduceRight(
+          (acc, [displayName, { state: State }]) => {
             const initialValue =
               value && value[displayName] !== undefined
                 ? value[displayName]
                 : contextSource[displayName];
 
-            const [state, dispatch] = useState(initialValue);
-            const getState = useCallback(() => state, [state]);
+            const [hookState, hookDispatch] = useState(initialValue);
+            useIsomorphicLayoutEffect(() => {
+              globalDispatch[displayName] = hookDispatch;
+            }, []);
 
-            setCurrentState(state, displayName);
+            const getState = useCallback(() => hookState, [hookState]);
 
-            return (
-              <State.Provider value={getState}>
-                <Dispatch.Provider value={dispatch}>{acc}</Dispatch.Provider>
-              </State.Provider>
-            );
+            setCurrentState(hookState, displayName);
+
+            return <State.Provider value={getState}>{acc}</State.Provider>;
           },
-          children
+          <DispatchProvider value={globalDispatch}>{children}</DispatchProvider>
         )}
       </>
     );
@@ -96,11 +105,8 @@ export const createUseStateContext = <T extends UseStateContextSource>(
   }: ContextProvider<T>) => {
     return (
       <>
-        {entries(context).reduceRight(
-          (
-            acc,
-            [displayName, { state: State, dispatch: Dispatch, subscription }]
-          ) => {
+        {entries(stateContexts).reduceRight(
+          (acc, [displayName, { state: State, subscription }]) => {
             const initialValue =
               value && value[displayName] !== undefined
                 ? value[displayName]
@@ -108,35 +114,30 @@ export const createUseStateContext = <T extends UseStateContextSource>(
 
             useIsomorphicLayoutEffect(() => {
               setCurrentState(initialValue, displayName);
+              globalDispatch[displayName] = createUseServerSideDispatch(
+                getCurrentState,
+                setCurrentState,
+                displayName,
+                subscription
+              );
             }, []);
-
-            const dispatch = createUseServerSideDispatch(
-              getCurrentState,
-              setCurrentState,
-              displayName,
-              subscription
-            );
 
             const getState = useCallback(() => {
               const currentState = getCurrentState();
               return currentState[displayName];
             }, [getCurrentState, displayName]);
 
-            return (
-              <State.Provider value={getState}>
-                <Dispatch.Provider value={dispatch}>{acc}</Dispatch.Provider>
-              </State.Provider>
-            );
+            return <State.Provider value={getState}>{acc}</State.Provider>;
           },
-          children
+          <DispatchProvider value={globalDispatch}>{children}</DispatchProvider>
         )}
       </>
     );
   };
 
   return {
-    context,
-    store,
+    useGlobalState,
+    useGlobalDispatch,
     contextProvider: isBrowser ? contextProvider : contextServerSideProvider,
     getState: getCurrentState,
   };

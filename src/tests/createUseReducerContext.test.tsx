@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { mount } from 'enzyme';
-import { createUseReducerContexts } from '../createUseReducerContexts';
+import { createUseReducerContext } from '../createUseReducerContext';
 import { testId } from './utils';
 
 type User = {
@@ -49,9 +49,13 @@ const reducer: React.Reducer<User, UserAction> = (state, action) => {
   }
 };
 
-describe('createUseRedcuerContexts', () => {
+describe('createUseRedcuerContext', () => {
   it('Initial state', () => {
-    const [store, UseReducerContextProviders] = createUseReducerContexts({
+    const [
+      useGlobalState,
+      ,
+      UseReducerContextProvider,
+    ] = createUseReducerContext({
       user: {
         reducer,
         initialState,
@@ -59,7 +63,7 @@ describe('createUseRedcuerContexts', () => {
     });
 
     const Container = () => {
-      const user = store.user.state();
+      const user = useGlobalState.user();
       return (
         <>
           <p data-testid="id">{user.id}</p>
@@ -69,9 +73,9 @@ describe('createUseRedcuerContexts', () => {
     };
 
     const wrapper = mount(
-      <UseReducerContextProviders>
+      <UseReducerContextProvider>
         <Container />
-      </UseReducerContextProviders>
+      </UseReducerContextProvider>
     );
 
     expect(wrapper.find(testId('id')).text()).toBe('id');
@@ -79,7 +83,11 @@ describe('createUseRedcuerContexts', () => {
   });
 
   it('Dispatch', () => {
-    const [store, UseReducerContextProviders] = createUseReducerContexts({
+    const [
+      useGlobalState,
+      useGlobalDispatch,
+      UseReducerContextProvider,
+    ] = createUseReducerContext({
       user: {
         reducer,
         initialState,
@@ -87,10 +95,10 @@ describe('createUseRedcuerContexts', () => {
     });
 
     const Container = () => {
-      const user = store.user.state();
-      const userDispatch = store.user.dispatch();
+      const user = useGlobalState.user();
+      const disptach = useGlobalDispatch();
       useEffect(() => {
-        userDispatch({
+        disptach.user({
           type: 'UPDATE_PROFILE',
           payload: {
             user: {
@@ -110,9 +118,9 @@ describe('createUseRedcuerContexts', () => {
     };
 
     const wrapper = mount(
-      <UseReducerContextProviders>
+      <UseReducerContextProvider>
         <Container />
-      </UseReducerContextProviders>
+      </UseReducerContextProvider>
     );
 
     expect(wrapper.find(testId('id')).text()).toBe('dispatched-id');
@@ -123,7 +131,11 @@ describe('createUseRedcuerContexts', () => {
     const withoutReducer: React.ReducerWithoutAction<number> = (count) =>
       count + 1;
 
-    const [store, UseReducerContextProviders] = createUseReducerContexts({
+    const [
+      useGlobalState,
+      useGlobalDispatch,
+      UseReducerContextProvider,
+    ] = createUseReducerContext({
       counter: {
         reducer: withoutReducer,
         initialState: 0,
@@ -131,26 +143,30 @@ describe('createUseRedcuerContexts', () => {
     });
 
     const Container = () => {
-      const count = store.counter.state();
-      const increment = store.counter.dispatch();
+      const count = useGlobalState.counter();
+      const disptach = useGlobalDispatch();
       useEffect(() => {
-        increment();
+        disptach.counter();
       }, []);
 
       return <p data-testid="count">{count}</p>;
     };
 
     const wrapper = mount(
-      <UseReducerContextProviders>
+      <UseReducerContextProvider>
         <Container />
-      </UseReducerContextProviders>
+      </UseReducerContextProvider>
     );
 
     expect(wrapper.find(testId('count')).text()).toBe('1');
   });
 
   it('UseSelector', () => {
-    const [store, UseReducerContextProviders] = createUseReducerContexts({
+    const [
+      useGlobalState,
+      useGlobalDispatch,
+      UseReducerContextProvider,
+    ] = createUseReducerContext({
       user: {
         reducer,
         initialState,
@@ -158,11 +174,11 @@ describe('createUseRedcuerContexts', () => {
     });
 
     const Container = () => {
-      const id = store.user.state((user) => user.id);
-      const dispatch = store.user.dispatch();
+      const id = useGlobalState.user((user) => user.id);
+      const dispatch = useGlobalDispatch();
 
       useEffect(() => {
-        dispatch({
+        dispatch.user({
           type: 'UPDATE_PROFILE',
           payload: {
             user: {
@@ -171,7 +187,7 @@ describe('createUseRedcuerContexts', () => {
             },
           },
         });
-        dispatch({
+        dispatch.user({
           type: 'UPDATE_PROFILE',
           payload: {
             user: {
@@ -186,9 +202,9 @@ describe('createUseRedcuerContexts', () => {
     };
 
     const wrapper = mount(
-      <UseReducerContextProviders>
+      <UseReducerContextProvider>
         <Container />
-      </UseReducerContextProviders>
+      </UseReducerContextProvider>
     );
 
     expect(wrapper.find(testId('id')).text()).toBe('id');
@@ -196,10 +212,11 @@ describe('createUseRedcuerContexts', () => {
 
   it('getState', () => {
     const [
-      store,
-      UseReducerContextProviders,
+      useGlobalState,
+      useGlobalDispatch,
+      UseReducerContextProvider,
       getState,
-    ] = createUseReducerContexts({
+    ] = createUseReducerContext({
       user: {
         reducer,
         initialState,
@@ -207,11 +224,11 @@ describe('createUseRedcuerContexts', () => {
     });
 
     const Container = () => {
-      const id = store.user.state((user) => user.id);
-      const userDispatch = store.user.dispatch();
+      const id = useGlobalState.user((user) => user.id);
+      const disptach = useGlobalDispatch();
 
       useEffect(() => {
-        userDispatch({
+        disptach.user({
           type: 'UPDATE_PROFILE',
           payload: {
             user: {
@@ -226,9 +243,9 @@ describe('createUseRedcuerContexts', () => {
     };
 
     mount(
-      <UseReducerContextProviders>
+      <UseReducerContextProvider>
         <Container />
-      </UseReducerContextProviders>
+      </UseReducerContextProvider>
     );
 
     const expectCurrentState = {
@@ -241,7 +258,11 @@ describe('createUseRedcuerContexts', () => {
   });
 
   it('Initial value', () => {
-    const [store, UseReducerContextProviders] = createUseReducerContexts({
+    const [
+      useGlobalState,
+      ,
+      UseReducerContextProvider,
+    ] = createUseReducerContext({
       user: {
         reducer,
         initialState,
@@ -249,7 +270,7 @@ describe('createUseRedcuerContexts', () => {
     });
 
     const Container = () => {
-      const id = store.user.state((user) => user.id);
+      const id = useGlobalState.user((user) => user.id);
 
       expect(id).toBe('dispatched-id');
 
@@ -264,9 +285,9 @@ describe('createUseRedcuerContexts', () => {
     };
 
     mount(
-      <UseReducerContextProviders value={value}>
+      <UseReducerContextProvider value={value}>
         <Container />
-      </UseReducerContextProviders>
+      </UseReducerContextProvider>
     );
   });
 });
