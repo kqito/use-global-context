@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { mount } from 'enzyme';
-import { createUseStateContexts } from '../createUseStateContexts';
+import { createUseStateContext } from '../createUseStateContext';
 import { testId } from './utils';
 
 type State = {
@@ -13,9 +13,9 @@ type State = {
   };
 };
 
-describe('createUseStateContexts', () => {
+describe('createUseStateContext', () => {
   it('Initial state', () => {
-    const [useGlobalState, , UseStateContextProvider] = createUseStateContexts<
+    const [useGlobalState, , UseStateContextProvider] = createUseStateContext<
       State
     >({
       counter: 0,
@@ -46,7 +46,7 @@ describe('createUseStateContexts', () => {
       useGlobalState,
       useGlobalDispatch,
       UseStateContextProvider,
-    ] = createUseStateContexts<State>({
+    ] = createUseStateContext<State>({
       counter: 0,
       message: '',
       user: {
@@ -79,7 +79,7 @@ describe('createUseStateContexts', () => {
       useGlobalState,
       useGlobalDispatch,
       UseStateContextProvider,
-    ] = createUseStateContexts<State>({
+    ] = createUseStateContext<State>({
       counter: 0,
       message: '',
       user: {
@@ -123,7 +123,7 @@ describe('createUseStateContexts', () => {
       useGlobalDispatch,
       UseStateContextProvider,
       getState,
-    ] = createUseStateContexts<State>({
+    ] = createUseStateContext<State>({
       counter: 0,
       message: '',
       user: {
@@ -155,7 +155,7 @@ describe('createUseStateContexts', () => {
   });
 
   it('Initial Value', () => {
-    const [useGlobalState, , UseStateContextProvider] = createUseStateContexts<
+    const [useGlobalState, , UseStateContextProvider] = createUseStateContext<
       State
     >({
       counter: 0,

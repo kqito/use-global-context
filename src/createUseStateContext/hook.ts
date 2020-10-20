@@ -1,30 +1,25 @@
-import { useContext } from 'react';
-import {
-  UseReducerContextSource,
-  CurrentState,
-} from './createUseReducerContexts';
-import { ReducerState, ReducerDispatch } from './createContext';
+import React, { useContext } from 'react';
+import { UseStateContextSource } from './createUseStateContext';
+import { UseStateContext } from './createContext';
 import { StateContexts, DispatchContext } from '../core/createContext';
 import { createUseSelector } from '../core/useSelector';
 import { entries } from '../utils/entries';
 
-export type UseGlobalState<T extends UseReducerContextSource> = {
+export type UseGlobalState<T extends UseStateContextSource> = {
   [P in keyof T]: {
-    (): ReducerState<T[P]['reducer']>;
-    <SelectedState>(
-      selector: (state: ReducerState<T[P]['reducer']>) => SelectedState
-    ): SelectedState;
+    (): T[P];
+    <SelectedState>(selector: (state: T[P]) => SelectedState): SelectedState;
   };
 };
 
-export type UseGlobalDispatch<T extends UseReducerContextSource> = () => {
-  [P in keyof T]: ReducerDispatch<T[P]['reducer']>;
+export type UseGlobalDispatch<T extends UseStateContextSource> = () => {
+  [P in keyof T]: React.Dispatch<React.SetStateAction<T[P]>>;
 };
 
-export const createStore = <T extends UseReducerContextSource>(
-  stateContexts: StateContexts<T>,
-  dispatchContext: DispatchContext<T>,
-  getCurrentState: () => CurrentState<T>
+export const createStore = <T extends UseStateContextSource>(
+  stateContexts: StateContexts<UseStateContext<T>>,
+  dispatchContext: DispatchContext<UseStateContext<T>>,
+  getCurrentState: () => T
 ) => {
   const useGlobalState = {} as UseGlobalState<T>;
   const useGlobalDispatch = (() =>
@@ -48,5 +43,8 @@ export const createStore = <T extends UseReducerContextSource>(
     );
   });
 
-  return { useGlobalState, useGlobalDispatch };
+  return {
+    useGlobalState,
+    useGlobalDispatch,
+  };
 };

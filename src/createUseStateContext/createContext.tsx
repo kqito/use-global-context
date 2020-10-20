@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { UseStateContextSource } from './createUseStateContexts';
+import { UseStateContextSource } from './createUseStateContext';
 import { createStore, UseGlobalDispatch } from './hook';
 import { useIsomorphicLayoutEffect } from '../core/useIsomorphicLayoutEffect';
 import { createBaseContext, ContextProvider } from '../core/createContext';
@@ -52,7 +52,7 @@ const createUseServerSideDispatch = <T extends UseStateContextSource>(
   return useServerSideDispatch as any;
 };
 
-export const createUseStateContext = <T extends UseStateContextSource>(
+export const createContext = <T extends UseStateContextSource>(
   contextSource: T
 ) => {
   const { getCurrentState, setCurrentState } = createCurrentState(
