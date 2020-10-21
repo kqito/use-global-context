@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { mount } from 'enzyme';
-import { createUseStateContext } from '../createUseStateContext';
+import { createUseStateContext, createStore } from '..';
 import { testId } from './utils';
 
 type State = {
@@ -122,8 +122,17 @@ describe('createUseStateContext', () => {
       useGlobalState,
       useGlobalDispatch,
       UseStateContextProvider,
-      getState,
     ] = createUseStateContext<State>({
+      counter: 0,
+      message: '',
+      user: {
+        id: '',
+        name: '',
+        age: 0,
+      },
+    });
+
+    const store = createStore({
       counter: 0,
       message: '',
       user: {
@@ -138,7 +147,7 @@ describe('createUseStateContext', () => {
       const dispatch = useGlobalDispatch();
 
       useEffect(() => {
-        expect(getState().counter).toBe(0);
+        expect(store.getState().counter).toBe(0);
         dispatch.counter(100);
       }, []);
 
@@ -146,12 +155,12 @@ describe('createUseStateContext', () => {
     };
 
     mount(
-      <UseStateContextProvider>
+      <UseStateContextProvider store={store}>
         <Container />
       </UseStateContextProvider>
     );
 
-    expect(getState().counter).toBe(100);
+    expect(store.getState().counter).toBe(100);
   });
 
   it('Initial Value', () => {
@@ -167,9 +176,9 @@ describe('createUseStateContext', () => {
       },
     });
 
-    const initialState = {
+    const store = createStore<State>({
       counter: 100,
-    };
+    } as any);
 
     const Container = () => {
       const counter = useGlobalState((state) => state.counter);
@@ -182,7 +191,7 @@ describe('createUseStateContext', () => {
     };
 
     mount(
-      <UseStateContextProvider value={initialState as any}>
+      <UseStateContextProvider store={store}>
         <Container />
       </UseStateContextProvider>
     );

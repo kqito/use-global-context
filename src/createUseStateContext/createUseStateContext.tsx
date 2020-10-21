@@ -19,18 +19,10 @@ export const createUseStateContext = <T extends UseStateContextSource>(
    *  *@see* https://reactjs.org/docs/context.html#contextdisplayname
    */
   contextSource: T
-): [
-  UseGlobalState<T>,
-  UseGlobalDispatch<T>,
-  React.FC<ContextProvider<T>>,
-  () => T
-] => {
-  const {
-    useGlobalState,
-    useGlobalDispatch,
-    contextProvider,
-    getState,
-  } = createContext(contextSource);
+): [UseGlobalState<T>, UseGlobalDispatch<T>, React.FC<ContextProvider<T>>] => {
+  const { useGlobalState, useGlobalDispatch, contextProvider } = createContext(
+    contextSource
+  );
 
-  return [useGlobalState, useGlobalDispatch, contextProvider, getState];
+  return [useGlobalState, useGlobalDispatch, contextProvider];
 };

@@ -30,15 +30,11 @@ export const createUseReducerContext = <T extends UseReducerContextSource>(
 ): [
   UseGlobalState<T>,
   UseGlobalDispatch<T>,
-  React.FC<ContextProvider<CurrentState<T>>>,
-  () => CurrentState<T>
+  React.FC<ContextProvider<CurrentState<T>>>
 ] => {
-  const {
-    useGlobalState,
-    useGlobalDispatch,
-    contextProvider,
-    getState,
-  } = createContext(contextSource);
+  const { useGlobalState, useGlobalDispatch, contextProvider } = createContext(
+    contextSource
+  );
 
-  return [useGlobalState, useGlobalDispatch, contextProvider, getState];
+  return [useGlobalState, useGlobalDispatch, contextProvider];
 };

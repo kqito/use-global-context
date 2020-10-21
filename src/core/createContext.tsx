@@ -1,25 +1,26 @@
 import React, { createContext, createElement } from 'react';
+import { Store } from './store';
 import { Subscription } from './subscription';
 import { useIsomorphicLayoutEffect } from './useIsomorphicLayoutEffect';
 
-export type ContextProvider<T> = {
+export type ContextProvider<T extends Record<string, unknown>> = {
   children: React.ReactNode;
-  value?: T;
+  store?: Store<T>;
 };
 
 export type ContextSource = {
   [displayName: string]: any;
 };
 
-const dispatchEventLister = (
+const dispatchEventLister = <T extends ContextSource>(
   provider: React.Context<any>['Provider'],
-  subscription: Subscription
+  subscription: Subscription<T>
 ) => {
   const dispatcher = React.memo(
     ({ value, children }: React.ProviderProps<any>) => {
       useIsomorphicLayoutEffect(() => {
         subscription.forEach((listener) => {
-          listener();
+          listener(value);
         });
       });
 
@@ -30,14 +31,12 @@ const dispatchEventLister = (
   return dispatcher;
 };
 
-export const createBaseContext = <T extends ContextSource>(
-  contextSource: T
-) => {
+export const createBaseContext = <T extends ContextSource>() => {
   const stateContext = createContext(null as any, () => 0);
   const dispatchContext = createContext(null as any);
   const subscription = new Set<() => void>();
 
-  stateContext.Provider = dispatchEventLister(
+  stateContext.Provider = dispatchEventLister<T>(
     stateContext.Provider,
     subscription
   );

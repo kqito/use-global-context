@@ -8,8 +8,7 @@ import { log } from '../utils/log';
 // https://github.com/dai-shi/use-context-selector (MIT LICENSE)
 export const createUseSelector = <State>(
   context: React.Context<State>,
-  getState: () => State,
-  subscription: Subscription
+  subscription: Subscription<State>
 ) => {
   const defaultSelector = (state: State) => state;
 
@@ -49,8 +48,7 @@ export const createUseSelector = <State>(
     });
 
     useIsomorphicLayoutEffect(() => {
-      const refresh = () => {
-        const nextStore = getState();
+      const refresh = (nextStore: State) => {
         if (
           latestSelector.current === undefined ||
           latestSelectedState.current === undefined

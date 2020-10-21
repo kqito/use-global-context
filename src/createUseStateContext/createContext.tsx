@@ -1,10 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { UseStateContextSource } from './createUseStateContext';
 import { createStore, UseGlobalDispatch } from './hook';
-import { useIsomorphicLayoutEffect } from '../core/useIsomorphicLayoutEffect';
 import { createBaseContext, ContextProvider } from '../core/createContext';
 import { Subscription } from '../core/subscription';
-import { createCurrentState } from '../core/currentState';
 import { isBrowser } from '../utils/environment';
 import { entries } from '../utils/entries';
 
@@ -20,10 +18,8 @@ const isFunction = <T extends unknown>(value: unknown): value is T =>
 
 const createUseServerSideDispatch = <T extends UseStateContextSource>(
   stateRef: React.MutableRefObject<T>,
-  getCurrentState: () => T,
-  setCurrentState: (value: T[keyof T], key: keyof T) => void,
   displayName: keyof T,
-  subscription: Subscription
+  subscription: Subscription<T>
 ): React.Dispatch<React.SetStateAction<T[keyof T]>> => {
   /* eslint no-param-reassign: 0 */
 
@@ -34,15 +30,14 @@ const createUseServerSideDispatch = <T extends UseStateContextSource>(
   function useServerSideDispatch(
     state: T[keyof T] | ((prevState: T[keyof T]) => T[keyof T])
   ): void {
-    const currentState = getCurrentState()[displayName];
+    const currentState = stateRef.current[displayName];
     const newState = isFunction<(prevState: T[keyof T]) => T[keyof T]>(state)
       ? state(currentState)
       : state;
 
     stateRef.current[displayName] = newState;
-    setCurrentState(newState, displayName);
     subscription.forEach((listener) => {
-      listener();
+      listener(newState);
     });
   }
 
@@ -52,39 +47,39 @@ const createUseServerSideDispatch = <T extends UseStateContextSource>(
 export const createContext = <T extends UseStateContextSource>(
   contextSource: T
 ) => {
-  const { getCurrentState, setCurrentState } = createCurrentState(
-    contextSource
-  );
   const { stateContext, dispatchContext, subscription } = createBaseContext<
     UseStateContext<T>
-  >(contextSource);
+  >();
   const { useGlobalState, useGlobalDispatch } = createStore(
     stateContext,
     dispatchContext,
-    subscription,
-    getCurrentState
+    subscription
   );
 
   const StateProvider = stateContext.Provider;
   const DispatchProvider = dispatchContext.Provider;
   const contextProvider: React.FC<ContextProvider<T>> = ({
     children,
-    value,
+    store,
   }: ContextProvider<T>) => {
     const stateRef = useRef({} as T);
     const dispatchRef = useRef({} as ReturnType<UseGlobalDispatch<T>>);
+    const storeState = store?.getState() ?? undefined;
 
     entries(contextSource).forEach(([displayName, initialState]) => {
       const initialValue =
-        value && value[displayName] !== undefined
-          ? value[displayName]
+        storeState && storeState[displayName] !== undefined
+          ? storeState[displayName]
           : initialState;
 
       const [hookState, hookDispatch] = useState(initialValue);
 
-      setCurrentState(hookState, displayName);
       stateRef.current[displayName] = hookState;
       dispatchRef.current[displayName] = hookDispatch;
+
+      if (store) {
+        store.setState(hookState, displayName);
+      }
     }, {} as any);
 
     return (
@@ -98,30 +93,29 @@ export const createContext = <T extends UseStateContextSource>(
 
   const contextServerSideProvider: React.FC<ContextProvider<T>> = ({
     children,
-    value,
+    store,
   }: ContextProvider<T>) => {
     const stateRef = useRef({} as T);
     const dispatchRef = useRef({} as ReturnType<UseGlobalDispatch<T>>);
+    const storeState = store?.getState() ?? undefined;
 
     entries(contextSource).forEach(([displayName, initialState]) => {
       const initialValue =
-        value && value[displayName] !== undefined
-          ? value[displayName]
+        storeState && storeState[displayName] !== undefined
+          ? storeState[displayName]
           : initialState;
-
-      useIsomorphicLayoutEffect(() => {
-        setCurrentState(initialValue, displayName);
-      }, []);
 
       const hookDispatch = createUseServerSideDispatch(
         stateRef,
-        getCurrentState,
-        setCurrentState,
         displayName,
         subscription
       );
+
       stateRef.current[displayName] = initialValue;
       dispatchRef.current[displayName] = hookDispatch;
+      if (store) {
+        store.setState(initialValue, displayName);
+      }
     });
 
     return (
@@ -137,6 +131,5 @@ export const createContext = <T extends UseStateContextSource>(
     useGlobalState,
     useGlobalDispatch,
     contextProvider: isBrowser ? contextProvider : contextServerSideProvider,
-    getState: getCurrentState,
   };
 };
