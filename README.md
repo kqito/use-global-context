@@ -8,7 +8,7 @@
 
 ## Features
 - Easy state management with `useState` and `useReducer`.
-- Optimally split context to prevent unnecessary renders.
+- Prevents the unnecessary renders.
 - `useSelector` function.
 - Support for SSR.
 
@@ -51,7 +51,6 @@ const [useGlobalState, useGlobalDispatch, ContextProvider] = createUseStateConte
 
 const App = () => (
   <ContextProvider>
-    <AppName />
     <Counter />
     <CounterButton />
   </ContextProvider>
@@ -59,7 +58,7 @@ const App = () => (
 
 const Counter = () => {
   // You can get the state value of the context as follows
-  const counter = useGlobalState.counter();
+  const counter = useGlobalState(state => state.counter);
 
   return <p>counter: {counter}</p>;
 };
@@ -76,15 +75,6 @@ const CounterButton = () => {
   );
 };
 
-const AppName = () => {
-  // Like the redux useSelector API, you can retrieve only the state you need.
-  // And there are no unnecessary renders.
-  const name = useGlobalState.app((app) => app.name);
-
-  return <p>App: {name}</p>;
-};
-
-export default App;
 ```
 
 
@@ -108,20 +98,22 @@ const [useGlobalState, useGlobalDispatch, ContextProvider] = createUseStateConte
 You can use it as follows.
 
 ```javascript
-const counter = useGlobalState.counter();
-// 0
+const state = useGlobalState();
+// {
+//   counter: 0,
+//   message: '',
+//   app: {
+//     name: 'use-global-context',
+//     description: 'A easy global state management library'
+//   }
+// }
 
-const message = useGlobalState.message();
-// ""
 
-const appState = useGlobalState.app();
+const app = useGlobalState(state => state.app);
 // {
 //   name: "use-global-context",
 //   description: "A easy global state management library",
 // }
-
-const appName = useGlobalState.app(app => app.name)
-// "use-global-context"
 
 const dispatch = useGlobalDispatch()
 // Each of the dispatch functions
