@@ -163,7 +163,7 @@ describe('createUseStateContext', () => {
     expect(store.getState().counter).toBe(100);
   });
 
-  it('Initial Value', () => {
+  it('Store', () => {
     const [useGlobalState, , UseStateContextProvider] = createUseStateContext<
       State
     >({
@@ -195,5 +195,40 @@ describe('createUseStateContext', () => {
         <Container />
       </UseStateContextProvider>
     );
+  });
+
+  it('Prevent inifinite loop', () => {
+    const [
+      useGlobalState,
+      useGlobalDispatch,
+      UseStateContextProvider,
+    ] = createUseStateContext<State>({
+      counter: 0,
+      message: '',
+      user: {
+        id: '',
+        name: '',
+        age: 0,
+      },
+    });
+
+    const Container = () => {
+      const counter = useGlobalState((state) => state.counter);
+      const dispatch = useGlobalDispatch();
+
+      useEffect(() => {
+        dispatch.counter(100);
+      });
+
+      return <p data-testid="id">{counter}</p>;
+    };
+
+    const wrapper = mount(
+      <UseStateContextProvider>
+        <Container />
+      </UseStateContextProvider>
+    );
+
+    expect(wrapper.find(testId('id')).text()).toBe('100');
   });
 });

@@ -5,6 +5,7 @@ import {
 } from './createUseReducerContext';
 import { createStore, UseGlobalDispatch } from './hook';
 import { createBaseContext, ContextProvider } from '../core/createContext';
+import { Store } from '../core/store';
 import { Subscription } from '../core/subscription';
 import { isBrowser } from '../utils/environment';
 import { entries } from '../utils/entries';
@@ -30,23 +31,12 @@ export type UseReducerContext<T extends UseReducerContextSource> = {
   };
 };
 
-const getInitialState = <T extends UseReducerContextSource>(
-  contextSource: T
-): CurrentState<T> => {
-  return entries(contextSource).reduce(
-    (acc, [displayName, { initialState }]) => {
-      acc[displayName] = initialState;
-      return acc;
-    },
-    {} as CurrentState<T>
-  );
-};
-
 const createUseServerSideDispatch = <T extends UseReducerContextSource>(
   stateRef: React.MutableRefObject<CurrentState<T>>,
   displayName: keyof CurrentState<T>,
   reducer: T[keyof T]['reducer'],
-  subscription: Subscription<CurrentState<T>>
+  subscription: Subscription<CurrentState<T>>,
+  store?: Store<CurrentState<T>>
 ): ReducerDispatch<typeof reducer> => {
   const useServerSideDispatch = (
     action?: React.ReducerAction<typeof reducer>
@@ -59,8 +49,12 @@ const createUseServerSideDispatch = <T extends UseReducerContextSource>(
         : reducer(currentState, action);
 
     stateRef.current[displayName] = newState;
+    if (store) {
+      store.setState(newState, displayName);
+    }
+
     subscription.forEach((listener) => {
-      listener(newState);
+      listener(stateRef.current);
     });
   };
 
@@ -131,7 +125,8 @@ export const createContext = <T extends UseReducerContextSource>(
         stateRef,
         displayName,
         contextSource[displayName].reducer,
-        subscription
+        subscription,
+        store
       );
 
       stateRef.current[displayName] = initialValue;

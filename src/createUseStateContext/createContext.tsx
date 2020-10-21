@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { UseStateContextSource } from './createUseStateContext';
 import { createStore, UseGlobalDispatch } from './hook';
 import { createBaseContext, ContextProvider } from '../core/createContext';
+import { Store } from '../core/store';
 import { Subscription } from '../core/subscription';
 import { isBrowser } from '../utils/environment';
 import { entries } from '../utils/entries';
@@ -19,7 +20,8 @@ const isFunction = <T extends unknown>(value: unknown): value is T =>
 const createUseServerSideDispatch = <T extends UseStateContextSource>(
   stateRef: React.MutableRefObject<T>,
   displayName: keyof T,
-  subscription: Subscription<T>
+  subscription: Subscription<T>,
+  store?: Store<T>
 ): React.Dispatch<React.SetStateAction<T[keyof T]>> => {
   /* eslint no-param-reassign: 0 */
 
@@ -36,8 +38,12 @@ const createUseServerSideDispatch = <T extends UseStateContextSource>(
       : state;
 
     stateRef.current[displayName] = newState;
+    if (store) {
+      store.setState(newState, displayName);
+    }
+
     subscription.forEach((listener) => {
-      listener(newState);
+      listener(stateRef.current);
     });
   }
 
@@ -108,7 +114,8 @@ export const createContext = <T extends UseStateContextSource>(
       const hookDispatch = createUseServerSideDispatch(
         stateRef,
         displayName,
-        subscription
+        subscription,
+        store
       );
 
       stateRef.current[displayName] = initialValue;
