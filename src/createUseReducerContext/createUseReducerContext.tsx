@@ -7,7 +7,7 @@ export type UseReducerContextSource = {
   [displayName: string]: {
     reducer: AnyReducer;
     initialState: any;
-    initializer?: undefined;
+    initializer?: any;
   };
 };
 

@@ -63,7 +63,7 @@ describe('createUseRedcuerContext', () => {
     });
 
     const Container = () => {
-      const user = useGlobalState.user();
+      const user = useGlobalState((state) => state.user);
       return (
         <>
           <p data-testid="id">{user.id}</p>
@@ -95,7 +95,7 @@ describe('createUseRedcuerContext', () => {
     });
 
     const Container = () => {
-      const user = useGlobalState.user();
+      const user = useGlobalState((state) => state.user);
       const disptach = useGlobalDispatch();
       useEffect(() => {
         disptach.user({
@@ -143,7 +143,7 @@ describe('createUseRedcuerContext', () => {
     });
 
     const Container = () => {
-      const count = useGlobalState.counter();
+      const count = useGlobalState((state) => state.counter);
       const disptach = useGlobalDispatch();
       useEffect(() => {
         disptach.counter();
@@ -174,7 +174,7 @@ describe('createUseRedcuerContext', () => {
     });
 
     const Container = () => {
-      const id = useGlobalState.user((user) => user.id);
+      const id = useGlobalState((state) => state.user.id);
       const dispatch = useGlobalDispatch();
 
       useEffect(() => {
@@ -224,7 +224,7 @@ describe('createUseRedcuerContext', () => {
     });
 
     const Container = () => {
-      const id = useGlobalState.user((user) => user.id);
+      const id = useGlobalState((state) => state.user.id);
       const disptach = useGlobalDispatch();
 
       useEffect(() => {
@@ -270,7 +270,7 @@ describe('createUseRedcuerContext', () => {
     });
 
     const Container = () => {
-      const id = useGlobalState.user((user) => user.id);
+      const id = useGlobalState((state) => state.user.id);
 
       expect(id).toBe('dispatched-id');
 

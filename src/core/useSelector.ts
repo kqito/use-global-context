@@ -1,4 +1,4 @@
-import { useRef, useReducer } from 'react';
+import React, { useContext, useRef, useReducer } from 'react';
 import { Subscription } from './subscription';
 import { useIsomorphicLayoutEffect } from './useIsomorphicLayoutEffect';
 import { log } from '../utils/log';
@@ -7,9 +7,9 @@ import { log } from '../utils/log';
 // https://github.com/reduxjs/react-redux (MIT LICENSE)
 // https://github.com/dai-shi/use-context-selector (MIT LICENSE)
 export const createUseSelector = <State>(
-  getContextValue: () => State,
-  subscription: Subscription,
-  getState: () => State
+  context: React.Context<State>,
+  getState: () => State,
+  subscription: Subscription
 ) => {
   const defaultSelector = (state: State) => state;
 
@@ -20,7 +20,7 @@ export const createUseSelector = <State>(
   function useSelector<SelectedState>(
     selector?: (state: State) => SelectedState
   ) {
-    const state = getContextValue();
+    const state = useContext(context);
     const storeSelector = selector || defaultSelector;
     const [, forceRender] = useReducer((s) => s + 1, 0);
 
@@ -76,7 +76,7 @@ export const createUseSelector = <State>(
       return () => {
         subscription.delete(refresh);
       };
-    }, [getContextValue, subscription]);
+    }, [context, subscription]);
 
     return selectedState;
   }

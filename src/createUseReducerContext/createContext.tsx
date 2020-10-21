@@ -1,4 +1,4 @@
-import React, { useReducer, useCallback } from 'react';
+import React, { useReducer, useRef } from 'react';
 import {
   UseReducerContextSource,
   CurrentState,
@@ -45,6 +45,7 @@ const getInitialState = <T extends UseReducerContextSource>(
 };
 
 const createUseServerSideDispatch = <T extends UseReducerContextSource>(
+  stateRef: React.MutableRefObject<CurrentState<T>>,
   getCurrentState: () => CurrentState<T>,
   setCurrentState: (
     value: CurrentState<T>[keyof T],
@@ -59,12 +60,13 @@ const createUseServerSideDispatch = <T extends UseReducerContextSource>(
   ): void => {
     /* eslint no-param-reassign: 0 */
     const currentState = getCurrentState()[displayName];
-    if (reducer.length === 1) {
-      setCurrentState(reducer(currentState, undefined), displayName);
-    } else {
-      setCurrentState(reducer(currentState, action), displayName);
-    }
+    const newState =
+      reducer.length === 1
+        ? reducer(currentState, undefined)
+        : reducer(currentState, action);
 
+    stateRef.current[displayName] = newState;
+    setCurrentState(newState, displayName);
     subscription.forEach((listener) => {
       listener();
     });
@@ -80,87 +82,83 @@ export const createContext = <T extends UseReducerContextSource>(
     getInitialState(contextSource)
   );
 
-  const { stateContexts, dispatchContext } = createBaseContext<T>(
+  const { stateContext, dispatchContext, subscription } = createBaseContext<T>(
     contextSource
   );
-  const { useGlobalState, useGlobalDispatch } = createStore(
-    stateContexts,
+  const { useGlobalState, useGlobalDispatch } = createStore<T>(
+    stateContext,
     dispatchContext,
+    subscription,
     getCurrentState
   );
-  const globalDispatch = {} as ReturnType<UseGlobalDispatch<T>>;
+  const StateProvider = stateContext.Provider;
   const DispatchProvider = dispatchContext.Provider;
   const contextProvider: React.FC<ContextProvider<CurrentState<T>>> = ({
     children,
     value,
   }: ContextProvider<CurrentState<T>>) => {
+    const stateRef = useRef({} as CurrentState<T>);
+    const dispatchRef = useRef({} as ReturnType<UseGlobalDispatch<T>>);
+
+    entries(contextSource).forEach(([displayName, source]) => {
+      const { reducer, initialState, initializer } = source;
+      const initialValue =
+        value && value[displayName] !== undefined
+          ? value[displayName]
+          : initialState;
+
+      const [hookState, hookDispatch] = useReducer(
+        reducer,
+        initialValue,
+        initializer
+      );
+
+      setCurrentState(hookState, displayName);
+      stateRef.current[displayName] = hookState;
+      dispatchRef.current[displayName] = hookDispatch as any;
+    }, {} as any);
+
     return (
-      <>
-        {entries(stateContexts).reduceRight(
-          (acc, [displayName, { state: State }]) => {
-            const { reducer, initialState, initializer } = contextSource[
-              displayName
-            ];
-            const initialValue =
-              value && value[displayName] !== undefined
-                ? value[displayName]
-                : initialState;
-
-            const [hookState, hookDispatch] = useReducer(
-              reducer,
-              initialValue,
-              initializer
-            );
-            useIsomorphicLayoutEffect(() => {
-              globalDispatch[displayName] = hookDispatch as any;
-            }, []);
-
-            const getState = useCallback(() => hookState, [hookState]);
-
-            setCurrentState(hookState, displayName);
-
-            return <State.Provider value={getState}>{acc}</State.Provider>;
-          },
-          <DispatchProvider value={globalDispatch}>{children}</DispatchProvider>
-        )}
-      </>
+      <StateProvider value={stateRef.current}>
+        <DispatchProvider value={dispatchRef.current}>
+          {children}
+        </DispatchProvider>
+      </StateProvider>
     );
   };
 
   const contextServerSideProvider: React.FC<ContextProvider<
     CurrentState<T>
   >> = ({ children, value }: ContextProvider<CurrentState<T>>) => {
+    const stateRef = useRef({} as CurrentState<T>);
+    const dispatchRef = useRef({} as ReturnType<UseGlobalDispatch<T>>);
+
+    entries(contextSource).forEach(([displayName, { initialState }]) => {
+      const initialValue =
+        value && value[displayName] !== undefined
+          ? value[displayName]
+          : initialState;
+
+      const hookDispatch = createUseServerSideDispatch(
+        stateRef,
+        getCurrentState,
+        setCurrentState,
+        displayName,
+        contextSource[displayName].reducer,
+        subscription
+      );
+
+      setCurrentState(initialValue, displayName);
+      stateRef.current[displayName] = initialValue;
+      dispatchRef.current[displayName] = hookDispatch as any;
+    }, {} as any);
+
     return (
-      <>
-        {entries(stateContexts).reduceRight(
-          (acc, [displayName, { state: State, subscription }]) => {
-            const { initialState } = contextSource[displayName];
-            const initialValue =
-              value && value[displayName] !== undefined
-                ? value[displayName]
-                : initialState;
-
-            useIsomorphicLayoutEffect(() => {
-              setCurrentState(initialValue, displayName);
-              globalDispatch[displayName] = createUseServerSideDispatch(
-                getCurrentState,
-                setCurrentState,
-                displayName,
-                contextSource[displayName].reducer,
-                subscription
-              );
-            }, []);
-
-            const getState = useCallback(() => {
-              const currentState = getCurrentState();
-              return currentState[displayName];
-            }, [getCurrentState, displayName]);
-
-            return <State.Provider value={getState}>{acc}</State.Provider>;
-          },
-          <DispatchProvider value={globalDispatch}>{children}</DispatchProvider>
-        )}
-      </>
+      <StateProvider value={stateRef.current}>
+        <DispatchProvider value={dispatchRef.current}>
+          {children}
+        </DispatchProvider>
+      </StateProvider>
     );
   };
 
