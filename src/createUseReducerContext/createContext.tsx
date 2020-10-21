@@ -1,14 +1,20 @@
 import React, { useReducer, useRef } from 'react';
-import {
-  UseReducerContextSource,
-  CurrentState,
-} from './createUseReducerContext';
+import { UseReducerContextSource } from './createUseReducerContext';
 import { createStore, UseGlobalDispatch } from './hook';
-import { createBaseContext, ContextProvider } from '../core/createContext';
+import { createBaseContext } from '../core/createContext';
 import { Store } from '../core/store';
 import { Subscription } from '../core/subscription';
 import { isBrowser } from '../utils/environment';
 import { entries } from '../utils/entries';
+
+export type ContextProvider<T extends Record<string, unknown>> = {
+  children: React.ReactNode;
+  store?: Store<T>;
+};
+
+export type CurrentState<T extends UseReducerContextSource> = {
+  [P in keyof T]: T[P]['initialState'];
+};
 
 export type AnyReducer<S = any, A = any> =
   | React.Reducer<S, A>
@@ -65,7 +71,8 @@ export const createContext = <T extends UseReducerContextSource>(
   contextSource: T
 ) => {
   const { stateContext, dispatchContext, subscription } = createBaseContext<
-    T
+    CurrentState<T>,
+    ReturnType<UseGlobalDispatch<T>>
   >();
   const { useGlobalState, useGlobalDispatch } = createStore<T>(
     stateContext,
@@ -130,7 +137,7 @@ export const createContext = <T extends UseReducerContextSource>(
       );
 
       stateRef.current[displayName] = initialValue;
-      dispatchRef.current[displayName] = hookDispatch as any;
+      dispatchRef.current[displayName] = hookDispatch;
     }, {} as any);
 
     return (

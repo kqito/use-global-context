@@ -1,11 +1,16 @@
 import React, { useState, useRef } from 'react';
 import { UseStateContextSource } from './createUseStateContext';
 import { createStore, UseGlobalDispatch } from './hook';
-import { createBaseContext, ContextProvider } from '../core/createContext';
+import { createBaseContext } from '../core/createContext';
 import { Store } from '../core/store';
 import { Subscription } from '../core/subscription';
 import { isBrowser } from '../utils/environment';
 import { entries } from '../utils/entries';
+
+export type ContextProvider<T extends Record<string, unknown>> = {
+  children: React.ReactNode;
+  store?: Store<T>;
+};
 
 export type UseStateContext<T extends UseStateContextSource> = {
   [P in keyof T]: {
@@ -54,7 +59,8 @@ export const createContext = <T extends UseStateContextSource>(
   contextSource: T
 ) => {
   const { stateContext, dispatchContext, subscription } = createBaseContext<
-    UseStateContext<T>
+    T,
+    ReturnType<UseGlobalDispatch<T>>
   >();
   const { useGlobalState, useGlobalDispatch } = createStore(
     stateContext,

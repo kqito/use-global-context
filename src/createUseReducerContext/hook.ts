@@ -1,9 +1,6 @@
 import { useContext } from 'react';
-import {
-  UseReducerContextSource,
-  CurrentState,
-} from './createUseReducerContext';
-import { ReducerState, ReducerDispatch } from './createContext';
+import { UseReducerContextSource } from './createUseReducerContext';
+import { ReducerState, ReducerDispatch, CurrentState } from './createContext';
 import { Subscription } from '../core/subscription';
 import { createUseSelector } from '../core/useSelector';
 

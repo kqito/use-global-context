@@ -1,7 +1,11 @@
 import React from 'react';
-import { createContext, AnyReducer } from './createContext';
+import {
+  createContext,
+  AnyReducer,
+  ContextProvider,
+  CurrentState,
+} from './createContext';
 import { UseGlobalState, UseGlobalDispatch } from './hook';
-import { ContextProvider } from '../core/createContext';
 
 export type UseReducerContextSource = {
   [displayName: string]: {
@@ -9,10 +13,6 @@ export type UseReducerContextSource = {
     initialState: any;
     initializer?: any;
   };
-};
-
-export type CurrentState<T extends UseReducerContextSource> = {
-  [P in keyof T]: T[P]['initialState'];
 };
 
 /**
