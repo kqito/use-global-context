@@ -1,15 +1,20 @@
 import React, { useReducer, useRef } from 'react';
-import {
-  UseReducerContextSource,
-  CurrentState,
-} from './createUseReducerContext';
+import { UseReducerContextSource } from './createUseReducerContext';
 import { createStore, UseGlobalDispatch } from './hook';
-import { useIsomorphicLayoutEffect } from '../core/useIsomorphicLayoutEffect';
-import { createBaseContext, ContextProvider } from '../core/createContext';
-import { createCurrentState } from '../core/currentState';
+import { createBaseContext } from '../core/createContext';
+import { Store } from '../core/store';
 import { Subscription } from '../core/subscription';
 import { isBrowser } from '../utils/environment';
 import { entries } from '../utils/entries';
+
+export type ContextProvider<T extends Record<string, unknown>> = {
+  children: React.ReactNode;
+  store?: Store<T>;
+};
+
+export type CurrentState<T extends UseReducerContextSource> = {
+  [P in keyof T]: T[P]['initialState'];
+};
 
 export type AnyReducer<S = any, A = any> =
   | React.Reducer<S, A>
@@ -32,43 +37,30 @@ export type UseReducerContext<T extends UseReducerContextSource> = {
   };
 };
 
-const getInitialState = <T extends UseReducerContextSource>(
-  contextSource: T
-): CurrentState<T> => {
-  return entries(contextSource).reduce(
-    (acc, [displayName, { initialState }]) => {
-      acc[displayName] = initialState;
-      return acc;
-    },
-    {} as CurrentState<T>
-  );
-};
-
 const createUseServerSideDispatch = <T extends UseReducerContextSource>(
   stateRef: React.MutableRefObject<CurrentState<T>>,
-  getCurrentState: () => CurrentState<T>,
-  setCurrentState: (
-    value: CurrentState<T>[keyof T],
-    key: keyof CurrentState<T>
-  ) => void,
   displayName: keyof CurrentState<T>,
   reducer: T[keyof T]['reducer'],
-  subscription: Subscription
+  subscription: Subscription<CurrentState<T>>,
+  store?: Store<CurrentState<T>>
 ): ReducerDispatch<typeof reducer> => {
   const useServerSideDispatch = (
     action?: React.ReducerAction<typeof reducer>
   ): void => {
     /* eslint no-param-reassign: 0 */
-    const currentState = getCurrentState()[displayName];
+    const currentState = stateRef.current[displayName];
     const newState =
       reducer.length === 1
         ? reducer(currentState, undefined)
         : reducer(currentState, action);
 
     stateRef.current[displayName] = newState;
-    setCurrentState(newState, displayName);
+    if (store) {
+      store.setState(newState, displayName);
+    }
+
     subscription.forEach((listener) => {
-      listener();
+      listener(stateRef.current);
     });
   };
 
@@ -78,33 +70,30 @@ const createUseServerSideDispatch = <T extends UseReducerContextSource>(
 export const createContext = <T extends UseReducerContextSource>(
   contextSource: T
 ) => {
-  const { getCurrentState, setCurrentState } = createCurrentState(
-    getInitialState(contextSource)
-  );
-
-  const { stateContext, dispatchContext, subscription } = createBaseContext<T>(
-    contextSource
-  );
+  const { stateContext, dispatchContext, subscription } = createBaseContext<
+    CurrentState<T>,
+    ReturnType<UseGlobalDispatch<T>>
+  >();
   const { useGlobalState, useGlobalDispatch } = createStore<T>(
     stateContext,
     dispatchContext,
-    subscription,
-    getCurrentState
+    subscription
   );
   const StateProvider = stateContext.Provider;
   const DispatchProvider = dispatchContext.Provider;
   const contextProvider: React.FC<ContextProvider<CurrentState<T>>> = ({
     children,
-    value,
+    store,
   }: ContextProvider<CurrentState<T>>) => {
     const stateRef = useRef({} as CurrentState<T>);
     const dispatchRef = useRef({} as ReturnType<UseGlobalDispatch<T>>);
+    const storeState = store?.getState() ?? undefined;
 
     entries(contextSource).forEach(([displayName, source]) => {
       const { reducer, initialState, initializer } = source;
       const initialValue =
-        value && value[displayName] !== undefined
-          ? value[displayName]
+        storeState && storeState[displayName] !== undefined
+          ? storeState[displayName]
           : initialState;
 
       const [hookState, hookDispatch] = useReducer(
@@ -113,7 +102,6 @@ export const createContext = <T extends UseReducerContextSource>(
         initializer
       );
 
-      setCurrentState(hookState, displayName);
       stateRef.current[displayName] = hookState;
       dispatchRef.current[displayName] = hookDispatch as any;
     }, {} as any);
@@ -129,28 +117,27 @@ export const createContext = <T extends UseReducerContextSource>(
 
   const contextServerSideProvider: React.FC<ContextProvider<
     CurrentState<T>
-  >> = ({ children, value }: ContextProvider<CurrentState<T>>) => {
+  >> = ({ children, store }: ContextProvider<CurrentState<T>>) => {
     const stateRef = useRef({} as CurrentState<T>);
     const dispatchRef = useRef({} as ReturnType<UseGlobalDispatch<T>>);
+    const storeState = store?.getState() ?? undefined;
 
     entries(contextSource).forEach(([displayName, { initialState }]) => {
       const initialValue =
-        value && value[displayName] !== undefined
-          ? value[displayName]
+        storeState && storeState[displayName] !== undefined
+          ? storeState[displayName]
           : initialState;
 
       const hookDispatch = createUseServerSideDispatch(
         stateRef,
-        getCurrentState,
-        setCurrentState,
         displayName,
         contextSource[displayName].reducer,
-        subscription
+        subscription,
+        store
       );
 
-      setCurrentState(initialValue, displayName);
       stateRef.current[displayName] = initialValue;
-      dispatchRef.current[displayName] = hookDispatch as any;
+      dispatchRef.current[displayName] = hookDispatch;
     }, {} as any);
 
     return (
@@ -166,6 +153,5 @@ export const createContext = <T extends UseReducerContextSource>(
     useGlobalState,
     useGlobalDispatch,
     contextProvider: isBrowser ? contextProvider : contextServerSideProvider,
-    getState: getCurrentState,
   };
 };

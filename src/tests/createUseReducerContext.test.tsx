@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { mount } from 'enzyme';
-import { createUseReducerContext } from '../createUseReducerContext';
+import { createUseReducerContext, createStore } from '..';
 import { testId } from './utils';
 
 type User = {
@@ -215,11 +215,16 @@ describe('createUseRedcuerContext', () => {
       useGlobalState,
       useGlobalDispatch,
       UseReducerContextProvider,
-      getState,
     ] = createUseReducerContext({
       user: {
         reducer,
         initialState,
+      },
+    });
+    const store = createStore({
+      user: {
+        id: 'dispatched-id',
+        name: '',
       },
     });
 
@@ -243,7 +248,7 @@ describe('createUseRedcuerContext', () => {
     };
 
     mount(
-      <UseReducerContextProvider>
+      <UseReducerContextProvider store={store}>
         <Container />
       </UseReducerContextProvider>
     );
@@ -254,7 +259,7 @@ describe('createUseRedcuerContext', () => {
         name: '',
       },
     };
-    expect(getState()).toStrictEqual(expectCurrentState);
+    expect(store.getState()).toStrictEqual(expectCurrentState);
   });
 
   it('Initial value', () => {
@@ -277,15 +282,15 @@ describe('createUseRedcuerContext', () => {
       return <p data-testid="id">{id}</p>;
     };
 
-    const value = {
+    const store = createStore({
       user: {
         id: 'dispatched-id',
         name: '',
       },
-    };
+    });
 
     mount(
-      <UseReducerContextProvider value={value}>
+      <UseReducerContextProvider store={store}>
         <Container />
       </UseReducerContextProvider>
     );

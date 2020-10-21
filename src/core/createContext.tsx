@@ -2,24 +2,15 @@ import React, { createContext, createElement } from 'react';
 import { Subscription } from './subscription';
 import { useIsomorphicLayoutEffect } from './useIsomorphicLayoutEffect';
 
-export type ContextProvider<T> = {
-  children: React.ReactNode;
-  value?: T;
-};
-
-export type ContextSource = {
-  [displayName: string]: any;
-};
-
-const dispatchEventLister = (
-  provider: React.Context<any>['Provider'],
-  subscription: Subscription
+const dispatchEventLister = <State extends any>(
+  provider: React.Context<State>['Provider'],
+  subscription: Subscription<State>
 ) => {
   const dispatcher = React.memo(
-    ({ value, children }: React.ProviderProps<any>) => {
+    ({ value, children }: React.ProviderProps<State>) => {
       useIsomorphicLayoutEffect(() => {
         subscription.forEach((listener) => {
-          listener();
+          listener(value);
         });
       });
 
@@ -27,21 +18,22 @@ const dispatchEventLister = (
     }
   );
 
+  dispatcher.displayName = 'UseGlobalContextProvider';
+
   return dispatcher;
 };
 
-export const createBaseContext = <T extends ContextSource>(
-  contextSource: T
-) => {
-  const stateContext = createContext(null as any, () => 0);
-  const dispatchContext = createContext(null as any);
+export const createBaseContext = <State, Dispatch>() => {
+  const stateContext = createContext<State>(null as any, () => 0);
+  const dispatchContext = createContext<Dispatch>(null as any);
   const subscription = new Set<() => void>();
 
-  stateContext.Provider = dispatchEventLister(
+  stateContext.Provider = dispatchEventLister<State>(
     stateContext.Provider,
     subscription
   );
   stateContext.displayName = 'UseGlobalStateContext';
+  dispatchContext.displayName = 'UseGlobalDispatchContext';
 
   return { stateContext, dispatchContext, subscription };
 };

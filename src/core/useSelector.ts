@@ -1,15 +1,14 @@
 import React, { useContext, useRef, useReducer } from 'react';
 import { Subscription } from './subscription';
 import { useIsomorphicLayoutEffect } from './useIsomorphicLayoutEffect';
-import { log } from '../utils/log';
+import { devlog } from '../utils/devlog';
 
 // The useSelector logic is based on the following repository.
 // https://github.com/reduxjs/react-redux (MIT LICENSE)
 // https://github.com/dai-shi/use-context-selector (MIT LICENSE)
 export const createUseSelector = <State>(
   context: React.Context<State>,
-  getState: () => State,
-  subscription: Subscription
+  subscription: Subscription<State>
 ) => {
   const defaultSelector = (state: State) => state;
 
@@ -39,7 +38,7 @@ export const createUseSelector = <State>(
         selectedState = storeSelector(state) as SelectedState;
       }
     } catch (err) {
-      log.error(err);
+      devlog.error(err);
     }
 
     useIsomorphicLayoutEffect(() => {
@@ -49,8 +48,7 @@ export const createUseSelector = <State>(
     });
 
     useIsomorphicLayoutEffect(() => {
-      const refresh = () => {
-        const nextStore = getState();
+      const refresh = (nextStore: State) => {
         if (
           latestSelector.current === undefined ||
           latestSelectedState.current === undefined
@@ -66,7 +64,7 @@ export const createUseSelector = <State>(
 
           latestSelectedState.current = newSelectedState;
         } catch (err) {
-          log.error(err);
+          devlog.error(err);
         }
 
         forceRender();

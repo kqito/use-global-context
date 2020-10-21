@@ -1,1 +1,1 @@
-export type Subscription = Set<() => void>;
+export type Subscription<State> = Set<(nextStore: State) => void>;

@@ -13,18 +13,13 @@ export type UseGlobalDispatch<T extends UseStateContextSource> = () => {
 };
 
 export const createStore = <T extends UseStateContextSource>(
-  stateContext: React.Context<any>,
-  dispatchContext: React.Context<any>,
-  subscription: Subscription,
-  getCurrentState: () => T
+  stateContext: React.Context<T>,
+  dispatchContext: React.Context<ReturnType<UseGlobalDispatch<T>>>,
+  subscription: Subscription<T>
 ) => {
-  const useGlobalState = createUseSelector(
-    stateContext,
-    getCurrentState,
-    subscription
-  );
-  const useGlobalDispatch = (() =>
-    useContext(dispatchContext)) as UseGlobalDispatch<T>;
+  const useGlobalState = createUseSelector(stateContext, subscription);
+  const useGlobalDispatch: UseGlobalDispatch<T> = () =>
+    useContext(dispatchContext);
 
   return {
     useGlobalState,

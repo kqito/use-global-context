@@ -1,9 +1,6 @@
 import { useContext } from 'react';
-import {
-  UseReducerContextSource,
-  CurrentState,
-} from './createUseReducerContext';
-import { ReducerState, ReducerDispatch } from './createContext';
+import { UseReducerContextSource } from './createUseReducerContext';
+import { ReducerState, ReducerDispatch, CurrentState } from './createContext';
 import { Subscription } from '../core/subscription';
 import { createUseSelector } from '../core/useSelector';
 
@@ -21,18 +18,16 @@ export type UseGlobalDispatch<T extends UseReducerContextSource> = () => {
 };
 
 export const createStore = <T extends UseReducerContextSource>(
-  stateContext: React.Context<any>,
-  dispatchContext: React.Context<any>,
-  subscription: Subscription,
-  getCurrentState: () => CurrentState<T>
+  stateContext: React.Context<CurrentState<T>>,
+  dispatchContext: React.Context<ReturnType<UseGlobalDispatch<T>>>,
+  subscription: Subscription<CurrentState<T>>
 ) => {
   const useGlobalState = createUseSelector(
     stateContext,
-    getCurrentState,
     subscription
   ) as UseGlobalState<CurrentState<T>>;
-  const useGlobalDispatch = (() =>
-    useContext(dispatchContext)) as UseGlobalDispatch<T>;
+  const useGlobalDispatch: UseGlobalDispatch<T> = () =>
+    useContext(dispatchContext);
 
   return {
     useGlobalState,
