@@ -295,4 +295,44 @@ describe('createUseRedcuerContext', () => {
       </UseReducerContextProvider>
     );
   });
+
+  it('Prevent inifinite loop', () => {
+    const [
+      useGlobalState,
+      useGlobalDispatch,
+      UseReducerContextProvider,
+    ] = createUseReducerContext({
+      user: {
+        reducer,
+        initialState,
+      },
+    });
+
+    const Container = () => {
+      const id = useGlobalState((state) => state.user.id);
+      const dispatch = useGlobalDispatch();
+
+      useEffect(() => {
+        dispatch.user({
+          type: 'UPDATE_PROFILE',
+          payload: {
+            user: {
+              id: 'dispatched-id',
+              name: '',
+            },
+          },
+        });
+      });
+
+      return <p data-testid="id">{id}</p>;
+    };
+
+    const wrapper = mount(
+      <UseReducerContextProvider>
+        <Container />
+      </UseReducerContextProvider>
+    );
+
+    expect(wrapper.find(testId('id')).text()).toBe('dispatched-id');
+  });
 });
