@@ -64,13 +64,12 @@ const Counter = () => {
 };
 
 const CounterButton = () => {
-  // It only gets the dispatch; separating the state and the dispatch prevents extra renders.
-  const dispatch = useGlobalDispatch();
+  const counterDispatch = useGlobalDispatch(dispatch => dispatch.counter);
 
   return (
     <>
-      <button onClick={() => dispatch.counter((counter) => counter + 1)}>+ 1</button>
-      <button onClick={() => dispatch.counter((counter) => counter - 1)}>- 1</button>
+      <button onClick={() => counterDispatch((c) => c + 1)}>+ 1</button>
+      <button onClick={() => counterDispatch((c) => c - 1)}>- 1</button>
     </>
   );
 };
@@ -122,6 +121,9 @@ const dispatch = useGlobalDispatch()
 //   message: ƒ dispatchAction,
 //   app: ƒ dispatchAction
 // }
+
+const counterDispatch = useGlobalDispatch(dispatch => dispatch.counter);
+// counter: ƒ dispatchAction,
 ```
 
 ### `createUseReducerContext` API
