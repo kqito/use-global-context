@@ -19,6 +19,10 @@ export type UseStateContext<T extends UseStateContextSource> = {
   };
 };
 
+export type Dispatch<T extends UseStateContextSource> = {
+  [P in keyof T]: React.Dispatch<React.SetStateAction<T[P]>>;
+};
+
 const isFunction = <T extends unknown>(value: unknown): value is T =>
   value && {}.toString.call(value) === '[object Function]';
 
@@ -58,24 +62,22 @@ const createUseServerSideDispatch = <T extends UseStateContextSource>(
 export const createContext = <T extends UseStateContextSource>(
   contextSource: T
 ) => {
-  const { stateContext, dispatchContext, subscription } = createBaseContext<
-    T,
-    ReturnType<UseGlobalDispatch<T>>
-  >();
+  const { state, dispatch } = createBaseContext<T, Dispatch<T>>();
   const { useGlobalState, useGlobalDispatch } = createStore(
-    stateContext,
-    dispatchContext,
-    subscription
+    state.context,
+    state.subscription,
+    dispatch.context,
+    dispatch.subscription
   );
 
-  const StateProvider = stateContext.Provider;
-  const DispatchProvider = dispatchContext.Provider;
+  const StateProvider = state.context.Provider;
+  const DispatchProvider = dispatch.context.Provider;
   const contextProvider: React.FC<ContextProvider<T>> = ({
     children,
     store,
   }: ContextProvider<T>) => {
     const stateRef = useRef({} as T);
-    const dispatchRef = useRef({} as ReturnType<UseGlobalDispatch<T>>);
+    const dispatchRef = useRef({} as Dispatch<T>);
     const storeState = store?.getState() ?? undefined;
 
     entries(contextSource).forEach(([displayName, initialState]) => {
@@ -108,7 +110,7 @@ export const createContext = <T extends UseStateContextSource>(
     store,
   }: ContextProvider<T>) => {
     const stateRef = useRef({} as T);
-    const dispatchRef = useRef({} as ReturnType<UseGlobalDispatch<T>>);
+    const dispatchRef = useRef({} as Dispatch<T>);
     const storeState = store?.getState() ?? undefined;
 
     entries(contextSource).forEach(([displayName, initialState]) => {
@@ -120,7 +122,7 @@ export const createContext = <T extends UseStateContextSource>(
       const hookDispatch = createUseServerSideDispatch(
         stateRef,
         displayName,
-        subscription,
+        state.subscription,
         store
       );
 

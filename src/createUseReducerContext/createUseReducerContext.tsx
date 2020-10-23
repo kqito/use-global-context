@@ -3,7 +3,7 @@ import {
   createContext,
   AnyReducer,
   ContextProvider,
-  CurrentState,
+  State,
 } from './createContext';
 import { UseGlobalState, UseGlobalDispatch } from './hook';
 
@@ -30,7 +30,7 @@ export const createUseReducerContext = <T extends UseReducerContextSource>(
 ): [
   UseGlobalState<T>,
   UseGlobalDispatch<T>,
-  React.FC<ContextProvider<CurrentState<T>>>
+  React.FC<ContextProvider<State<T>>>
 ] => {
   const { useGlobalState, useGlobalDispatch, contextProvider } = createContext(
     contextSource
