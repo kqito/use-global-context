@@ -25,15 +25,30 @@ const dispatchEventLister = <State extends any>(
 
 export const createBaseContext = <State, Dispatch>() => {
   const stateContext = createContext<State>(null as any, () => 0);
-  const dispatchContext = createContext<Dispatch>(null as any);
-  const subscription = new Set<() => void>();
+  const dispatchContext = createContext<Dispatch>(null as any, () => 0);
+  const stateSubscription = new Set<(state: State) => void>();
+  const dispatchSubscription = new Set<(dispatch: Dispatch) => void>();
 
   stateContext.Provider = dispatchEventLister<State>(
     stateContext.Provider,
-    subscription
+    stateSubscription
   );
+  dispatchContext.Provider = dispatchEventLister(
+    dispatchContext.Provider,
+    dispatchSubscription
+  );
+
   stateContext.displayName = 'UseGlobalStateContext';
   dispatchContext.displayName = 'UseGlobalDispatchContext';
 
-  return { stateContext, dispatchContext, subscription };
+  return {
+    state: {
+      context: stateContext,
+      subscription: stateSubscription,
+    },
+    dispatch: {
+      context: dispatchContext,
+      subscription: dispatchSubscription,
+    },
+  };
 };

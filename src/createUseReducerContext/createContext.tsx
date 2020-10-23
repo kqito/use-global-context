@@ -1,6 +1,6 @@
 import React, { useReducer, useRef } from 'react';
 import { UseReducerContextSource } from './createUseReducerContext';
-import { createStore, UseGlobalDispatch } from './hook';
+import { createStore } from './hook';
 import { createBaseContext } from '../core/createContext';
 import { Store } from '../core/store';
 import { Subscription } from '../core/subscription';
@@ -10,10 +10,6 @@ import { entries } from '../utils/entries';
 export type ContextProvider<T extends Record<string, unknown>> = {
   children: React.ReactNode;
   store?: Store<T>;
-};
-
-export type CurrentState<T extends UseReducerContextSource> = {
-  [P in keyof T]: T[P]['initialState'];
 };
 
 export type AnyReducer<S = any, A = any> =
@@ -30,6 +26,12 @@ export type ReducerDispatch<R> = R extends React.ReducerWithoutAction<any>
   ? React.Dispatch<React.ReducerAction<R>>
   : never;
 
+export type State<T extends UseReducerContextSource> = {
+  [P in keyof T]: T[P]['initialState'];
+};
+export type Dispatch<T extends UseReducerContextSource> = {
+  [P in keyof T]: ReducerDispatch<T[P]['reducer']>;
+};
 export type UseReducerContext<T extends UseReducerContextSource> = {
   [P in keyof T]: {
     state: ReducerState<T[P]['reducer']>;
@@ -38,11 +40,11 @@ export type UseReducerContext<T extends UseReducerContextSource> = {
 };
 
 const createUseServerSideDispatch = <T extends UseReducerContextSource>(
-  stateRef: React.MutableRefObject<CurrentState<T>>,
-  displayName: keyof CurrentState<T>,
+  stateRef: React.MutableRefObject<State<T>>,
+  displayName: keyof State<T>,
   reducer: T[keyof T]['reducer'],
-  subscription: Subscription<CurrentState<T>>,
-  store?: Store<CurrentState<T>>
+  subscription: Subscription<State<T>>,
+  store?: Store<State<T>>
 ): ReducerDispatch<typeof reducer> => {
   const useServerSideDispatch = (
     action?: React.ReducerAction<typeof reducer>
@@ -70,23 +72,21 @@ const createUseServerSideDispatch = <T extends UseReducerContextSource>(
 export const createContext = <T extends UseReducerContextSource>(
   contextSource: T
 ) => {
-  const { stateContext, dispatchContext, subscription } = createBaseContext<
-    CurrentState<T>,
-    ReturnType<UseGlobalDispatch<T>>
-  >();
+  const { state, dispatch } = createBaseContext<State<T>, Dispatch<T>>();
   const { useGlobalState, useGlobalDispatch } = createStore<T>(
-    stateContext,
-    dispatchContext,
-    subscription
+    state.context,
+    state.subscription,
+    dispatch.context,
+    dispatch.subscription
   );
-  const StateProvider = stateContext.Provider;
-  const DispatchProvider = dispatchContext.Provider;
-  const contextProvider: React.FC<ContextProvider<CurrentState<T>>> = ({
+  const StateProvider = state.context.Provider;
+  const DispatchProvider = dispatch.context.Provider;
+  const contextProvider: React.FC<ContextProvider<State<T>>> = ({
     children,
     store,
-  }: ContextProvider<CurrentState<T>>) => {
-    const stateRef = useRef({} as CurrentState<T>);
-    const dispatchRef = useRef({} as ReturnType<UseGlobalDispatch<T>>);
+  }: ContextProvider<State<T>>) => {
+    const stateRef = useRef({} as State<T>);
+    const dispatchRef = useRef({} as Dispatch<T>);
     const storeState = store?.getState() ?? undefined;
 
     entries(contextSource).forEach(([displayName, source]) => {
@@ -115,11 +115,12 @@ export const createContext = <T extends UseReducerContextSource>(
     );
   };
 
-  const contextServerSideProvider: React.FC<ContextProvider<
-    CurrentState<T>
-  >> = ({ children, store }: ContextProvider<CurrentState<T>>) => {
-    const stateRef = useRef({} as CurrentState<T>);
-    const dispatchRef = useRef({} as ReturnType<UseGlobalDispatch<T>>);
+  const contextServerSideProvider: React.FC<ContextProvider<State<T>>> = ({
+    children,
+    store,
+  }: ContextProvider<State<T>>) => {
+    const stateRef = useRef({} as State<T>);
+    const dispatchRef = useRef({} as Dispatch<T>);
     const storeState = store?.getState() ?? undefined;
 
     entries(contextSource).forEach(([displayName, { initialState }]) => {
@@ -132,7 +133,7 @@ export const createContext = <T extends UseReducerContextSource>(
         stateRef,
         displayName,
         contextSource[displayName].reducer,
-        subscription,
+        state.subscription,
         store
       );
 
