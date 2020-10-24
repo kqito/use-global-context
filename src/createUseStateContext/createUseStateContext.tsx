@@ -1,7 +1,6 @@
 import React from 'react';
-import { createContext , ContextProvider } from './createContext';
+import { createContext, ContextProvider } from './createContext';
 import { UseGlobalState, UseGlobalDispatch } from './hook';
-
 
 export type UseStateContextSource = {
   [displayName: string]: any;

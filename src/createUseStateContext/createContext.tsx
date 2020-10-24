@@ -1,10 +1,10 @@
 import React, { useState, useRef } from 'react';
 import { UseStateContextSource } from './createUseStateContext';
 import { createStore } from './hook';
-import { createBaseContext } from '../core/createContext';
+import { createBaseContext, Subscription } from '../core/createContext';
 import { Store } from '../core/store';
-import { Subscription } from '../core/subscription';
 import { isBrowser } from '../utils/environment';
+import { isFunction } from '../utils/isFunction';
 import { entries } from '../utils/entries';
 
 export type ContextProvider<T extends Record<string, unknown>> = {
@@ -12,19 +12,9 @@ export type ContextProvider<T extends Record<string, unknown>> = {
   store?: Store<T>;
 };
 
-export type UseStateContext<T extends UseStateContextSource> = {
-  [P in keyof T]: {
-    state: React.Context<T[P]>;
-    dispatch: React.Context<React.Dispatch<React.SetStateAction<T[P]>>>;
-  };
-};
-
 export type Dispatch<T extends UseStateContextSource> = {
   [P in keyof T]: React.Dispatch<React.SetStateAction<T[P]>>;
 };
-
-const isFunction = <T extends unknown>(value: unknown): value is T =>
-  value && {}.toString.call(value) === '[object Function]';
 
 const createUseServerSideDispatch = <T extends UseStateContextSource>(
   stateRef: React.MutableRefObject<T>,

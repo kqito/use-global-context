@@ -5,7 +5,7 @@ import {
   State,
   Dispatch,
 } from './createContext';
-import { Subscription } from '../core/subscription';
+import { Subscription } from '../core/createContext';
 import { createUseSelector } from '../core/useSelector';
 
 export type UseGlobalState<T extends UseReducerContextSource> = {
