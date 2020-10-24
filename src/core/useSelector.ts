@@ -1,5 +1,5 @@
 import React, { useContext, useRef, useReducer } from 'react';
-import { Subscription } from './subscription';
+import { Subscription } from './createContext';
 import { useIsomorphicLayoutEffect } from './useIsomorphicLayoutEffect';
 import { devlog } from '../utils/devlog';
 
