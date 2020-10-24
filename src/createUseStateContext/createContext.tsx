@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { UseStateContextSource } from './createUseStateContext';
-import { createStore, UseGlobalDispatch } from './hook';
+import { createStore } from './hook';
 import { createBaseContext } from '../core/createContext';
 import { Store } from '../core/store';
 import { Subscription } from '../core/subscription';

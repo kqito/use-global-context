@@ -1,3 +1,9 @@
-export { createUseStateContext } from './createUseStateContext';
-export { createUseReducerContext } from './createUseReducerContext';
+export {
+  createUseStateContext,
+  UseStateDispatch,
+} from './createUseStateContext';
+export {
+  createUseReducerContext,
+  UseReducerDispatch,
+} from './createUseReducerContext';
 export { createStore } from './createStore';
