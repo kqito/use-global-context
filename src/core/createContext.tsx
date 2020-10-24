@@ -1,6 +1,7 @@
 import React, { createContext, createElement } from 'react';
-import { Subscription } from './subscription';
 import { useIsomorphicLayoutEffect } from './useIsomorphicLayoutEffect';
+
+export type Subscription<State> = Set<(nextStore: State) => void>;
 
 const dispatchEventLister = <State extends any>(
   provider: React.Context<State>['Provider'],

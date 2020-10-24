@@ -1,9 +1,8 @@
 import React, { useReducer, useRef } from 'react';
 import { UseReducerContextSource } from './createUseReducerContext';
 import { createStore } from './hook';
-import { createBaseContext } from '../core/createContext';
+import { createBaseContext, Subscription } from '../core/createContext';
 import { Store } from '../core/store';
-import { Subscription } from '../core/subscription';
 import { isBrowser } from '../utils/environment';
 import { entries } from '../utils/entries';
 
@@ -31,12 +30,6 @@ export type State<T extends UseReducerContextSource> = {
 };
 export type Dispatch<T extends UseReducerContextSource> = {
   [P in keyof T]: ReducerDispatch<T[P]['reducer']>;
-};
-export type UseReducerContext<T extends UseReducerContextSource> = {
-  [P in keyof T]: {
-    state: ReducerState<T[P]['reducer']>;
-    dispatch: ReducerDispatch<T[P]['reducer']>;
-  };
 };
 
 const createUseServerSideDispatch = <T extends UseReducerContextSource>(

@@ -1,7 +1,7 @@
 import React from 'react';
 import { UseStateContextSource } from './createUseStateContext';
 import { Dispatch } from './createContext';
-import { Subscription } from '../core/subscription';
+import { Subscription } from '../core/createContext';
 import { createUseSelector } from '../core/useSelector';
 
 export type UseGlobalState<T extends UseStateContextSource> = {
