@@ -6,6 +6,10 @@ import { devlog } from '../utils/devlog';
 // The useSelector logic is based on the following repository.
 // https://github.com/reduxjs/react-redux (MIT LICENSE)
 // https://github.com/dai-shi/use-context-selector (MIT LICENSE)
+
+const defaultEquality = (a: any, b: any) =>
+  JSON.stringify(a) === JSON.stringify(b);
+
 export const createUseSelector = <State>(
   context: React.Context<State>,
   subscription: Subscription<State>
@@ -58,7 +62,7 @@ export const createUseSelector = <State>(
 
         try {
           const newSelectedState = latestSelector.current(nextStore);
-          if (newSelectedState === latestSelectedState.current) {
+          if (defaultEquality(newSelectedState, latestSelectedState.current)) {
             return;
           }
 
