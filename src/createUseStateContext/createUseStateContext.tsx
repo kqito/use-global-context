@@ -1,6 +1,6 @@
 import React from 'react';
 import { createContext, ContextProvider } from './createContext';
-import { UseGlobalState, UseGlobalDispatch } from './hook';
+import { UseSelector } from '../core/useSelector';
 
 export type UseStateContextSource = {
   [displayName: string]: any;
@@ -18,7 +18,15 @@ export const createUseStateContext = <T extends UseStateContextSource>(
    *  *@see* https://reactjs.org/docs/context.html#contextdisplayname
    */
   contextSource: T
-): [UseGlobalState<T>, UseGlobalDispatch<T>, React.FC<ContextProvider<T>>] => {
+): [
+  UseSelector<T>,
+  UseSelector<
+    {
+      [P in keyof T]: React.Dispatch<React.SetStateAction<T[P]>>;
+    }
+  >,
+  React.FC<ContextProvider<T>>
+] => {
   const { useGlobalState, useGlobalDispatch, contextProvider } = createContext(
     contextSource
   );
