@@ -9,7 +9,7 @@ import { updateUserProfile } from './actions/user';
 import { userReducerArgs } from './reducer/user';
 import { counterReducerArgs } from './reducer/counter';
 import { isBrowser } from '../../utils/environment';
-import { testId } from '../utils';
+import { testId, deepEqual } from '../utils';
 
 const reducers = {
   user: userReducerArgs,
@@ -219,7 +219,7 @@ describe('createUseRedcuerContext', () => {
     ] = createUseReducerContext(reducers);
 
     const Container = () => {
-      const user = useGlobalState((state) => state.user);
+      const user = useGlobalState((state) => state.user, deepEqual);
       const userDispatch = useGlobalDispatch((dispatch) => dispatch.user);
 
       // SSR
