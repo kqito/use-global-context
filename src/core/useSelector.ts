@@ -6,22 +6,30 @@ import { devlog } from '../utils/devlog';
 // The useSelector logic is based on the following repository.
 // https://github.com/reduxjs/react-redux (MIT LICENSE)
 // https://github.com/dai-shi/use-context-selector (MIT LICENSE)
-
-const defaultEquality = (a: any, b: any) =>
-  JSON.stringify(a) === JSON.stringify(b);
+export type UseSelector<T> = {
+  (): T;
+  <SelectedState>(
+    selector: (state: T) => SelectedState,
+    equalityFunction?: EqualityFunction
+  ): SelectedState;
+};
+type EqualityFunction = (a: any, b: any) => boolean;
+const refEquality: EqualityFunction = (a: any, b: any) => a === b;
 
 export const createUseSelector = <State>(
   context: React.Context<State>,
   subscription: Subscription<State>
-) => {
+): UseSelector<State> => {
   const defaultSelector = (state: State) => state;
 
   function useSelector(): State;
   function useSelector<SelectedState>(
-    selector: (state: State) => SelectedState
+    selector: (state: State) => SelectedState,
+    equalityFunction?: EqualityFunction
   ): SelectedState;
   function useSelector<SelectedState>(
-    selector?: (state: State) => SelectedState
+    selector?: (state: State) => SelectedState,
+    equalityFunction?: EqualityFunction
   ) {
     const state = useContext(context);
     const storeSelector = selector || defaultSelector;
@@ -62,7 +70,8 @@ export const createUseSelector = <State>(
 
         try {
           const newSelectedState = latestSelector.current(nextStore);
-          if (defaultEquality(newSelectedState, latestSelectedState.current)) {
+          const equality = equalityFunction || refEquality;
+          if (equality(newSelectedState, latestSelectedState.current)) {
             return;
           }
 

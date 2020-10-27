@@ -4,8 +4,11 @@ import {
   AnyReducer,
   ContextProvider,
   State,
+  ReducerState,
+  ReducerDispatch,
 } from './createContext';
-import { UseGlobalState, UseGlobalDispatch } from './hook';
+
+import { UseSelector } from '../core/useSelector';
 
 export type UseReducerContextSource = {
   [displayName: string]: {
@@ -28,8 +31,8 @@ export const createUseReducerContext = <T extends UseReducerContextSource>(
    */
   contextSource: T
 ): [
-  UseGlobalState<T>,
-  UseGlobalDispatch<T>,
+  UseSelector<{ [P in keyof T]: ReducerState<T[P]['reducer']> }>,
+  UseSelector<{ [P in keyof T]: ReducerDispatch<T[P]['reducer']> }>,
   React.FC<ContextProvider<State<T>>>
 ] => {
   const { useGlobalState, useGlobalDispatch, contextProvider } = createContext(

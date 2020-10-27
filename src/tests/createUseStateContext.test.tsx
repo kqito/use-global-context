@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { mount } from 'enzyme';
 import { createUseStateContext, createStore } from '..';
 import { isBrowser } from '../utils/environment';
-import { testId } from './utils';
+import { testId, deepEqual } from './utils';
 
 type State = {
   user: {
@@ -179,7 +179,7 @@ describe('createUseStateContext', () => {
     ] = createUseStateContext<State>(initialState);
 
     const Container = () => {
-      const user = useGlobalState((state) => state.user);
+      const user = useGlobalState((state) => state.user, deepEqual);
       const userDispatch = useGlobalDispatch((dispatch) => dispatch.user);
 
       // SSR
