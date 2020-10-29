@@ -1,7 +1,9 @@
-import React, { useReducer, useRef } from 'react';
+import React, { useReducer, useRef, useEffect } from 'react';
 import { UseReducerContextSource } from './createUseReducerContext';
 import { createStore } from './hook';
-import { createBaseContext, Subscription } from '../core/createContext';
+import { createBaseContext } from '../core/context';
+import { createSubscription, Subscription } from '../core/subscription';
+import { useIsomorphicLayoutEffect } from '../core/useIsomorphicLayoutEffect';
 import { Store } from '../core/store';
 import { isBrowser } from '../utils/environment';
 import { entries } from '../utils/entries';
@@ -28,35 +30,38 @@ export type ReducerDispatch<R> = R extends React.ReducerWithoutAction<any>
 export type State<T extends UseReducerContextSource> = {
   [P in keyof T]: T[P]['initialState'];
 };
-export type Dispatch<T extends UseReducerContextSource> = {
-  [P in keyof T]: ReducerDispatch<T[P]['reducer']>;
+export type UseReducerStore<T extends UseReducerContextSource> = {
+  state: {
+    [P in keyof T]: T[P]['initialState'];
+  };
+  dispatch: {
+    [P in keyof T]: ReducerDispatch<T[P]['reducer']>;
+  };
 };
 
 const createUseServerSideDispatch = <T extends UseReducerContextSource>(
-  stateRef: React.MutableRefObject<State<T>>,
+  contextValueRef: React.MutableRefObject<UseReducerStore<T>>,
   displayName: keyof State<T>,
   reducer: T[keyof T]['reducer'],
-  subscription: Subscription<State<T>>,
+  subscription: Subscription<UseReducerStore<T>>,
   store?: Store<State<T>>
 ): ReducerDispatch<typeof reducer> => {
   const useServerSideDispatch = (
     action?: React.ReducerAction<typeof reducer>
   ): void => {
     /* eslint no-param-reassign: 0 */
-    const currentState = stateRef.current[displayName];
+    const currentState = contextValueRef.current.state[displayName];
     const newState =
       reducer.length === 1
         ? reducer(currentState, undefined)
         : reducer(currentState, action);
 
-    stateRef.current[displayName] = newState;
+    contextValueRef.current.state[displayName] = newState;
     if (store) {
       store.setState(newState, displayName);
     }
 
-    subscription.forEach((listener) => {
-      listener(stateRef.current);
-    });
+    subscription.trySubscribe(contextValueRef.current);
   };
 
   return useServerSideDispatch as any;
@@ -65,21 +70,18 @@ const createUseServerSideDispatch = <T extends UseReducerContextSource>(
 export const createContext = <T extends UseReducerContextSource>(
   contextSource: T
 ) => {
-  const { state, dispatch } = createBaseContext<State<T>, Dispatch<T>>();
-  const { useGlobalState, useGlobalDispatch } = createStore<T>(
-    state.context,
-    state.subscription,
-    dispatch.context,
-    dispatch.subscription
-  );
-  const StateProvider = state.context.Provider;
-  const DispatchProvider = dispatch.context.Provider;
+  const context = createBaseContext<UseReducerStore<T>>();
+  const subscription = createSubscription<UseReducerStore<T>>();
+  const useGlobalContext = createStore(context, subscription);
+  const { Provider } = context;
   const contextProvider: React.FC<ContextProvider<State<T>>> = ({
     children,
     store,
   }: ContextProvider<State<T>>) => {
-    const stateRef = useRef({} as State<T>);
-    const dispatchRef = useRef({} as Dispatch<T>);
+    const contextValueRef = useRef({
+      state: {},
+      dispatch: {},
+    } as UseReducerStore<T>);
     const storeState = store?.getState() ?? undefined;
 
     entries(contextSource).forEach(([displayName, source]) => {
@@ -89,63 +91,62 @@ export const createContext = <T extends UseReducerContextSource>(
           ? storeState[displayName]
           : initialState;
 
-      const [hookState, hookDispatch] = useReducer(
-        reducer,
-        initialValue,
-        initializer
-      );
+      const [state, dispatch] = useReducer(reducer, initialValue, initializer);
 
-      stateRef.current[displayName] = hookState;
-      dispatchRef.current[displayName] = hookDispatch as any;
+      contextValueRef.current.state[displayName] = state;
+      contextValueRef.current.dispatch[displayName] = dispatch as any;
+      if (store) {
+        store.setState(state, displayName);
+      }
     }, {} as any);
 
-    return (
-      <StateProvider value={stateRef.current}>
-        <DispatchProvider value={dispatchRef.current}>
-          {children}
-        </DispatchProvider>
-      </StateProvider>
-    );
+    useEffect(() => {
+      subscription.trySubscribe(contextValueRef.current);
+    });
+
+    return <Provider value={contextValueRef.current}>{children}</Provider>;
   };
 
   const contextServerSideProvider: React.FC<ContextProvider<State<T>>> = ({
     children,
     store,
   }: ContextProvider<State<T>>) => {
-    const stateRef = useRef({} as State<T>);
-    const dispatchRef = useRef({} as Dispatch<T>);
+    const contextValueRef = useRef({
+      state: {},
+      dispatch: {},
+    } as UseReducerStore<T>);
     const storeState = store?.getState() ?? undefined;
 
     entries(contextSource).forEach(([displayName, { initialState }]) => {
-      const initialValue =
+      const state =
         storeState && storeState[displayName] !== undefined
           ? storeState[displayName]
           : initialState;
 
-      const hookDispatch = createUseServerSideDispatch(
-        stateRef,
+      const dispatch = createUseServerSideDispatch(
+        contextValueRef,
         displayName,
         contextSource[displayName].reducer,
-        state.subscription,
+        subscription,
         store
       );
 
-      stateRef.current[displayName] = initialValue;
-      dispatchRef.current[displayName] = hookDispatch;
+      contextValueRef.current.state[displayName] = state;
+      contextValueRef.current.dispatch[displayName] = dispatch;
+      if (store) {
+        store.setState(state, displayName);
+      }
     }, {} as any);
 
-    return (
-      <StateProvider value={stateRef.current}>
-        <DispatchProvider value={dispatchRef.current}>
-          {children}
-        </DispatchProvider>
-      </StateProvider>
-    );
+    useIsomorphicLayoutEffect(() => {
+      subscription.trySubscribe(contextValueRef.current);
+    });
+
+    return <Provider value={contextValueRef.current}>{children}</Provider>;
   };
 
   return {
-    useGlobalState,
-    useGlobalDispatch,
+    useGlobalContext,
     contextProvider: isBrowser ? contextProvider : contextServerSideProvider,
   };
 };

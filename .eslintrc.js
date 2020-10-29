@@ -28,6 +28,7 @@ module.exports = {
     sourceType: 'module',
   },
   rules: {
+    'prefer-const': 0,
     'no-param-reassign': 0,
     'no-use-before-define': 0,
     '@typescript-eslint/explicit-function-return-type': 0,

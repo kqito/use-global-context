@@ -1,95 +1,76 @@
 import React, { useContext, useRef, useReducer } from 'react';
-import { Subscription } from './createContext';
+import { Subscription } from './subscription';
 import { useIsomorphicLayoutEffect } from './useIsomorphicLayoutEffect';
 import { devlog } from '../utils/devlog';
 
 // The useSelector logic is based on the following repository.
 // https://github.com/reduxjs/react-redux (MIT LICENSE)
 // https://github.com/dai-shi/use-context-selector (MIT LICENSE)
-export type UseSelector<T> = {
-  (): T;
-  <SelectedState>(
-    selector: (state: T) => SelectedState,
-    equalityFunction?: EqualityFunction
-  ): SelectedState;
-};
+export type UseSelector<Store> = <SelectedStore>(
+  selector: (store: Store) => SelectedStore,
+  equalityFunction?: EqualityFunction
+) => SelectedStore;
 type EqualityFunction = (a: any, b: any) => boolean;
 const refEquality: EqualityFunction = (a: any, b: any) => a === b;
 
-export const createUseSelector = <State>(
-  context: React.Context<State>,
-  subscription: Subscription<State>
-): UseSelector<State> => {
-  const defaultSelector = (state: State) => state;
-
-  function useSelector(): State;
-  function useSelector<SelectedState>(
-    selector: (state: State) => SelectedState,
-    equalityFunction?: EqualityFunction
-  ): SelectedState;
-  function useSelector<SelectedState>(
-    selector?: (state: State) => SelectedState,
+export const createUseSelector = <Store>(
+  context: React.Context<Store>,
+  subscription: Subscription<Store>
+): UseSelector<Store> => {
+  function useSelector<SelectedStore>(
+    selector: (store: Store) => SelectedStore,
     equalityFunction?: EqualityFunction
   ) {
-    const state = useContext(context);
-    const storeSelector = selector || defaultSelector;
+    const store = useContext(context);
     const [, forceRender] = useReducer((s) => s + 1, 0);
 
-    let selectedState: SelectedState;
-    const latestSelector = useRef<typeof storeSelector>();
-    const latestStoreState = useRef<State>();
-    const latestSelectedState = useRef<State | SelectedState>();
+    let selectedStore: SelectedStore;
+    const latestSelector = useRef<typeof selector>();
+    const latestStore = useRef<Store>();
+    const latestSelectedStore = useRef<SelectedStore>();
 
-    selectedState = latestSelectedState.current as SelectedState;
-
-    try {
-      if (
-        storeSelector !== latestSelector.current ||
-        state !== latestStoreState.current
-      ) {
-        selectedState = storeSelector(state) as SelectedState;
-      }
-    } catch (err) {
-      devlog.error(err);
-    }
+    selectedStore = selector({ ...store });
 
     useIsomorphicLayoutEffect(() => {
-      latestSelector.current = storeSelector;
-      latestStoreState.current = state;
-      latestSelectedState.current = selectedState;
+      latestSelector.current = selector;
+      latestStore.current = store;
+      latestSelectedStore.current = selectedStore;
     });
 
     useIsomorphicLayoutEffect(() => {
-      const refresh = (nextStore: State) => {
+      const refresh = (nextStore: Store) => {
         if (
           latestSelector.current === undefined ||
-          latestSelectedState.current === undefined
+          latestSelectedStore.current === undefined
         ) {
           return;
         }
 
         try {
-          const newSelectedState = latestSelector.current(nextStore);
-          const equality = equalityFunction || refEquality;
-          if (equality(newSelectedState, latestSelectedState.current)) {
+          const newSelectedStore = latestSelector.current({ ...nextStore });
+          const isEqualityFunction = equalityFunction || refEquality;
+          if (
+            isEqualityFunction(newSelectedStore, latestSelectedStore.current)
+          ) {
             return;
           }
 
-          latestSelectedState.current = newSelectedState;
+          latestSelectedStore.current = newSelectedStore;
         } catch (err) {
           devlog.error(err);
         }
 
+        console.log('render', nextStore);
         forceRender();
       };
 
-      subscription.add(refresh);
+      subscription.addListener(refresh);
       return () => {
-        subscription.delete(refresh);
+        subscription.deleteListener(refresh);
       };
     }, [context, subscription]);
 
-    return selectedState;
+    return selectedStore;
   }
 
   return useSelector;
