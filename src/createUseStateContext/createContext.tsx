@@ -1,7 +1,8 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { UseStateContextSource } from './createUseStateContext';
 import { createStore } from './hook';
-import { createBaseContext, Subscription } from '../core/createContext';
+import { createBaseContext } from '../core/context';
+import { createSubscription, Subscription } from '../core/subscription';
 import { Store } from '../core/store';
 import { isBrowser } from '../utils/environment';
 import { isFunction } from '../utils/isFunction';
@@ -12,14 +13,17 @@ export type ContextProvider<T extends Record<string, unknown>> = {
   store?: Store<T>;
 };
 
-export type Dispatch<T extends UseStateContextSource> = {
-  [P in keyof T]: React.Dispatch<React.SetStateAction<T[P]>>;
+export type UseStateStore<T extends UseStateContextSource> = {
+  state: T;
+  dispatch: {
+    [P in keyof T]: React.Dispatch<React.SetStateAction<T[P]>>;
+  };
 };
 
 const createUseServerSideDispatch = <T extends UseStateContextSource>(
-  stateRef: React.MutableRefObject<T>,
+  contextValueRef: React.MutableRefObject<UseStateStore<T>>,
   displayName: keyof T,
-  subscription: Subscription<T>,
+  subscription: Subscription<UseStateStore<T>>,
   store?: Store<T>
 ): React.Dispatch<React.SetStateAction<T[keyof T]>> => {
   /* eslint no-param-reassign: 0 */
@@ -31,19 +35,17 @@ const createUseServerSideDispatch = <T extends UseStateContextSource>(
   function useServerSideDispatch(
     state: T[keyof T] | ((prevState: T[keyof T]) => T[keyof T])
   ): void {
-    const currentState = stateRef.current[displayName];
+    const currentState = contextValueRef.current.state[displayName];
     const newState = isFunction<(prevState: T[keyof T]) => T[keyof T]>(state)
       ? state(currentState)
       : state;
 
-    stateRef.current[displayName] = newState;
+    contextValueRef.current.state[displayName] = newState;
     if (store) {
       store.setState(newState, displayName);
     }
 
-    subscription.forEach((listener) => {
-      listener(stateRef.current);
-    });
+    subscription.trySubscribe(contextValueRef.current);
   }
 
   return useServerSideDispatch as any;
@@ -52,22 +54,18 @@ const createUseServerSideDispatch = <T extends UseStateContextSource>(
 export const createContext = <T extends UseStateContextSource>(
   contextSource: T
 ) => {
-  const { state, dispatch } = createBaseContext<T, Dispatch<T>>();
-  const { useGlobalState, useGlobalDispatch } = createStore(
-    state.context,
-    state.subscription,
-    dispatch.context,
-    dispatch.subscription
-  );
+  const context = createBaseContext<UseStateStore<T>>();
+  const subscription = createSubscription<UseStateStore<T>>();
+  const useGlobalContext = createStore(context, subscription);
 
-  const StateProvider = state.context.Provider;
-  const DispatchProvider = dispatch.context.Provider;
+  const { Provider } = context;
   const contextProvider: React.FC<ContextProvider<T>> = ({
     children,
     store,
   }: ContextProvider<T>) => {
-    const stateRef = useRef({} as T);
-    const dispatchRef = useRef({} as Dispatch<T>);
+    const contextValueRef = useRef({ state: {}, dispatch: {} } as UseStateStore<
+      T
+    >);
     const storeState = store?.getState() ?? undefined;
 
     entries(contextSource).forEach(([displayName, initialState]) => {
@@ -76,65 +74,58 @@ export const createContext = <T extends UseStateContextSource>(
           ? storeState[displayName]
           : initialState;
 
-      const [hookState, hookDispatch] = useState(initialValue);
+      const [state, dispatch] = useState(initialValue);
 
-      stateRef.current[displayName] = hookState;
-      dispatchRef.current[displayName] = hookDispatch;
+      contextValueRef.current.state[displayName] = state;
+      contextValueRef.current.dispatch[displayName] = dispatch;
 
       if (store) {
-        store.setState(hookState, displayName);
+        store.setState(state, displayName);
       }
-    }, {} as any);
+    });
 
-    return (
-      <StateProvider value={stateRef.current}>
-        <DispatchProvider value={dispatchRef.current}>
-          {children}
-        </DispatchProvider>
-      </StateProvider>
-    );
+    useEffect(() => {
+      subscription.trySubscribe(contextValueRef.current);
+    });
+
+    return <Provider value={contextValueRef.current}>{children}</Provider>;
   };
 
   const contextServerSideProvider: React.FC<ContextProvider<T>> = ({
     children,
     store,
   }: ContextProvider<T>) => {
-    const stateRef = useRef({} as T);
-    const dispatchRef = useRef({} as Dispatch<T>);
+    const contextValueRef = useRef({ state: {}, dispatch: {} } as UseStateStore<
+      T
+    >);
     const storeState = store?.getState() ?? undefined;
 
     entries(contextSource).forEach(([displayName, initialState]) => {
-      const initialValue =
+      const state =
         storeState && storeState[displayName] !== undefined
           ? storeState[displayName]
           : initialState;
 
-      const hookDispatch = createUseServerSideDispatch(
-        stateRef,
+      const dispatch = createUseServerSideDispatch(
+        contextValueRef,
         displayName,
-        state.subscription,
+        subscription,
         store
       );
 
-      stateRef.current[displayName] = initialValue;
-      dispatchRef.current[displayName] = hookDispatch;
+      contextValueRef.current.state[displayName] = state;
+      contextValueRef.current.dispatch[displayName] = dispatch;
+
       if (store) {
-        store.setState(initialValue, displayName);
+        store.setState(state, displayName);
       }
     });
 
-    return (
-      <StateProvider value={stateRef.current}>
-        <DispatchProvider value={dispatchRef.current}>
-          {children}
-        </DispatchProvider>
-      </StateProvider>
-    );
+    return <Provider value={contextValueRef.current}>{children}</Provider>;
   };
 
   return {
-    useGlobalState,
-    useGlobalDispatch,
+    useGlobalContext,
     contextProvider: isBrowser ? contextProvider : contextServerSideProvider,
   };
 };
