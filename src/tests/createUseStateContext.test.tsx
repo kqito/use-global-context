@@ -1,8 +1,10 @@
 import React, { useEffect } from 'react';
 import { mount } from 'enzyme';
-import { createUseStateContext, createStore } from '..';
+import { createSelector } from 'reselect';
+import deepEqual from 'fast-deep-equal';
+import { createUseStateContext, createStore, UseStateStore } from '..';
 import { isBrowser } from '../utils/environment';
-import { testId, deepEqual } from './utils';
+import { testId } from './utils';
 
 type State = {
   user: {
@@ -11,6 +13,8 @@ type State = {
   };
   counter: number;
 };
+
+type Store = UseStateStore<State>;
 
 const initialState: State = {
   user: {
@@ -22,18 +26,18 @@ const initialState: State = {
 
 describe('createUseStateContext', () => {
   it('Initial state', () => {
-    const [useGlobalState, , ContextProvider] = createUseStateContext<State>(
+    const [useGlobalContext, ContextProvider] = createUseStateContext<State>(
       initialState
     );
 
     const Container = () => {
-      const globalState = useGlobalState();
-      const counter = useGlobalState((state) => state.counter);
-      const user = useGlobalState((state) => state.user);
-      const id = useGlobalState((state) => state.user.id);
-      const nullValue = useGlobalState(() => null);
-      const undefinedValue = useGlobalState(() => undefined);
-      const stringValue = useGlobalState(() => '');
+      const globalState = useGlobalContext(({ state }) => state);
+      const counter = useGlobalContext(({ state }) => state.counter);
+      const user = useGlobalContext(({ state }) => state.user);
+      const id = useGlobalContext(({ state }) => state.user.id);
+      const nullValue = useGlobalContext(() => null);
+      const undefinedValue = useGlobalContext(() => undefined);
+      const stringValue = useGlobalContext(() => '');
 
       expect(globalState).toStrictEqual(initialState);
       expect(counter).toBe(initialState.counter);
@@ -54,21 +58,20 @@ describe('createUseStateContext', () => {
   });
 
   it('Dispatch', () => {
-    const [
-      useGlobalState,
-      useGlobalDispatch,
-      ContextProvider,
-    ] = createUseStateContext<State>(initialState);
+    const [useGlobalContext, ContextProvider] = createUseStateContext<State>(
+      initialState
+    );
 
     const Container = () => {
-      const user = useGlobalState((state) => state.user);
-
-      const globalDispatch = useGlobalDispatch();
-      const userDispatch = useGlobalDispatch((dispatch) => dispatch.user);
-      const counterDispatch = useGlobalDispatch((dispatch) => dispatch.counter);
-      const undefinedValue = useGlobalDispatch(() => undefined);
-      const arrayValue = useGlobalDispatch(() => []);
-      const stringValue = useGlobalDispatch(() => '');
+      const user = useGlobalContext(({ state }) => state.user);
+      const globalDispatch = useGlobalContext(({ dispatch }) => dispatch);
+      const userDispatch = useGlobalContext(({ dispatch }) => dispatch.user);
+      const counterDispatch = useGlobalContext(
+        ({ dispatch }) => dispatch.counter
+      );
+      const undefinedValue = useGlobalContext(() => undefined);
+      const arrayValue = useGlobalContext(() => []);
+      const stringValue = useGlobalContext(() => '');
 
       expect(Object.keys(globalDispatch)).toStrictEqual(['user', 'counter']);
       expect(typeof globalDispatch.user).toBe('function');
@@ -105,17 +108,16 @@ describe('createUseStateContext', () => {
   });
 
   it('GetState', () => {
-    const [
-      useGlobalState,
-      useGlobalDispatch,
-      ContextProvider,
-    ] = createUseStateContext<State>(initialState);
+    const [useGlobalContext, ContextProvider] = createUseStateContext<State>(
+      initialState
+    );
 
-    const store = createStore(initialState);
+    const valueStore = createStore(initialState);
 
     const Container = () => {
-      const counter = useGlobalState((state) => state.counter);
-      const counterDispatch = useGlobalDispatch((dispatch) => dispatch.counter);
+      const counterDispatch = useGlobalContext(
+        ({ dispatch }) => dispatch.counter
+      );
 
       useEffect(() => {
         counterDispatch(100);
@@ -125,7 +127,7 @@ describe('createUseStateContext', () => {
     };
 
     mount(
-      <ContextProvider store={store}>
+      <ContextProvider store={valueStore}>
         <Container />
       </ContextProvider>
     );
@@ -138,15 +140,15 @@ describe('createUseStateContext', () => {
       counter: 100,
     };
 
-    expect(store.getState()).toStrictEqual(expectState);
+    expect(valueStore.getState()).toStrictEqual(expectState);
   });
 
   it('InitialState of store', () => {
-    const [useGlobalState, , ContextProvider] = createUseStateContext<State>(
+    const [useGlobalContext, ContextProvider] = createUseStateContext<State>(
       initialState
     );
 
-    const expectState: State = {
+    const expectedState: State = {
       user: {
         id: '',
         name: '',
@@ -154,12 +156,12 @@ describe('createUseStateContext', () => {
       counter: 100,
     };
 
-    const store = createStore<State>(expectState);
+    const store = createStore<State>(expectedState);
 
     const Container = () => {
-      const globalState = useGlobalState();
+      const globalState = useGlobalContext(({ state }) => state);
 
-      expect(globalState).toStrictEqual(expectState);
+      expect(globalState).toStrictEqual(expectedState);
 
       return null;
     };
@@ -172,15 +174,13 @@ describe('createUseStateContext', () => {
   });
 
   it('Prevent inifinite loop', () => {
-    const [
-      useGlobalState,
-      useGlobalDispatch,
-      ContextProvider,
-    ] = createUseStateContext<State>(initialState);
+    const [useGlobalContext, ContextProvider] = createUseStateContext<State>(
+      initialState
+    );
 
     const Container = () => {
-      const user = useGlobalState((state) => state.user, deepEqual);
-      const userDispatch = useGlobalDispatch((dispatch) => dispatch.user);
+      const user = useGlobalContext(({ state }) => state.user, deepEqual);
+      const userDispatch = useGlobalContext(({ dispatch }) => dispatch.user);
 
       // SSR
       if (!isBrowser) {
@@ -215,5 +215,39 @@ describe('createUseStateContext', () => {
 
     expect(wrapper.find(testId('id')).text()).toBe('id');
     expect(wrapper.find(testId('name')).text()).toBe('name');
+  });
+
+  it('Reselect', () => {
+    const getUserSelector = ({ state }: Store) => state.user;
+    const getHaveIdSelector = createSelector(
+      [getUserSelector],
+      (user) => user.id !== ''
+    );
+
+    const [useGlobalContext, ContextProvider] = createUseStateContext<State>(
+      initialState
+    );
+
+    const Container = () => {
+      const haveId = useGlobalContext(getHaveIdSelector);
+      const userDispatch = useGlobalContext(({ dispatch }) => dispatch.user);
+
+      useEffect(() => {
+        userDispatch({
+          id: 'id',
+          name: 'name',
+        });
+      }, []);
+
+      return <p data-testid="have-id">{haveId ? 'true' : 'false'}</p>;
+    };
+
+    const wrapper = mount(
+      <ContextProvider>
+        <Container />
+      </ContextProvider>
+    );
+
+    expect(wrapper.find(testId('have-id')).text()).toBe('true');
   });
 });

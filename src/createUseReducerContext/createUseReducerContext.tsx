@@ -4,8 +4,7 @@ import {
   AnyReducer,
   ContextProvider,
   State,
-  ReducerState,
-  ReducerDispatch,
+  UseReducerStore,
 } from './createContext';
 
 import { UseSelector } from '../core/useSelector';
@@ -30,14 +29,8 @@ export const createUseReducerContext = <T extends UseReducerContextSource>(
    *  *@see* https://reactjs.org/docs/context.html#contextdisplayname
    */
   contextSource: T
-): [
-  UseSelector<{ [P in keyof T]: ReducerState<T[P]['reducer']> }>,
-  UseSelector<{ [P in keyof T]: ReducerDispatch<T[P]['reducer']> }>,
-  React.FC<ContextProvider<State<T>>>
-] => {
-  const { useGlobalState, useGlobalDispatch, contextProvider } = createContext(
-    contextSource
-  );
+): [UseSelector<UseReducerStore<T>>, React.FC<ContextProvider<State<T>>>] => {
+  const { useGlobalContext, contextProvider } = createContext(contextSource);
 
-  return [useGlobalState, useGlobalDispatch, contextProvider];
+  return [useGlobalContext, contextProvider];
 };
