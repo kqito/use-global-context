@@ -40,7 +40,7 @@ import React from "react";
 import { createUseStateContext } from "use-global-context";
 
 // You can add global state here. easy !!
-const [useGlobalState, useGlobalDispatch, ContextProvider] = createUseStateContext({
+const [useGlobalContext, ContextProvider] = createUseStateContext({
   counter: 0,
   message: "",
   app: {
@@ -58,13 +58,13 @@ const App = () => (
 
 const Counter = () => {
   // You can get the state value of the context as follows
-  const counter = useGlobalState(state => state.counter);
+  const counter = useGlobalContext(({ state }) => state.counter);
 
   return <p>counter: {counter}</p>;
 };
 
 const CounterButton = () => {
-  const counterDispatch = useGlobalDispatch(dispatch => dispatch.counter);
+  const counterDispatch = useGlobalContext(({ dispatch }) => dispatch.counter);
 
   return (
     <>
@@ -84,7 +84,7 @@ const CounterButton = () => {
 import React from "react";
 import { createUseStateContext } from "use-global-context";
 
-const [useGlobalState, useGlobalDispatch, ContextProvider] = createUseStateContext({
+const [useGlobalContext, ContextProvider] = createUseStateContext({
   counter: 0,
   message: "",
   app: {
@@ -97,7 +97,7 @@ const [useGlobalState, useGlobalDispatch, ContextProvider] = createUseStateConte
 You can use it as follows.
 
 ```javascript
-const state = useGlobalState();
+const state = useGlobalContext(({ state, dispatch }) => state);
 // {
 //   counter: 0,
 //   message: '',
@@ -108,13 +108,13 @@ const state = useGlobalState();
 // }
 
 
-const app = useGlobalState(state => state.app);
+const app = useGlobalContext(({ state, dispatch }) => state.app);
 // {
 //   name: "use-global-context",
 //   description: "A easy global state management library",
 // }
 
-const dispatch = useGlobalDispatch()
+const dispatch = useGlobalContext(({ state, dispatch }) => dispatch)
 // Each of the dispatch functions
 // {
 //   counter: ƒ dispatchAction,
@@ -122,7 +122,7 @@ const dispatch = useGlobalDispatch()
 //   app: ƒ dispatchAction
 // }
 
-const counterDispatch = useGlobalDispatch(dispatch => dispatch.counter);
+const counterDispatch = useGlobalContext(({ state, dispatch }) => dispatch.counter);
 // counter: ƒ dispatchAction,
 ```
 
@@ -169,7 +169,7 @@ const reducer: React.Reducer<typeof initialState, CounterAction> = (
   }
 };
 
-export const [useGlobalState, useGlobalDispatch, ContextProvider] = createUseReducerContext({
+export const [useGlobalContext, ContextProvider] = createUseReducerContext({
   counter: {
     reducer,
     initialState,
