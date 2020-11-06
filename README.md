@@ -133,47 +133,24 @@ const counterDispatch = useGlobalContext(({ state, dispatch }) => dispatch.count
 import React from "react";
 import { createUseReducerContext } from "use-global-context";
 
-const initialState = {
-  count: 0,
-};
+import { counterReducer, counterInitialState } from './reducer/counter'
+import { messageReducer, messageInitialState } from './reducer/message'
+import { userReducer, userInitialState } from './reducer/user'
 
-const ActionType = {
-  INCREMENT: "INCREMENT",
-  DECREMENT: "DECREMENT",
-} as const;
-
-type CounterAction = {
-  type: keyof typeof ActionType;
-};
-
-const reducer: React.Reducer<typeof initialState, CounterAction> = (
-  state,
-  action
-) => {
-  switch (action.type) {
-    case ActionType.INCREMENT: {
-      return {
-        count: state.count + 1,
-      };
-    }
-
-    case ActionType.DECREMENT: {
-      return {
-        count: state.count - 1,
-      };
-    }
-
-    default: {
-      return state;
-    }
-  }
-};
 
 export const [useGlobalContext, ContextProvider] = createUseReducerContext({
   counter: {
-    reducer,
-    initialState,
-  }
+    reducer: counterReducer,
+    initialState: counterInitialState,
+  },
+  message: {
+    reducer: messageReducer,
+    initialState: messageInitialState,
+  },
+  user: {
+    reducer: userReducer,
+    initialState: userInitialState,
+  },
 });
 ```
 
