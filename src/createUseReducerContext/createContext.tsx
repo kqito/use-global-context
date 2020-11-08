@@ -41,7 +41,7 @@ export type UseReducerStore<T extends UseReducerContextSource> = {
 
 const createUseServerSideDispatch = <T extends UseReducerContextSource>(
   contextValueRef: React.MutableRefObject<UseReducerStore<T>>,
-  displayName: keyof State<T>,
+  partial: keyof State<T>,
   reducer: T[keyof T]['reducer'],
   subscription: Subscription<UseReducerStore<T>>,
   store?: Store<State<T>>
@@ -50,15 +50,15 @@ const createUseServerSideDispatch = <T extends UseReducerContextSource>(
     action?: React.ReducerAction<typeof reducer>
   ): void => {
     /* eslint no-param-reassign: 0 */
-    const currentState = contextValueRef.current.state[displayName];
+    const currentState = contextValueRef.current.state[partial];
     const newState =
       reducer.length === 1
         ? reducer(currentState, undefined)
         : reducer(currentState, action);
 
-    contextValueRef.current.state[displayName] = newState;
+    contextValueRef.current.state[partial] = newState;
     if (store) {
-      store.setState(newState, displayName);
+      store.setState(newState, partial);
     }
 
     subscription.trySubscribe(contextValueRef.current);
@@ -84,19 +84,19 @@ export const createContext = <T extends UseReducerContextSource>(
     } as UseReducerStore<T>);
     const storeState = store?.getState() ?? undefined;
 
-    entries(contextSource).forEach(([displayName, source]) => {
+    entries(contextSource).forEach(([partial, source]) => {
       const { reducer, initialState, initializer } = source;
       const initialValue =
-        storeState && storeState[displayName] !== undefined
-          ? storeState[displayName]
+        storeState && storeState[partial] !== undefined
+          ? storeState[partial]
           : initialState;
 
       const [state, dispatch] = useReducer(reducer, initialValue, initializer);
 
-      contextValueRef.current.state[displayName] = state;
-      contextValueRef.current.dispatch[displayName] = dispatch as any;
+      contextValueRef.current.state[partial] = state;
+      contextValueRef.current.dispatch[partial] = dispatch as any;
       if (store) {
-        store.setState(state, displayName);
+        store.setState(state, partial);
       }
     }, {} as any);
 
@@ -117,24 +117,24 @@ export const createContext = <T extends UseReducerContextSource>(
     } as UseReducerStore<T>);
     const storeState = store?.getState() ?? undefined;
 
-    entries(contextSource).forEach(([displayName, { initialState }]) => {
+    entries(contextSource).forEach(([partial, { initialState }]) => {
       const state =
-        storeState && storeState[displayName] !== undefined
-          ? storeState[displayName]
+        storeState && storeState[partial] !== undefined
+          ? storeState[partial]
           : initialState;
 
       const dispatch = createUseServerSideDispatch(
         contextValueRef,
-        displayName,
-        contextSource[displayName].reducer,
+        partial,
+        contextSource[partial].reducer,
         subscription,
         store
       );
 
-      contextValueRef.current.state[displayName] = state;
-      contextValueRef.current.dispatch[displayName] = dispatch;
+      contextValueRef.current.state[partial] = state;
+      contextValueRef.current.dispatch[partial] = dispatch;
       if (store) {
-        store.setState(state, displayName);
+        store.setState(state, partial);
       }
     }, {} as any);
 

@@ -22,7 +22,7 @@ export type UseStateStore<T extends UseStateContextSource> = {
 
 const createUseServerSideDispatch = <T extends UseStateContextSource>(
   contextValueRef: React.MutableRefObject<UseStateStore<T>>,
-  displayName: keyof T,
+  partial: keyof T,
   subscription: Subscription<UseStateStore<T>>,
   store?: Store<T>
 ): React.Dispatch<React.SetStateAction<T[keyof T]>> => {
@@ -35,14 +35,14 @@ const createUseServerSideDispatch = <T extends UseStateContextSource>(
   function useServerSideDispatch(
     state: T[keyof T] | ((prevState: T[keyof T]) => T[keyof T])
   ): void {
-    const currentState = contextValueRef.current.state[displayName];
+    const currentState = contextValueRef.current.state[partial];
     const newState = isFunction<(prevState: T[keyof T]) => T[keyof T]>(state)
       ? state(currentState)
       : state;
 
-    contextValueRef.current.state[displayName] = newState;
+    contextValueRef.current.state[partial] = newState;
     if (store) {
-      store.setState(newState, displayName);
+      store.setState(newState, partial);
     }
 
     subscription.trySubscribe(contextValueRef.current);
@@ -68,19 +68,19 @@ export const createContext = <T extends UseStateContextSource>(
     >);
     const storeState = store?.getState() ?? undefined;
 
-    entries(contextSource).forEach(([displayName, initialState]) => {
+    entries(contextSource).forEach(([partial, initialState]) => {
       const initialValue =
-        storeState && storeState[displayName] !== undefined
-          ? storeState[displayName]
+        storeState && storeState[partial] !== undefined
+          ? storeState[partial]
           : initialState;
 
       const [state, dispatch] = useState(initialValue);
 
-      contextValueRef.current.state[displayName] = state;
-      contextValueRef.current.dispatch[displayName] = dispatch;
+      contextValueRef.current.state[partial] = state;
+      contextValueRef.current.dispatch[partial] = dispatch;
 
       if (store) {
-        store.setState(state, displayName);
+        store.setState(state, partial);
       }
     });
 
@@ -100,24 +100,24 @@ export const createContext = <T extends UseStateContextSource>(
     >);
     const storeState = store?.getState() ?? undefined;
 
-    entries(contextSource).forEach(([displayName, initialState]) => {
+    entries(contextSource).forEach(([partial, initialState]) => {
       const state =
-        storeState && storeState[displayName] !== undefined
-          ? storeState[displayName]
+        storeState && storeState[partial] !== undefined
+          ? storeState[partial]
           : initialState;
 
       const dispatch = createUseServerSideDispatch(
         contextValueRef,
-        displayName,
+        partial,
         subscription,
         store
       );
 
-      contextValueRef.current.state[displayName] = state;
-      contextValueRef.current.dispatch[displayName] = dispatch;
+      contextValueRef.current.state[partial] = state;
+      contextValueRef.current.dispatch[partial] = dispatch;
 
       if (store) {
-        store.setState(state, displayName);
+        store.setState(state, partial);
       }
     });
 
