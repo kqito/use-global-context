@@ -7,9 +7,7 @@ export type UseStateContextSource = {
 };
 
 /**
- * *useState* to create multiple contexts.
- * The created contexts are split into a state and a dispatch,
- * respectively, to prevent unnecessary rendering.
+ * Use "useState" to create a useGlobalContext with global context.
  */
 export const createUseStateContext = <T extends UseStateContextSource>(
   contextSource: T

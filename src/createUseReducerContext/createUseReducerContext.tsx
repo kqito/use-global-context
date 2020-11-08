@@ -18,9 +18,7 @@ export type UseReducerContextSource = {
 };
 
 /**
- * *useReducer* to create multiple contexts.
- * The created contexts are split into a state and a dispatch,
- * respectively, to prevent unnecessary rendering.
+ * Use "useReducer" to create a useGlobalContext with global context.
  */
 export const createUseReducerContext = <T extends UseReducerContextSource>(
   contextSource: T
