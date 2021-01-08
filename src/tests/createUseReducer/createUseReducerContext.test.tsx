@@ -5,7 +5,7 @@ import deepEqual from 'fast-deep-equal';
 import {
   createUseReducerContext,
   createStore,
-  UseReducerStore,
+  UseReducerContextValue,
 } from '../../index';
 import { updateUserProfile } from './actions/user';
 import { userReducerArgs } from './reducer/user';
@@ -13,8 +13,9 @@ import { counterReducerArgs } from './reducer/counter';
 import { isBrowser } from '../../utils/environment';
 import { testId } from '../utils';
 
-type GlobalContextValue = UseReducerStore<typeof reducers>;
-const reducers = {
+type GlobalContextValue = UseReducerContextValue<typeof contextValue>;
+
+const contextValue = {
   user: userReducerArgs,
   counter: counterReducerArgs,
 };
@@ -27,7 +28,7 @@ const initialState = {
 describe('createUseRedcuerContext', () => {
   it('Initial state', () => {
     const [useGlobalContext, ContextProvider] = createUseReducerContext(
-      reducers
+      contextValue
     );
 
     const Container = () => {
@@ -61,7 +62,7 @@ describe('createUseRedcuerContext', () => {
 
   it('Dispatch', () => {
     const [useGlobalContext, ContextProvider] = createUseReducerContext(
-      reducers
+      contextValue
     );
 
     const Container = () => {
@@ -114,7 +115,7 @@ describe('createUseRedcuerContext', () => {
 
   it('Without action', () => {
     const [useGlobalContext, ContextProvider] = createUseReducerContext(
-      reducers
+      contextValue
     );
 
     const Container = () => {
@@ -141,7 +142,7 @@ describe('createUseRedcuerContext', () => {
 
   it('GetState', () => {
     const [useGlobalContext, ContextProvider] = createUseReducerContext(
-      reducers
+      contextValue
     );
     const store = createStore<GlobalContextValue['state']>({
       user: {
@@ -186,7 +187,7 @@ describe('createUseRedcuerContext', () => {
 
   it('InitialState of store', () => {
     const [useGlobalContext, ContextProvider] = createUseReducerContext(
-      reducers
+      contextValue
     );
 
     const expectedState: GlobalContextValue['state'] = {
@@ -216,7 +217,7 @@ describe('createUseRedcuerContext', () => {
 
   it('Prevent inifinite loop', () => {
     const [useGlobalContext, ContextProvider] = createUseReducerContext(
-      reducers
+      contextValue
     );
 
     const Container = () => {
@@ -270,7 +271,7 @@ describe('createUseRedcuerContext', () => {
     );
 
     const [useGlobalContext, ContextProvider] = createUseReducerContext(
-      reducers
+      contextValue
     );
 
     const Container = () => {

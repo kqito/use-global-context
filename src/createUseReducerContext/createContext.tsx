@@ -30,7 +30,7 @@ export type ReducerDispatch<R> = R extends React.ReducerWithoutAction<any>
 export type State<T extends UseReducerContextSource> = {
   [P in keyof T]: T[P]['initialState'];
 };
-export type UseReducerStore<T extends UseReducerContextSource> = {
+export type UseReducerContextValue<T extends UseReducerContextSource> = {
   state: {
     [P in keyof T]: T[P]['initialState'];
   };
@@ -40,10 +40,10 @@ export type UseReducerStore<T extends UseReducerContextSource> = {
 };
 
 const createUseServerSideDispatch = <T extends UseReducerContextSource>(
-  contextValueRef: React.MutableRefObject<UseReducerStore<T>>,
+  contextValueRef: React.MutableRefObject<UseReducerContextValue<T>>,
   partial: keyof State<T>,
   reducer: T[keyof T]['reducer'],
-  subscription: Subscription<UseReducerStore<T>>,
+  subscription: Subscription<UseReducerContextValue<T>>,
   store?: Store<State<T>>
 ): ReducerDispatch<typeof reducer> => {
   const useServerSideDispatch = (
@@ -70,8 +70,8 @@ const createUseServerSideDispatch = <T extends UseReducerContextSource>(
 export const createContext = <T extends UseReducerContextSource>(
   contextSource: T
 ) => {
-  const context = createBaseContext<UseReducerStore<T>>();
-  const subscription = createSubscription<UseReducerStore<T>>();
+  const context = createBaseContext<UseReducerContextValue<T>>();
+  const subscription = createSubscription<UseReducerContextValue<T>>();
   const useGlobalContext = createStore(context, subscription);
   const { Provider } = context;
   const contextProvider: React.FC<ContextProvider<State<T>>> = ({
@@ -81,7 +81,7 @@ export const createContext = <T extends UseReducerContextSource>(
     const contextValueRef = useRef({
       state: {},
       dispatch: {},
-    } as UseReducerStore<T>);
+    } as UseReducerContextValue<T>);
     const storeState = store?.getState() ?? undefined;
 
     entries(contextSource).forEach(([partial, source]) => {
@@ -114,7 +114,7 @@ export const createContext = <T extends UseReducerContextSource>(
     const contextValueRef = useRef({
       state: {},
       dispatch: {},
-    } as UseReducerStore<T>);
+    } as UseReducerContextValue<T>);
     const storeState = store?.getState() ?? undefined;
 
     entries(contextSource).forEach(([partial, { initialState }]) => {

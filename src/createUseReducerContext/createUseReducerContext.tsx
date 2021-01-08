@@ -4,7 +4,7 @@ import {
   AnyReducer,
   ContextProvider,
   State,
-  UseReducerStore,
+  UseReducerContextValue,
 } from './createContext';
 
 import { UseSelector } from '../core/useSelector';
@@ -22,7 +22,10 @@ export type UseReducerContextSource = {
  */
 export const createUseReducerContext = <T extends UseReducerContextSource>(
   contextSource: T
-): [UseSelector<UseReducerStore<T>>, React.FC<ContextProvider<State<T>>>] => {
+): [
+  UseSelector<UseReducerContextValue<T>>,
+  React.FC<ContextProvider<State<T>>>
+] => {
   const { useGlobalContext, contextProvider } = createContext(contextSource);
 
   return [useGlobalContext, contextProvider];

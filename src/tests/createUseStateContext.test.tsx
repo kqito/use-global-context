@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { mount } from 'enzyme';
 import { createSelector } from 'reselect';
 import deepEqual from 'fast-deep-equal';
-import { createUseStateContext, createStore, UseStateStore } from '..';
+import { createUseStateContext, createStore, UseStateContextValue } from '..';
 import { isBrowser } from '../utils/environment';
 import { testId } from './utils';
 
@@ -14,7 +14,7 @@ type State = {
   counter: number;
 };
 
-type GlobalContextValue = UseStateStore<State>;
+type GlobalContextValue = UseStateContextValue<State>;
 
 const initialState: State = {
   user: {
