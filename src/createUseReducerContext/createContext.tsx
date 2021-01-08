@@ -4,7 +4,7 @@ import { createStore } from './hook';
 import { createBaseContext } from '../core/context';
 import { createSubscription, Subscription } from '../core/subscription';
 import { useIsomorphicLayoutEffect } from '../core/useIsomorphicLayoutEffect';
-import { Store } from '../core/store';
+import { Store } from '../createStore/createStore';
 import { isBrowser } from '../utils/environment';
 import { entries } from '../utils/entries';
 
@@ -58,7 +58,7 @@ const createUseServerSideDispatch = <T extends UseReducerContextSource>(
 
     contextValueRef.current.state[partial] = newState;
     if (store) {
-      store.setState(newState, partial);
+      store.setState(partial, newState);
     }
 
     subscription.trySubscribe(contextValueRef.current);
@@ -96,7 +96,7 @@ export const createContext = <T extends UseReducerContextSource>(
       contextValueRef.current.state[partial] = state;
       contextValueRef.current.dispatch[partial] = dispatch as any;
       if (store) {
-        store.setState(state, partial);
+        store.setState(partial, state);
       }
     }, {} as any);
 
@@ -134,7 +134,7 @@ export const createContext = <T extends UseReducerContextSource>(
       contextValueRef.current.state[partial] = state;
       contextValueRef.current.dispatch[partial] = dispatch;
       if (store) {
-        store.setState(state, partial);
+        store.setState(partial, state);
       }
     }, {} as any);
 

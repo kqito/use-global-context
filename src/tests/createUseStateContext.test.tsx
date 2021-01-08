@@ -14,7 +14,7 @@ type State = {
   counter: number;
 };
 
-type Store = UseStateStore<State>;
+type GlobalContextValue = UseStateStore<State>;
 
 const initialState: State = {
   user: {
@@ -112,7 +112,7 @@ describe('createUseStateContext', () => {
       initialState
     );
 
-    const valueStore = createStore(initialState);
+    const valueStore = createStore<GlobalContextValue['state']>(initialState);
 
     const Container = () => {
       const counterDispatch = useGlobalContext(
@@ -156,7 +156,7 @@ describe('createUseStateContext', () => {
       counter: 100,
     };
 
-    const store = createStore<State>(expectedState);
+    const store = createStore<GlobalContextValue['state']>(expectedState);
 
     const Container = () => {
       const globalState = useGlobalContext(({ state }) => state);
@@ -218,7 +218,7 @@ describe('createUseStateContext', () => {
   });
 
   it('Reselect', () => {
-    const getUserSelector = ({ state }: Store) => state.user;
+    const getUserSelector = ({ state }: GlobalContextValue) => state.user;
     const getHaveIdSelector = createSelector(
       [getUserSelector],
       (user) => user.id !== ''
