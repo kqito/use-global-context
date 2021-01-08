@@ -1,12 +1,12 @@
 import React from 'react';
 import { UseStateContextSource } from './createUseStateContext';
-import { UseStateStore } from './createContext';
+import { UseStateContextValue } from './createContext';
 import { Subscription } from '../core/subscription';
 import { createUseSelector } from '../core/useSelector';
 
 export const createStore = <T extends UseStateContextSource>(
-  context: React.Context<UseStateStore<T>>,
-  subscription: Subscription<UseStateStore<T>>
+  context: React.Context<UseStateContextValue<T>>,
+  subscription: Subscription<UseStateContextValue<T>>
 ) => {
   const useGlobalContext = createUseSelector(context, subscription);
 

@@ -13,7 +13,7 @@ export type ContextProvider<T extends Record<string, unknown>> = {
   store?: Store<T>;
 };
 
-export type UseStateStore<T extends UseStateContextSource> = {
+export type UseStateContextValue<T extends UseStateContextSource> = {
   state: T;
   dispatch: {
     [P in keyof T]: React.Dispatch<React.SetStateAction<T[P]>>;
@@ -21,9 +21,9 @@ export type UseStateStore<T extends UseStateContextSource> = {
 };
 
 const createUseServerSideDispatch = <T extends UseStateContextSource>(
-  contextValueRef: React.MutableRefObject<UseStateStore<T>>,
+  contextValueRef: React.MutableRefObject<UseStateContextValue<T>>,
   partial: keyof T,
-  subscription: Subscription<UseStateStore<T>>,
+  subscription: Subscription<UseStateContextValue<T>>,
   store?: Store<T>
 ): React.Dispatch<React.SetStateAction<T[keyof T]>> => {
   /* eslint no-param-reassign: 0 */
@@ -54,8 +54,8 @@ const createUseServerSideDispatch = <T extends UseStateContextSource>(
 export const createContext = <T extends UseStateContextSource>(
   contextSource: T
 ) => {
-  const context = createBaseContext<UseStateStore<T>>();
-  const subscription = createSubscription<UseStateStore<T>>();
+  const context = createBaseContext<UseStateContextValue<T>>();
+  const subscription = createSubscription<UseStateContextValue<T>>();
   const useGlobalContext = createStore(context, subscription);
 
   const { Provider } = context;
@@ -63,9 +63,10 @@ export const createContext = <T extends UseStateContextSource>(
     children,
     store,
   }: ContextProvider<T>) => {
-    const contextValueRef = useRef({ state: {}, dispatch: {} } as UseStateStore<
-      T
-    >);
+    const contextValueRef = useRef({
+      state: {},
+      dispatch: {},
+    } as UseStateContextValue<T>);
     const storeState = store?.getState() ?? undefined;
 
     entries(contextSource).forEach(([partial, initialState]) => {
@@ -95,9 +96,10 @@ export const createContext = <T extends UseStateContextSource>(
     children,
     store,
   }: ContextProvider<T>) => {
-    const contextValueRef = useRef({ state: {}, dispatch: {} } as UseStateStore<
-      T
-    >);
+    const contextValueRef = useRef({
+      state: {},
+      dispatch: {},
+    } as UseStateContextValue<T>);
     const storeState = store?.getState() ?? undefined;
 
     entries(contextSource).forEach(([partial, initialState]) => {

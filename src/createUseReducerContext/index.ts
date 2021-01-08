@@ -1,2 +1,2 @@
 export { createUseReducerContext } from './createUseReducerContext';
-export type { UseReducerStore } from './createContext';
+export type { UseReducerContextValue } from './createContext';

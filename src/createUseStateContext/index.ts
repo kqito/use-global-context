@@ -1,2 +1,2 @@
 export { createUseStateContext } from './createUseStateContext';
-export type { UseStateStore } from './createContext';
+export type { UseStateContextValue } from './createContext';
