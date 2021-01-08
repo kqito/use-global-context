@@ -3,7 +3,7 @@ import { UseStateContextSource } from './createUseStateContext';
 import { createStore } from './hook';
 import { createBaseContext } from '../core/context';
 import { createSubscription, Subscription } from '../core/subscription';
-import { Store } from '../core/store';
+import { Store } from '../createStore/createStore';
 import { isBrowser } from '../utils/environment';
 import { isFunction } from '../utils/isFunction';
 import { entries } from '../utils/entries';
@@ -42,7 +42,7 @@ const createUseServerSideDispatch = <T extends UseStateContextSource>(
 
     contextValueRef.current.state[partial] = newState;
     if (store) {
-      store.setState(newState, partial);
+      store.setState(partial, newState);
     }
 
     subscription.trySubscribe(contextValueRef.current);
@@ -80,7 +80,7 @@ export const createContext = <T extends UseStateContextSource>(
       contextValueRef.current.dispatch[partial] = dispatch;
 
       if (store) {
-        store.setState(state, partial);
+        store.setState(partial, state);
       }
     });
 
@@ -117,7 +117,7 @@ export const createContext = <T extends UseStateContextSource>(
       contextValueRef.current.dispatch[partial] = dispatch;
 
       if (store) {
-        store.setState(state, partial);
+        store.setState(partial, state);
       }
     });
 

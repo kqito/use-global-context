@@ -13,7 +13,7 @@ import { counterReducerArgs } from './reducer/counter';
 import { isBrowser } from '../../utils/environment';
 import { testId } from '../utils';
 
-type Store = UseReducerStore<typeof reducers>;
+type GlobalContextValue = UseReducerStore<typeof reducers>;
 const reducers = {
   user: userReducerArgs,
   counter: counterReducerArgs,
@@ -143,7 +143,7 @@ describe('createUseRedcuerContext', () => {
     const [useGlobalContext, ContextProvider] = createUseReducerContext(
       reducers
     );
-    const store = createStore({
+    const store = createStore<GlobalContextValue['state']>({
       user: {
         id: 'id',
         name: '',
@@ -173,7 +173,7 @@ describe('createUseRedcuerContext', () => {
       </ContextProvider>
     );
 
-    const expectState: Store['state'] = {
+    const expectState: GlobalContextValue['state'] = {
       user: {
         id: 'id',
         name: '',
@@ -189,7 +189,7 @@ describe('createUseRedcuerContext', () => {
       reducers
     );
 
-    const expectedState: Store['state'] = {
+    const expectedState: GlobalContextValue['state'] = {
       user: {
         id: 'id',
         name: '',
@@ -197,7 +197,7 @@ describe('createUseRedcuerContext', () => {
       counter: 0,
     };
 
-    const store = createStore(expectedState);
+    const store = createStore<GlobalContextValue['state']>(expectedState);
 
     const Container = () => {
       const globalState = useGlobalContext(({ state }) => state);
@@ -263,7 +263,7 @@ describe('createUseRedcuerContext', () => {
   });
 
   it('Reselect', () => {
-    const getUserSelector = ({ state }: Store) => state.user;
+    const getUserSelector = ({ state }: GlobalContextValue) => state.user;
     const getHaveIdSelector = createSelector(
       [getUserSelector],
       (user) => user.id !== ''
