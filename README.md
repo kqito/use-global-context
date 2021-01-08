@@ -159,6 +159,48 @@ export const [useGlobalContext, ContextProvider] = createUseReducerContext({
 
 The usage is the same as [`createUseStateContext` API](https://github.com/kqito/use-global-context#createusestatecontext-api).
 
+## TypeScript
+### Context value's type
+You can define the value type of the context as follows.
+For example, to define the type of the value of a context created with `createUseReducerContext`, you can use the following.
+
+```typescript
+import {
+  createUseReducerContext,
+  UseReducerContextValue,
+} from 'use-global-context';
+import { counterReducer, counterInitialState } from './reducer/counter'
+import { messageReducer, messageInitialState } from './reducer/message'
+import { userReducer, userInitialState } from './reducer/user'
+
+const contextValue = {
+  counter: {
+    reducer: counterReducer,
+    initialState: counterInitialState,
+  },
+  message: {
+    reducer: messageReducer,
+    initialState: messageInitialState,
+  },
+  user: {
+    reducer: userReducer,
+    initialState: userInitialState,
+  },
+}
+
+const [useGlobalContext, ContextProvider] = createUseReducerContext(contextValue);
+
+// You can define like this !!
+type GlobalContextValue = UseReducerContextValue<typeof contextValue>;
+
+const userNameSelector = (state: GlobalContextValue) => state.user.name
+
+const userName = useGlobalContext(userNameSelector)
+```
+
+You can also define the type of the value of a context created by `createUseStateContext` by using the `UseStateContextValue` type as well.
+
+
 ## Examples
 ### [CreateUseStateContext API example](https://codesandbox.io/s/use-global-contextexamplecreateusestatecontext-p5ug4 "CodeSandBox")
 This is an example of a counter app that uses the `createUseStateContext` API.
