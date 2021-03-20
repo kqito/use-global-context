@@ -1,22 +1,15 @@
-<h3 align="center">
-  use-global-context
-</h3>
 
-<p align="center">
-Use-global-context is a new way to use <a href="https://reactjs.org/docs/hooks-reference.html#usecontext">useContext</a> better with selector.
-</p>
+# use-global-context
+**Use-global-context** is a new way to use [`useContext`](https://reactjs.org/docs/hooks-reference.html#usecontext) better.
 
-<p align="center">
-  <a href="https://github.com/kqito/use-global-context/actions/workflows/node.js.yml"><img src="https://github.com/kqito/use-global-context/workflows/Node.js%20CI/badge.svg" alt="Build status"></a>
-  <a href="https://badge.fury.io/js/use-global-context"><img src="https://badge.fury.io/js/use-global-context.svg" alt="Npm version"></a>
-  <a href="https://github.com/kqito/use-global-context/blob/master/LICENSE"><img src="https://img.shields.io/github/license/kqito/use-global-context" alt="License"></a>
-</p>
+![build status](https://github.com/kqito/use-global-context/workflows/Node.js%20CI/badge.svg)
+[![npm version](https://badge.fury.io/js/use-global-context.svg)](https://badge.fury.io/js/use-global-context)
+![license](https://img.shields.io/github/license/kqito/use-global-context)
 
 ## Features
 - Easy global state management with `useState` or `useReducer`.
-- Support for `typeScript`.
-- `useSelector` function.
 - Prevents the unnecessary renders.
+- `useSelector` function.
 - Support for SSR.
 
 ## Why
@@ -27,8 +20,6 @@ However, it can lead to unnecessary renders if you don't split the context with 
 On the other hand, while redux is appropriate for managing large amounts of state, I don't think it's necessary for small projects to adopt such a large library.
 
 This library is intended to avoid the implementation costs of redux and also to prevent unnecessary renders, which is a problem with the context API.
-
-And This library is also a kind of test experimental implementation for [this RCF](https://github.com/reactjs/rfcs/pull/119).
 
 ## Installation
 You can install the package from npm.
@@ -44,54 +35,17 @@ yarn add use-global-context
 
 ## Usage
 ### General
-The first step is to define the reducer and its state.
-
 ```javascript
-export const incrementCount = () => ({ type: "INCREMENT" });
-export const decrementCount = () => ({ type: "DECREMENT" });
+import React from "react";
+import { createUseStateContext } from "use-global-context";
 
-export const counterReducer = (state, action) => {
-  switch (action.type) {
-    case "INCREMENT": {
-      return {
-        count: state.count + 1
-      };
-    }
-
-    case "DECREMENT": {
-      return {
-        count: state.count - 1
-      };
-    }
-
-    default: {
-      return state;
-    }
-  }
-};
-
-export const initialCounterState = {
-  count: 100,
-  error: null,
-  status: null,
-};
-```
-
-Next, you can use it in the use-global-context API as follows.
-
-```javascript
-import { createUseReducerContext } from "use-global-context";
-import {
-  incrementCount,
-  decrementCount,
-  counterReducer,
-  initialCounterState,
-} from "./reducer/counter";
-
-export const [useGlobalContext, ContextProvider] = createUseReducerContext({
-  counter: {
-    reducer: counterReducer,
-    initialState: initialCounterState
+// You can add global state here. easy !!
+const [useGlobalContext, ContextProvider] = createUseStateContext({
+  counter: 0,
+  message: "",
+  app: {
+    name: "use-global-context",
+    description: "A easy global state management library",
   },
 });
 
@@ -104,9 +58,9 @@ const App = () => (
 
 const Counter = () => {
   // You can get the state value of the context as follows
-  const count = useGlobalContext(({ state }) => state.counter.count);
+  const counter = useGlobalContext(({ state }) => state.counter);
 
-  return <p>count: {count}</p>;
+  return <p>counter: {counter}</p>;
 };
 
 const CounterButton = () => {
@@ -114,8 +68,8 @@ const CounterButton = () => {
 
   return (
     <>
-      <button onClick={() => counterDispatch(incrementCount())}>+ 1</button>
-      <button onClick={() => counterDispatch(decrementCount())}>- 1</button>
+      <button onClick={() => counterDispatch((c) => c + 1)}>+ 1</button>
+      <button onClick={() => counterDispatch((c) => c - 1)}>- 1</button>
     </>
   );
 };
@@ -124,40 +78,30 @@ const CounterButton = () => {
 
 
 ## API
-### `createUseReducerContext` API
-`createUseReducerContext` is an API that executes each value of the argument as a value of `useRecuer` and generates the result as hooks.
-
-Each argument of this API can be the same as `useReducer`.
+### `createUseStateContext` API
+`createUseStateContext` is an API that executes each value of the argument as the value of `useState` and generates the result as hooks.
 
 ```javascript
-import { createUseReducerContext } from "use-global-context";
+import React from "react";
+import { createUseStateContext } from "use-global-context";
 
-import { counterReducer, counterInitialState } from './reducer/counter'
-import { messageReducer, messageInitialState } from './reducer/message'
-import { appReducer, appInitialState } from './reducer/app'
-
-export const [useGlobalContext, ContextProvider] = createUseReducerContext({
-  counter: {
-    reducer: counterReducer,
-    initialState: counterInitialState,
-  },
+const [useGlobalContext, ContextProvider] = createUseStateContext({
+  counter: 0,
+  message: "",
   app: {
-    reducer: appReducer,
-    initialState: appInitialState,
-  },
+    name: "use-global-context",
+    description: "A easy global state management library",
+  }
 });
 ```
 
-You can use `useGlobalContext` hooks as follows.
+You can use it as follows.
 
 ```javascript
 const state = useGlobalContext(({ state, dispatch }) => state);
 // {
-//   counter: {
-//     count: 100,
-//     error: null,
-//     status: null,
-//   },
+//   counter: 0,
+//   message: '',
 //   app: {
 //     name: 'use-global-context',
 //     description: 'A easy global state management library'
@@ -165,11 +109,10 @@ const state = useGlobalContext(({ state, dispatch }) => state);
 // }
 
 
-const count = useGlobalContext(({ state, dispatch }) => state.counter);
+const app = useGlobalContext(({ state, dispatch }) => state.app);
 // {
-//   count: 100,
-//   error: null,
-//   status: null,
+//   name: "use-global-context",
+//   description: "A easy global state management library",
 // }
 
 const dispatch = useGlobalContext(({ state, dispatch }) => dispatch)
@@ -184,24 +127,37 @@ const counterDispatch = useGlobalContext(({ state, dispatch }) => dispatch.count
 // counter: ƒ dispatchAction,
 ```
 
-### `createUseStateContext` API
-`createUseStateContext` is an API that executes each value of the argument as the value of `useState` and generates the result as hooks.
+### `createUseReducerContext` API
+`createUseReducerContext` is an API that executes each value of the argument as a value of `useRecuer` and generates the result as hooks.
+
+Each argument of this API can be the same as `useReducer`.
 
 ```javascript
-import { createUseStateContext } from "use-global-context";
+import React from "react";
+import { createUseReducerContext } from "use-global-context";
 
-const [useGlobalContext, ContextProvider] = createUseStateContext({
-  counter: 0,
-  message: "",
-  app: {
-    name: "use-global-context",
-    description: "A easy global state management library",
-  }
+import { counterReducer, counterInitialState } from './reducer/counter'
+import { messageReducer, messageInitialState } from './reducer/message'
+import { userReducer, userInitialState } from './reducer/user'
+
+
+export const [useGlobalContext, ContextProvider] = createUseReducerContext({
+  counter: {
+    reducer: counterReducer,
+    initialState: counterInitialState,
+  },
+  message: {
+    reducer: messageReducer,
+    initialState: messageInitialState,
+  },
+  user: {
+    reducer: userReducer,
+    initialState: userInitialState,
+  },
 });
 ```
 
-The usage is the same as [`createUseReducerContext` API](https://github.com/kqito/use-global-context#createusereducercontext-api).
-
+The usage is the same as [`createUseStateContext` API](https://github.com/kqito/use-global-context#createusestatecontext-api).
 
 ## TypeScript
 ### Context value's type
@@ -215,7 +171,7 @@ import {
 } from 'use-global-context';
 import { counterReducer, counterInitialState } from './reducer/counter'
 import { messageReducer, messageInitialState } from './reducer/message'
-import { appReducer, appInitialState } from './reducer/app'
+import { userReducer, userInitialState } from './reducer/user'
 
 const contextValue = {
   counter: {
@@ -226,9 +182,9 @@ const contextValue = {
     reducer: messageReducer,
     initialState: messageInitialState,
   },
-  app: {
-    reducer: appReducer,
-    initialState: appInitialState,
+  user: {
+    reducer: userReducer,
+    initialState: userInitialState,
   },
 }
 
@@ -237,22 +193,24 @@ const [useGlobalContext, ContextProvider] = createUseReducerContext(contextValue
 // You can define like this !!
 type GlobalContextValue = UseReducerContextValue<typeof contextValue>;
 
-const appNameSelector = (state: GlobalContextValue) => state.app.name
+const userNameSelector = (state: GlobalContextValue) => state.user.name
 
-const appName = useGlobalContext(appNameSelector)
+const userName = useGlobalContext(userNameSelector)
 ```
 
 You can also define the type of the value of a context created by `createUseStateContext` by using the `UseStateContextValue` type as well.
 
 
 ## Examples
-### [CreateUseReducerContext API example](https://codesandbox.io/s/use-global-contextexamplecreateusereducercontext-xfdxc "CodeSandBox")
-This is an example of a counter app that uses the `createUseReducerContext` API.
+### [CreateUseStateContext API example](https://codesandbox.io/s/use-global-contextexamplecreateusestatecontext-p5ug4 "CodeSandBox")
+This is an example of a counter app that uses the `createUseStateContext` API.
+
+Notice that each time you increase/decrease the count, only the render of the Counter comport is running. (No unnecessary renders are happening.)
 
 
 ------------
-### [CreateUseStateContext API example](https://codesandbox.io/s/use-global-contextexamplecreateusestatecontext-p5ug4 "CodeSandBox")
-This is an example of a counter app that uses the `createUseStateContext` API.
+### [CreateUseReducerContext API example](https://codesandbox.io/s/use-global-contextexamplecreateusereducercontext-xfdxc "CodeSandBox")
+Similar to the example above, this is an example of a counter app using the `createUseReducerContext` API.
 
 
 ------------
