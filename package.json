@@ -24,8 +24,7 @@
     "react",
     "context",
     "react-state-management",
-    "useState",
-    "useReducer"
+    "useSelect"
   ],
   "files": [
     "dist",

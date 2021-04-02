@@ -14,7 +14,6 @@ Use-global-context is a new way to use <a href="https://reactjs.org/docs/hooks-r
 
 ## Features
 - Easy global state management with `useState` or `useReducer`.
-- Support for `typeScript`.
 - `useSelector` function.
 - Prevents the unnecessary renders.
 - Support for SSR.
@@ -24,11 +23,9 @@ The [`context API`](https://reactjs.org/docs/context.html) allows you to create 
 
 However, it can lead to unnecessary renders if you don't split the context with proper granularity. It also doesn't have a feature like redux's useSelector. That means you have to memo. Please see [the solutions](https://github.com/facebook/react/issues/15156#issuecomment-474590693).
 
-On the other hand, while redux is appropriate for managing large amounts of state, I don't think it's necessary for small projects to adopt such a large library.
+This library is intended to prevent unnecessary renders with selector, which is a problem with the context API.
 
-This library is intended to avoid the implementation costs of redux and also to prevent unnecessary renders, which is a problem with the context API.
-
-And This library is also kqito's own test experimental implementation for [this RCF](https://github.com/reactjs/rfcs/pull/119).
+And This library is also kqito's own test experimental implementation for [RCF #119](https://github.com/reactjs/rfcs/pull/119).
 
 ## Installation
 You can install the package from npm.
@@ -165,12 +162,15 @@ const state = useGlobalContext(({ state, dispatch }) => state);
 // }
 
 
-const count = useGlobalContext(({ state, dispatch }) => state.counter);
+const counter = useGlobalContext(({ state, dispatch }) => state.counter);
 // {
 //   count: 100,
 //   error: null,
 //   status: null,
 // }
+
+const count = useGlobalContext(({ state, dispatch }) => state.counter.count);
+// 100
 
 const dispatch = useGlobalContext(({ state, dispatch }) => dispatch)
 // Each of the dispatch functions
