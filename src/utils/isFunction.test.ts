@@ -2,10 +2,9 @@ import { isFunction } from './isFunction';
 
 describe('isFunction', () => {
   it('Should be function', () => {
-    const arrowFunc: any = () => {};
-
-    if (!isFunction(arrowFunc)) {
-      expect(arrowFunc).toThrowError();
+    const fn = jest.fn();
+    if (!isFunction(fn)) {
+      expect(fn).toThrowError();
     }
   });
 
