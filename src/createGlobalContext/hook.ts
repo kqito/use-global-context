@@ -1,9 +1,11 @@
-import { UseReducerContextSource } from './createUseReducerContext';
-import { UseReducerContextValue } from './createContext';
+import {
+  UseReducerContextValue,
+  CreateGlobalContextArgs,
+} from './createGlobalContext';
 import { Subscription } from '../core/subscription';
 import { createUseSelector } from '../core/useSelector';
 
-export const createStore = <T extends UseReducerContextSource>(
+export const createStore = <T extends CreateGlobalContextArgs>(
   context: React.Context<UseReducerContextValue<T>>,
   subscription: Subscription<UseReducerContextValue<T>>
 ) => {
