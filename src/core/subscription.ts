@@ -1,28 +1,51 @@
-export type Subscription<S> = {
-  trySubscribe: (value: S) => void;
-  addListener: (listener: (state: S) => void) => void;
-  deleteListener: (listener: (state: S) => void) => void;
-};
+export class Subscription<S extends { state: any; dispatch: any } = any> {
+  private store: S;
 
-export const createSubscription = <S>() => {
-  const listeners = new Set<(state: S) => void>();
-  const trySubscribe = (value: S) => {
-    listeners.forEach((listener) => {
-      listener(value);
+  private listeners: Set<(state: S) => void>;
+
+  constructor(store: S) {
+    this.store = store;
+    this.listeners = new Set<(state: S) => void>();
+  }
+
+  getStore() {
+    return this.store;
+  }
+
+  updateStore({
+    newState,
+    newDispatch,
+  }: {
+    newState?: Partial<S['state']>;
+    newDispatch?: Partial<S['dispatch']>;
+  }) {
+    this.store.state = {
+      ...this.store.state,
+      ...(newState || {}),
+    };
+
+    this.store.dispatch = {
+      ...this.store.dispatch,
+      ...(newDispatch || {}),
+    };
+  }
+
+  trySubscribe() {
+    this.listeners.forEach((listener) => {
+      listener(this.store);
     });
-  };
-  const addListener = (listener: (state: S) => void) => {
-    listeners.add(listener);
-  };
-  const deleteListener = (listener: (state: S) => void) => {
-    listeners.delete(listener);
-  };
+  }
 
-  const subscription: Subscription<S> = {
-    trySubscribe,
-    addListener,
-    deleteListener,
-  };
+  addListener(listener: (state: S) => void) {
+    this.listeners.add(listener);
+  }
 
-  return subscription;
-};
+  deleteListener(listener: (state: S) => void) {
+    this.listeners.delete(listener);
+  }
+
+  reset(store: S) {
+    this.store = store;
+    this.listeners = new Set<(state: S) => void>();
+  }
+}

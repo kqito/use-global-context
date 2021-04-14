@@ -15,7 +15,7 @@ const refEquality: EqualityFunction = (a: any, b: any) => a === b;
 
 export const createUseSelector = <Store>(
   context: React.Context<Store>,
-  subscription: Subscription<Store>
+  subscription: Subscription
 ): UseSelector<Store> => {
   function useSelector<SelectedStore>(
     selector: (store: Store) => SelectedStore,

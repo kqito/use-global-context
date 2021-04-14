@@ -11,6 +11,7 @@ module.exports = {
     'plugin:react/recommended',
     'plugin:@typescript-eslint/recommended',
     'plugin:import/typescript',
+    'plugin:react-hooks/recommended',
     'prettier',
   ],
   globals: {
@@ -33,7 +34,7 @@ module.exports = {
     '@typescript-eslint/explicit-module-boundary-types': 0,
     '@typescript-eslint/no-explicit-any': 0,
     'import/no-cycle': 0,
-    'react/prop-types': [2, { ignore: ['children'] }],
+    'react/prop-types': 0,
     'react/jsx-props-no-spreading': 0,
     'import/extensions': ['error', 'always', { ts: 'never', tsx: 'never' }],
     'import/prefer-default-export': 'off',
