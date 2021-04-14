@@ -1,5 +1,4 @@
 import { Subscription } from '../core/subscription';
-import { Store } from '../createStore/createStore';
 import {
   ReducerDispatch,
   State,
@@ -8,29 +7,27 @@ import {
 } from './createGlobalContext';
 
 export const createDispatch = <T extends CreateGlobalContextArgs>(
-  contextValueRef: React.MutableRefObject<GlobalContextValue<T>>,
-  partial: keyof State<T>,
-  reducer: T[keyof T]['reducer'],
   subscription: Subscription<GlobalContextValue<T>>,
-  store?: Store<State<T>>
+  partial: keyof State<T>,
+  reducer: T[keyof T]['reducer']
 ): ReducerDispatch<typeof reducer> => {
-  const useServerSideDispatch = (
-    action?: React.ReducerAction<typeof reducer>
-  ): void => {
+  const dispatch = (action?: React.ReducerAction<typeof reducer>): void => {
     /* eslint no-param-reassign: 0 */
-    const currentState = contextValueRef.current.state[partial];
-    const newState =
+    const currentState = subscription.getStore().state[partial];
+    const state =
       reducer.length === 1
         ? reducer(currentState, undefined)
         : reducer(currentState, action);
 
-    contextValueRef.current.state[partial] = newState;
-    if (store) {
-      store.setState(partial, newState);
-    }
+    const newState: Partial<GlobalContextValue<T>['state']> = {};
+    newState[partial] = state;
 
-    subscription.trySubscribe(contextValueRef.current);
+    subscription.updateStore({
+      newState,
+    });
+
+    subscription.trySubscribe();
   };
 
-  return useServerSideDispatch as any;
+  return dispatch as ReducerDispatch<typeof reducer>;
 };
