@@ -13,13 +13,13 @@ Use-global-context is a new way to use <a href="https://reactjs.org/docs/hooks-r
 </p>
 
 ## Features
-- Easy global state management with `useState` or `useReducer`.
+- Easy global state management.
 - `useSelector` function.
 - Prevents the unnecessary renders.
 - Support for SSR.
 
 ## Why
-The [`context API`](https://reactjs.org/docs/context.html) allows you to create a simple store in combination with hooks such as [`useState`](https://reactjs.org/docs/hooks-reference.html#usestate) and [`useReducer`](https://reactjs.org/docs/hooks-reference.html#usereducer).
+The [`context API`](https://reactjs.org/docs/context.html) allows you to create a simple store.
 
 However, it can lead to unnecessary renders if you don't split the context with proper granularity. It also doesn't have a feature like redux's useSelector. That means you have to memo. Please see [the solutions](https://github.com/facebook/react/issues/15156#issuecomment-474590693).
 
@@ -77,7 +77,7 @@ export const initialCounterState = {
 Next, you can use it in the use-global-context API as follows.
 
 ```javascript
-import { createUseReducerContext } from "use-global-context";
+import { createGlobalContext } from "use-global-context";
 import {
   incrementCount,
   decrementCount,
@@ -85,7 +85,7 @@ import {
   initialCounterState,
 } from "./reducer/counter";
 
-export const [useGlobalContext, ContextProvider] = createUseReducerContext({
+export const [useGlobalContext, GlobalContextProvider] = createGlobalContext({
   counter: {
     reducer: counterReducer,
     initialState: initialCounterState
@@ -93,10 +93,10 @@ export const [useGlobalContext, ContextProvider] = createUseReducerContext({
 });
 
 const App = () => (
-  <ContextProvider>
+  <GlobalContextProvider>
     <Counter />
     <CounterButton />
-  </ContextProvider>
+  </GlobalContextProvider>
 )
 
 const Counter = () => {
@@ -121,19 +121,17 @@ const CounterButton = () => {
 
 
 ## API
-### `createUseReducerContext` API
-`createUseReducerContext` is an API that executes each value of the argument as a value of `useRecuer` and generates the result as hooks.
-
-Each argument of this API can be the same as `useReducer`.
+### `createGlobalContext` API
+`createGlobalContext` is an API that generate useGlobalContext hooks with each reducer and initialState of the argument.
 
 ```javascript
-import { createUseReducerContext } from "use-global-context";
+import { createGlobalContext } from "use-global-context";
 
 import { counterReducer, counterInitialState } from './reducer/counter'
 import { messageReducer, messageInitialState } from './reducer/message'
 import { appReducer, appInitialState } from './reducer/app'
 
-export const [useGlobalContext, ContextProvider] = createUseReducerContext({
+export const [useGlobalContext, GlobalContextProvider] = createGlobalContext({
   counter: {
     reducer: counterReducer,
     initialState: counterInitialState,
@@ -184,34 +182,15 @@ const counterDispatch = useGlobalContext(({ state, dispatch }) => dispatch.count
 // counter: ƒ dispatchAction,
 ```
 
-### `createUseStateContext` API
-`createUseStateContext` is an API that executes each value of the argument as the value of `useState` and generates the result as hooks.
-
-```javascript
-import { createUseStateContext } from "use-global-context";
-
-const [useGlobalContext, ContextProvider] = createUseStateContext({
-  counter: 0,
-  message: "",
-  app: {
-    name: "use-global-context",
-    description: "A easy global state management library",
-  }
-});
-```
-
-The usage is the same as [`createUseReducerContext` API](https://github.com/kqito/use-global-context#createusereducercontext-api).
-
-
 ## TypeScript
 ### Context value's type
 You can define the value type of the context as follows.
-For example, to define the type of the value of a context created with `createUseReducerContext`, you can use the following.
+For example, to define the type of the value of a context created with `createGlobalContext`, you can use the following.
 
 ```typescript
 import {
-  createUseReducerContext,
-  UseReducerContextValue,
+  createGlobalContext,
+  GlobalContextValue,
 } from 'use-global-context';
 import { counterReducer, counterInitialState } from './reducer/counter'
 import { messageReducer, messageInitialState } from './reducer/message'
@@ -232,27 +211,20 @@ const contextValue = {
   },
 }
 
-const [useGlobalContext, ContextProvider] = createUseReducerContext(contextValue);
+const [useGlobalContext, GlobalContextProvider] = createGlobalContext(contextValue);
 
 // You can define like this !!
-type GlobalContextValue = UseReducerContextValue<typeof contextValue>;
+type GlobalContextValue = GlobalContextValue<typeof contextValue>;
 
 const appNameSelector = (state: GlobalContextValue) => state.app.name
 
 const appName = useGlobalContext(appNameSelector)
 ```
 
-You can also define the type of the value of a context created by `createUseStateContext` by using the `UseStateContextValue` type as well.
-
 
 ## Examples
-### [CreateUseReducerContext API example](https://codesandbox.io/s/use-global-contextexamplecreateusereducercontext-xfdxc "CodeSandBox")
-This is an example of a counter app that uses the `createUseReducerContext` API.
-
-
-------------
-### [CreateUseStateContext API example](https://codesandbox.io/s/use-global-contextexamplecreateusestatecontext-p5ug4 "CodeSandBox")
-This is an example of a counter app that uses the `createUseStateContext` API.
+### [createGlobalContext API example](https://codesandbox.io/s/use-global-contextexamplecreateusereducercontext-xfdxc "CodeSandBox")
+This is an example of a counter app that uses the `createGlobalContext` API.
 
 
 ------------
