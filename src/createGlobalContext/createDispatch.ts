@@ -3,15 +3,15 @@ import { Store } from '../createStore/createStore';
 import {
   ReducerDispatch,
   State,
-  UseReducerContextValue,
+  GlobalContextValue,
   CreateGlobalContextArgs,
 } from './createGlobalContext';
 
 export const createDispatch = <T extends CreateGlobalContextArgs>(
-  contextValueRef: React.MutableRefObject<UseReducerContextValue<T>>,
+  contextValueRef: React.MutableRefObject<GlobalContextValue<T>>,
   partial: keyof State<T>,
   reducer: T[keyof T]['reducer'],
-  subscription: Subscription<UseReducerContextValue<T>>,
+  subscription: Subscription<GlobalContextValue<T>>,
   store?: Store<State<T>>
 ): ReducerDispatch<typeof reducer> => {
   const useServerSideDispatch = (

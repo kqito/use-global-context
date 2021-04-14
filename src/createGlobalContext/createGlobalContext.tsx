@@ -17,7 +17,7 @@ export type CreateGlobalContextArgs = {
 };
 
 export type CreateGlobalContextResult<T extends CreateGlobalContextArgs> = [
-  UseSelector<UseReducerContextValue<T>>,
+  UseSelector<GlobalContextValue<T>>,
   React.FC<GlobalContextProviderProps<State<T>>>
 ];
 
@@ -43,7 +43,7 @@ export type ReducerDispatch<R> = R extends React.ReducerWithoutAction<any>
 export type State<T extends CreateGlobalContextArgs> = {
   [P in keyof T]: T[P]['initialState'];
 };
-export type UseReducerContextValue<T extends CreateGlobalContextArgs> = {
+export type GlobalContextValue<T extends CreateGlobalContextArgs> = {
   state: {
     [P in keyof T]: T[P]['initialState'];
   };
@@ -55,8 +55,8 @@ export type UseReducerContextValue<T extends CreateGlobalContextArgs> = {
 export const createGlobalContext = <T extends CreateGlobalContextArgs>(
   contextSource: T
 ): CreateGlobalContextResult<T> => {
-  const context = createBaseContext<UseReducerContextValue<T>>();
-  const subscription = createSubscription<UseReducerContextValue<T>>();
+  const context = createBaseContext<GlobalContextValue<T>>();
+  const subscription = createSubscription<GlobalContextValue<T>>();
   const useGlobalContext = createStore(context, subscription);
   const { Provider } = context;
   const GlobalContextProvider: React.FC<
@@ -65,7 +65,7 @@ export const createGlobalContext = <T extends CreateGlobalContextArgs>(
     const contextValueRef = useRef({
       state: {},
       dispatch: {},
-    } as UseReducerContextValue<T>);
+    } as GlobalContextValue<T>);
     const storeState = store?.getState() ?? undefined;
 
     entries(contextSource).forEach(([partial, { initialState }]) => {
