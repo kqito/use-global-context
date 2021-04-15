@@ -223,7 +223,7 @@ const appName = useGlobalContext(appNameSelector)
 
 
 ## Examples
-### [createGlobalContext API example](https://codesandbox.io/s/use-global-contextexamplecreateusereducercontext-xfdxc "CodeSandBox")
+### [createGlobalContext API example](https://codesandbox.io/s/use-global-context-example-xfdxc "CodeSandBox")
 This is an example of a counter app that uses the `createGlobalContext` API.
 
 
