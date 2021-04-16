@@ -2,7 +2,11 @@ import React, { useEffect } from 'react';
 import { mount } from 'enzyme';
 import { createSelector } from 'reselect';
 import deepEqual from 'fast-deep-equal';
-import { createGlobalContext, GlobalContextValue } from '../../index';
+import {
+  createGlobalContext,
+  GlobalContextValue,
+  mergeInitialState,
+} from '../../index';
 import { updateUserProfile } from './actions/user';
 import { userReducerArgs } from './reducer/user';
 import { counterReducerArgs } from './reducer/counter';
@@ -23,7 +27,7 @@ const initialState = {
 
 describe('createGlobalContext', () => {
   it('Initial state', () => {
-    const [useGlobalContext, ContextProvider] = createGlobalContext(
+    const [useGlobalContext, GlobalContextProvider] = createGlobalContext(
       contextValue
     );
 
@@ -50,14 +54,14 @@ describe('createGlobalContext', () => {
     };
 
     mount(
-      <ContextProvider>
+      <GlobalContextProvider>
         <Container />
-      </ContextProvider>
+      </GlobalContextProvider>
     );
   });
 
   it('Dispatch', () => {
-    const [useGlobalContext, ContextProvider] = createGlobalContext(
+    const [useGlobalContext, GlobalContextProvider] = createGlobalContext(
       contextValue
     );
 
@@ -100,9 +104,9 @@ describe('createGlobalContext', () => {
     };
 
     const wrapper = mount(
-      <ContextProvider>
+      <GlobalContextProvider>
         <Container />
-      </ContextProvider>
+      </GlobalContextProvider>
     );
 
     expect(wrapper.find(testId('id')).text()).toBe('id');
@@ -110,7 +114,7 @@ describe('createGlobalContext', () => {
   });
 
   it('Without action', () => {
-    const [useGlobalContext, ContextProvider] = createGlobalContext(
+    const [useGlobalContext, GlobalContextProvider] = createGlobalContext(
       contextValue
     );
 
@@ -128,91 +132,83 @@ describe('createGlobalContext', () => {
     };
 
     const wrapper = mount(
-      <ContextProvider>
+      <GlobalContextProvider>
         <Container />
-      </ContextProvider>
+      </GlobalContextProvider>
     );
 
     expect(wrapper.find(testId('count')).text()).toBe('1');
   });
 
-  /* it('GetState', () => { */
-  /*   const [useGlobalContext, ContextProvider] = createGlobalContext( */
-  /*     contextValue */
-  /*   ); */
-  /*   const store = createStore<ContextValue['state']>({ */
-  /*     user: { */
-  /*       id: 'id', */
-  /*       name: '', */
-  /*     }, */
-  /*     counter: 0, */
-  /*   }); */
+  it('GetState', () => {
+    const ssrState: ContextValue['state'] = {
+      user: {
+        id: 'id',
+        name: '',
+      },
+      counter: 0,
+    };
 
-  /*   const Container = () => { */
-  /*     const id = useGlobalContext(({ state }) => state.user.id); */
-  /*     const userDispatch = useGlobalContext(({ dispatch }) => dispatch.user); */
+    const [
+      useGlobalContext,
+      GlobalContextProvider,
+      getStore,
+    ] = createGlobalContext(mergeInitialState(contextValue, ssrState));
 
-  /*     useEffect(() => { */
-  /*       userDispatch( */
-  /*         updateUserProfile({ */
-  /*           id: 'id', */
-  /*           name: '', */
-  /*         }) */
-  /*       ); */
-  /*     }, []); */
+    const Container = () => {
+      const id = useGlobalContext(({ state }) => state.user.id);
+      const userDispatch = useGlobalContext(({ dispatch }) => dispatch.user);
 
-  /*     return <p data-testid="id">{id}</p>; */
-  /*   }; */
+      useEffect(() => {
+        userDispatch(
+          updateUserProfile({
+            id: 'id',
+            name: '',
+          })
+        );
+      }, [userDispatch]);
 
-  /*   mount( */
-  /*     <ContextProvider store={store}> */
-  /*       <Container /> */
-  /*     </ContextProvider> */
-  /*   ); */
+      return <p data-testid="id">{id}</p>;
+    };
 
-  /*   const expectState: ContextValue['state'] = { */
-  /*     user: { */
-  /*       id: 'id', */
-  /*       name: '', */
-  /*     }, */
-  /*     counter: 0, */
-  /*   }; */
+    mount(
+      <GlobalContextProvider>
+        <Container />
+      </GlobalContextProvider>
+    );
 
-  /*   expect(store.getState()).toStrictEqual(expectState); */
-  /* }); */
+    expect(getStore()).toStrictEqual(ssrState);
+  });
 
-  /* it('InitialState of store', () => { */
-  /*   const [useGlobalContext, ContextProvider] = createGlobalContext( */
-  /*     contextValue */
-  /*   ); */
+  it('InitialState of store', () => {
+    const ssrState: ContextValue['state'] = {
+      user: {
+        id: 'id',
+        name: '',
+      },
+      counter: 0,
+    };
 
-  /*   const expectedState: ContextValue['state'] = { */
-  /*     user: { */
-  /*       id: 'id', */
-  /*       name: '', */
-  /*     }, */
-  /*     counter: 0, */
-  /*   }; */
+    const [useGlobalContext, GlobalContextProvider] = createGlobalContext(
+      mergeInitialState(contextValue, ssrState)
+    );
+    const Container = () => {
+      const globalState = useGlobalContext(({ state }) => state);
 
-  /*   const store = createStore<ContextValue['state']>(expectedState); */
+      expect(globalState).toStrictEqual(ssrState);
 
-  /*   const Container = () => { */
-  /*     const globalState = useGlobalContext(({ state }) => state); */
+      return null;
+    };
 
-  /*     expect(globalState).toStrictEqual(expectedState); */
-
-  /*     return null; */
-  /*   }; */
-
-  /*   mount( */
-  /*     <ContextProvider store={store}> */
-  /*       <Container /> */
-  /*     </ContextProvider> */
-  /*   ); */
-  /* }); */
+    mount(
+      <GlobalContextProvider>
+        <Container />
+      </GlobalContextProvider>
+    );
+  });
 
   it('Prevent inifinite loop', () => {
-    const [useGlobalContext, ContextProvider] = createGlobalContext(
+    const [useGlobalContext, GlobalContextProvider] = createGlobalContext(
       contextValue
     );
 
@@ -248,9 +244,9 @@ describe('createGlobalContext', () => {
     };
 
     const wrapper = mount(
-      <ContextProvider>
+      <GlobalContextProvider>
         <Container />
-      </ContextProvider>
+      </GlobalContextProvider>
     );
 
     expect(wrapper.find(testId('id')).text()).toBe('id');
@@ -264,7 +260,7 @@ describe('createGlobalContext', () => {
       (user) => user.id !== ''
     );
 
-    const [useGlobalContext, ContextProvider] = createGlobalContext(
+    const [useGlobalContext, GlobalContextProvider] = createGlobalContext(
       contextValue
     );
 
@@ -285,9 +281,9 @@ describe('createGlobalContext', () => {
     };
 
     const wrapper = mount(
-      <ContextProvider>
+      <GlobalContextProvider>
         <Container />
-      </ContextProvider>
+      </GlobalContextProvider>
     );
 
     expect(wrapper.find(testId('have-id')).text()).toBe('true');

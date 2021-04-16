@@ -85,7 +85,7 @@ import {
   initialCounterState,
 } from "./reducer/counter";
 
-export const [useGlobalContext, GlobalContextProvider] = createGlobalContext({
+export const { useGlobalContext, GlobalContextProvider } = createGlobalContext({
   counter: {
     reducer: counterReducer,
     initialState: initialCounterState
@@ -131,7 +131,7 @@ import { counterReducer, counterInitialState } from './reducer/counter'
 import { messageReducer, messageInitialState } from './reducer/message'
 import { appReducer, appInitialState } from './reducer/app'
 
-export const [useGlobalContext, GlobalContextProvider] = createGlobalContext({
+export const { useGlobalContext, GlobalContextProvider } = createGlobalContext({
   counter: {
     reducer: counterReducer,
     initialState: counterInitialState,
@@ -211,7 +211,7 @@ const contextValue = {
   },
 }
 
-const [useGlobalContext, GlobalContextProvider] = createGlobalContext(contextValue);
+const { useGlobalContext, GlobalContextProvider } = createGlobalContext(contextValue);
 
 // You can define like this !!
 type GlobalContextValue = GlobalContextValue<typeof contextValue>;

@@ -11,13 +11,13 @@ export type CreateGlobalContextArgs = {
   [partial: string]: {
     reducer: AnyReducer;
     initialState: any;
-    initializer?: any;
   };
 };
 
 export type CreateGlobalContextResult<T extends CreateGlobalContextArgs> = [
   UseSelector<GlobalContextValue<T>>,
-  React.FC
+  React.FC,
+  () => GlobalContextValue<T>['state']
 ];
 
 export type AnyReducer<S = any, A = any> =
@@ -55,6 +55,7 @@ export const createGlobalContext = <T extends CreateGlobalContextArgs>(
     dispatch: {},
   } as GlobalContextValue<T>);
   const useGlobalContext = createStore(context, subscription);
+  const getStore = () => subscription.getStore().state;
   const { Provider } = context;
 
   const GlobalContextProvider: React.FC = ({ children }) => {
@@ -96,5 +97,5 @@ export const createGlobalContext = <T extends CreateGlobalContextArgs>(
     return <Provider value={subscription.getStore()}>{children}</Provider>;
   };
 
-  return [useGlobalContext, GlobalContextProvider];
+  return [useGlobalContext, GlobalContextProvider, getStore];
 };
