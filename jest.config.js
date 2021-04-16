@@ -5,9 +5,10 @@ module.exports = {
   coverageDirectory: './coverage/',
   preset: 'ts-jest',
   transform: {
-    '^.+\\.(t|j)sx?$': 'ts-jest',
+    '^.+\\.tsx?$': 'ts-jest',
   },
   roots: ['<rootDir>/src'],
+  testMatch: ['**/__tests__/**/*.test.ts?(x)', '**/?(*.)+(spec|test).ts?(x)'],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
   globals: {
     'ts-jest': {
