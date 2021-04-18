@@ -21,9 +21,9 @@ Use-global-context is a new way to use <a href="https://reactjs.org/docs/hooks-r
 ## Why
 The [`context API`](https://reactjs.org/docs/context.html) allows you to create a simple store.
 
-However, it can lead to unnecessary renders if you don't split the context with proper granularity. It also doesn't have a feature like redux's useSelector. That means you have to memo. Please see [the solutions](https://github.com/facebook/react/issues/15156#issuecomment-474590693).
+However, it can lead to unnecessary renders if you don't split the context with proper granularity. It also doesn't have a feature like redux's useSelector. That means you have to memo. Please see [the basic solutions](https://github.com/facebook/react/issues/15156#issuecomment-474590693).
 
-This library is intended to prevent unnecessary renders with selector, which is a problem with the context API.
+This library is intended to prevent unnecessary renders with selector, which is a problem with the context API and easily manage global state.
 
 ## Installation
 You can install the package from npm.
