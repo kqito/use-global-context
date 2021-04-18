@@ -1,11 +1,16 @@
 import { User } from '../reducer/user';
 
-export type Actions = ReturnType<typeof updateUserProfile>;
+export type Actions = ReturnType<typeof updateUserName | typeof incrementCount>;
 
-export const updateUserProfile = (user: User) =>
+export const updateUserName = (name: User['name']) =>
   ({
-    type: 'UPDATE_USER_PROFILE',
+    type: 'UPDATE_USER_NAME',
     payload: {
-      user,
+      name,
     },
+  } as const);
+
+export const incrementCount = () =>
+  ({
+    type: 'INCREMENT_COUNT',
   } as const);

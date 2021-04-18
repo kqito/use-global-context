@@ -3,9 +3,6 @@ import { Subscription } from './subscription';
 import { useIsomorphicLayoutEffect } from './useIsomorphicLayoutEffect';
 import { devlog } from '../utils/devlog';
 
-// The useSelector logic is based on the following repository.
-// https://github.com/reduxjs/react-redux (MIT LICENSE)
-// https://github.com/dai-shi/use-context-selector (MIT LICENSE)
 export type UseSelector<Store> = <SelectedStore>(
   selector: (store: Store) => SelectedStore,
   equalityFunction?: EqualityFunction
@@ -29,7 +26,7 @@ export const createUseSelector = <Store>(
     const latestStore = useRef<Store>();
     const latestSelectedStore = useRef<SelectedStore>();
 
-    selectedStore = selector({ ...store });
+    selectedStore = selector(store);
 
     useIsomorphicLayoutEffect(() => {
       latestSelector.current = selector;
@@ -47,14 +44,16 @@ export const createUseSelector = <Store>(
         }
 
         try {
-          const newSelectedStore = latestSelector.current({ ...nextStore });
+          const newSelectedStore = latestSelector.current(nextStore);
           const isEqualityFunction = equalityFunction || refEquality;
+
           if (
             isEqualityFunction(newSelectedStore, latestSelectedStore.current)
           ) {
             return;
           }
 
+          latestStore.current = nextStore;
           latestSelectedStore.current = newSelectedStore;
         } catch (err) {
           devlog.error(err);

@@ -12,27 +12,20 @@ export class Subscription<S extends { state: any; dispatch: any } = any> {
     return this.store;
   }
 
-  updateStore({
-    newState,
-    newDispatch,
-  }: {
-    newState?: Partial<S['state']>;
-    newDispatch?: Partial<S['dispatch']>;
-  }) {
-    this.store.state = {
-      ...this.store.state,
-      ...(newState || {}),
-    };
+  setState<T extends keyof S['state']>(partial: T, value: S['state'][T]) {
+    this.store.state[partial] = value;
+  }
 
-    this.store.dispatch = {
-      ...this.store.dispatch,
-      ...(newDispatch || {}),
-    };
+  setDispatchs<T extends keyof S['dispatch']>(
+    partial: T,
+    value: S['dispatch'][T]
+  ) {
+    this.store.dispatch[partial] = value;
   }
 
   trySubscribe() {
     this.listeners.forEach((listener) => {
-      listener(this.store);
+      listener({ ...this.store });
     });
   }
 

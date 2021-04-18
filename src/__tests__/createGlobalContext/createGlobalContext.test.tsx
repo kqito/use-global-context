@@ -1,5 +1,7 @@
-import React, { useEffect } from 'react';
-import { mount } from 'enzyme';
+import { useEffect } from 'react';
+import { renderToString } from 'react-dom/server';
+import { render, cleanup } from '@testing-library/react';
+import { getByTestId } from '@testing-library/dom';
 import { createSelector } from 'reselect';
 import deepEqual from 'fast-deep-equal';
 import {
@@ -7,11 +9,10 @@ import {
   GlobalContextValue,
   mergeInitialState,
 } from '../../index';
-import { updateUserProfile } from './actions/user';
+import { updateUserName } from './actions/user';
 import { userReducerArgs } from './reducer/user';
 import { counterReducerArgs } from './reducer/counter';
-import { isBrowser } from '../../utils/environment';
-import { testId } from '../utils';
+import * as isomorphicHooks from '../../core/useIsomorphicLayoutEffect';
 
 type ContextValue = GlobalContextValue<typeof contextValue>;
 
@@ -25,8 +26,34 @@ const initialState = {
   counter: counterReducerArgs.initialState,
 };
 
+const useEffectMock = jest.fn();
+let useIsomorphicLayoutEffectSpy: jest.SpyInstance<any, any> | undefined;
+
+const testOnCSR = (test: () => void) => {
+  it('CSR', () => {
+    useEffectMock.mockImplementation(useEffect);
+    test();
+  });
+};
+
+const testOnSSR = (test: () => void) => {
+  it('SSR', () => {
+    useEffectMock.mockImplementation((fn) => fn());
+    useIsomorphicLayoutEffectSpy = jest
+      .spyOn(isomorphicHooks, 'useIsomorphicLayoutEffect')
+      .mockImplementation(isomorphicHooks.onServerFn);
+
+    test();
+  });
+};
+
 describe('createGlobalContext', () => {
-  it('Initial state', () => {
+  beforeEach(() => {
+    useIsomorphicLayoutEffectSpy?.mockRestore();
+    cleanup();
+  });
+
+  describe('Initial state', () => {
     const [useGlobalContext, GlobalContextProvider] = createGlobalContext(
       contextValue
     );
@@ -36,6 +63,7 @@ describe('createGlobalContext', () => {
       const counter = useGlobalContext(({ state }) => state.counter);
       const user = useGlobalContext(({ state }) => state.user);
       const id = useGlobalContext(({ state }) => state.user.id);
+      const loginCount = useGlobalContext(({ state }) => state.user.loginCount);
       const nullValue = useGlobalContext(() => null);
       const undefinedValue = useGlobalContext(() => undefined);
       const arrayValue = useGlobalContext(() => []);
@@ -45,6 +73,7 @@ describe('createGlobalContext', () => {
       expect(counter).toBe(initialState.counter);
       expect(user).toBe(initialState.user);
       expect(id).toBe(initialState.user.id);
+      expect(loginCount).toBe(initialState.user.loginCount);
       expect(nullValue).toBeNull();
       expect(undefinedValue).toBeUndefined();
       expect(arrayValue).toStrictEqual([]);
@@ -53,100 +82,82 @@ describe('createGlobalContext', () => {
       return null;
     };
 
-    mount(
+    render(
       <GlobalContextProvider>
         <Container />
       </GlobalContextProvider>
     );
   });
 
-  it('Dispatch', () => {
+  describe('Dispatch', () => {
     const [useGlobalContext, GlobalContextProvider] = createGlobalContext(
       contextValue
     );
 
     const Container = () => {
-      const user = useGlobalContext(({ state }) => state.user);
+      const id = useGlobalContext(({ state }) => state.user.id);
+      const name = useGlobalContext(({ state }) => state.user.name);
+      const loginCount = useGlobalContext(({ state }) => state.user.loginCount);
 
       const globalDispatch = useGlobalContext(({ dispatch }) => dispatch);
       const userDispatch = useGlobalContext(({ dispatch }) => dispatch.user);
       const counterDispatch = useGlobalContext(
         ({ dispatch }) => dispatch.counter
       );
-      const undefinedValue = useGlobalContext(() => undefined);
-      const arrayValue = useGlobalContext(() => []);
-      const stringValue = useGlobalContext(() => '');
 
       expect(Object.keys(globalDispatch)).toStrictEqual(['user', 'counter']);
       expect(typeof globalDispatch.user).toBe('function');
       expect(typeof globalDispatch.counter).toBe('function');
       expect(typeof userDispatch).toBe('function');
       expect(typeof counterDispatch).toBe('function');
-      expect(undefinedValue).toBeUndefined();
-      expect(arrayValue).toStrictEqual([]);
-      expect(stringValue).toBe('');
 
-      useEffect(() => {
-        userDispatch(
-          updateUserProfile({
-            id: 'id',
-            name: 'name',
-          })
-        );
-      }, [userDispatch]);
+      userDispatch(updateUserName('name'));
 
       return (
-        <>
-          <p data-testid="id">{user.id}</p>
-          <p data-testid="name">{user.name}</p>
-        </>
+        <div>
+          <p data-testid="id">{id}</p>
+          <p data-testid="name">{name}</p>
+          <p data-testid="loginCount">{loginCount}</p>
+        </div>
       );
     };
 
-    const wrapper = mount(
-      <GlobalContextProvider>
-        <Container />
-      </GlobalContextProvider>
-    );
-
-    expect(wrapper.find(testId('id')).text()).toBe('id');
-    expect(wrapper.find(testId('name')).text()).toBe('name');
-  });
-
-  it('Without action', () => {
-    const [useGlobalContext, GlobalContextProvider] = createGlobalContext(
-      contextValue
-    );
-
-    const Container = () => {
-      const count = useGlobalContext(({ state }) => state.counter);
-      const counterDispatch = useGlobalContext(
-        ({ dispatch }) => dispatch.counter
+    testOnCSR(() => {
+      const renderResult = render(
+        <GlobalContextProvider>
+          <Container />
+        </GlobalContextProvider>
       );
 
-      useEffect(() => {
-        counterDispatch();
-      }, [counterDispatch]);
+      expect(renderResult.getByTestId('id').textContent).toBe('');
+      expect(renderResult.getByTestId('name').textContent).toBe('name');
+      expect(renderResult.getByTestId('loginCount').textContent).toBe('0');
+    });
 
-      return <p data-testid="count">{count}</p>;
-    };
+    testOnSSR(() => {
+      const innerElement = renderToString(
+        <GlobalContextProvider>
+          <Container />
+        </GlobalContextProvider>
+      );
 
-    const wrapper = mount(
-      <GlobalContextProvider>
-        <Container />
-      </GlobalContextProvider>
-    );
+      const container = document.createElement('div');
+      container.innerHTML = innerElement;
 
-    expect(wrapper.find(testId('count')).text()).toBe('1');
+      expect(getByTestId(container, 'id').textContent).toBe('');
+      expect(getByTestId(container, 'name').textContent).toBe('name');
+      expect(getByTestId(container, 'loginCount').textContent).toBe('0');
+    });
   });
 
-  it('GetState', () => {
+  describe('GetState', () => {
     const ssrState: ContextValue['state'] = {
       user: {
         id: 'id',
         name: '',
+        loginCount: 0,
       },
-      counter: 0,
+      counter: 100,
     };
 
     const [
@@ -157,57 +168,66 @@ describe('createGlobalContext', () => {
 
     const Container = () => {
       const id = useGlobalContext(({ state }) => state.user.id);
+      const name = useGlobalContext(({ state }) => state.user.name);
+      const loginCount = useGlobalContext(({ state }) => state.user.loginCount);
       const userDispatch = useGlobalContext(({ dispatch }) => dispatch.user);
 
-      useEffect(() => {
-        userDispatch(
-          updateUserProfile({
-            id: 'id',
-            name: '',
-          })
-        );
+      useEffectMock(() => {
+        userDispatch(updateUserName('name'));
       }, [userDispatch]);
 
-      return <p data-testid="id">{id}</p>;
+      return (
+        <div>
+          <p data-testid="id">{id}</p>
+          <p data-testid="name">{name}</p>
+          <p data-testid="loginCount">{loginCount}</p>
+        </div>
+      );
     };
 
-    mount(
-      <GlobalContextProvider>
-        <Container />
-      </GlobalContextProvider>
-    );
+    testOnCSR(() => {
+      const renderResult = render(
+        <GlobalContextProvider>
+          <Container />
+        </GlobalContextProvider>
+      );
 
-    expect(getStore()).toStrictEqual(ssrState);
+      expect(renderResult.getByTestId('id').textContent).toBe('id');
+      expect(renderResult.getByTestId('name').textContent).toBe('name');
+      expect(renderResult.getByTestId('loginCount').textContent).toBe('0');
+      expect(getStore()).toStrictEqual({
+        ...ssrState,
+        user: {
+          ...ssrState.user,
+          name: 'name',
+        },
+      });
+    });
+
+    testOnSSR(() => {
+      const innerElement = renderToString(
+        <GlobalContextProvider>
+          <Container />
+        </GlobalContextProvider>
+      );
+
+      const container = document.createElement('div');
+      container.innerHTML = innerElement;
+
+      expect(getByTestId(container, 'id').textContent).toBe('id');
+      expect(getByTestId(container, 'name').textContent).toBe('name');
+      expect(getByTestId(container, 'loginCount').textContent).toBe('0');
+      expect(getStore()).toStrictEqual({
+        ...ssrState,
+        user: {
+          ...ssrState.user,
+          name: 'name',
+        },
+      });
+    });
   });
 
-  it('InitialState of store', () => {
-    const ssrState: ContextValue['state'] = {
-      user: {
-        id: 'id',
-        name: '',
-      },
-      counter: 0,
-    };
-
-    const [useGlobalContext, GlobalContextProvider] = createGlobalContext(
-      mergeInitialState(contextValue, ssrState)
-    );
-    const Container = () => {
-      const globalState = useGlobalContext(({ state }) => state);
-
-      expect(globalState).toStrictEqual(ssrState);
-
-      return null;
-    };
-
-    mount(
-      <GlobalContextProvider>
-        <Container />
-      </GlobalContextProvider>
-    );
-  });
-
-  it('Prevent inifinite loop', () => {
+  describe('EqualityFunction', () => {
     const [useGlobalContext, GlobalContextProvider] = createGlobalContext(
       contextValue
     );
@@ -216,76 +236,100 @@ describe('createGlobalContext', () => {
       const user = useGlobalContext(({ state }) => state.user, deepEqual);
       const userDispatch = useGlobalContext(({ dispatch }) => dispatch.user);
 
-      // SSR
-      if (!isBrowser) {
-        userDispatch(
-          updateUserProfile({
-            id: 'id',
-            name: 'name',
-          })
-        );
-      }
-
-      useEffect(() => {
-        userDispatch(
-          updateUserProfile({
-            id: 'id',
-            name: 'name',
-          })
-        );
+      useEffectMock(() => {
+        userDispatch(updateUserName('name'));
       }, [userDispatch]);
 
       return (
-        <>
+        <div>
           <p data-testid="id">{user.id}</p>
           <p data-testid="name">{user.name}</p>
-        </>
+          <p data-testid="loginCount">{user.loginCount}</p>
+        </div>
       );
     };
 
-    const wrapper = mount(
-      <GlobalContextProvider>
-        <Container />
-      </GlobalContextProvider>
-    );
+    testOnCSR(() => {
+      const renderResult = render(
+        <GlobalContextProvider>
+          <Container />
+        </GlobalContextProvider>
+      );
 
-    expect(wrapper.find(testId('id')).text()).toBe('id');
-    expect(wrapper.find(testId('name')).text()).toBe('name');
+      expect(renderResult.getByTestId('id').textContent).toBe('');
+      expect(renderResult.getByTestId('name').textContent).toBe('name');
+      expect(renderResult.getByTestId('loginCount').textContent).toBe('0');
+    });
+
+    testOnSSR(() => {
+      const innerElement = renderToString(
+        <GlobalContextProvider>
+          <Container />
+        </GlobalContextProvider>
+      );
+
+      const container = document.createElement('div');
+      container.innerHTML = innerElement;
+
+      expect(getByTestId(container, 'id').textContent).toBe('');
+      expect(getByTestId(container, 'name').textContent).toBe('name');
+      expect(getByTestId(container, 'loginCount').textContent).toBe('0');
+    });
   });
 
-  it('Reselect', () => {
-    const getUserSelector = ({ state }: ContextValue) => state.user;
-    const getHaveIdSelector = createSelector(
-      [getUserSelector],
-      (user) => user.id !== ''
-    );
+  describe('With "reselect"', () => {
+    const getUserSelector = ({ state }: ContextValue) => state.user.name;
+    const getNameSelector = createSelector([getUserSelector], (name) => name);
 
     const [useGlobalContext, GlobalContextProvider] = createGlobalContext(
       contextValue
     );
 
     const Container = () => {
-      const haveId = useGlobalContext(getHaveIdSelector);
+      const name = useGlobalContext(getNameSelector);
+
+      const id = useGlobalContext(({ state }) => state.user.id);
+      const loginCount = useGlobalContext(({ state }) => state.user.loginCount);
       const userDispatch = useGlobalContext(({ dispatch }) => dispatch.user);
 
-      useEffect(() => {
-        userDispatch(
-          updateUserProfile({
-            id: 'id',
-            name: 'name',
-          })
-        );
+      useEffectMock(() => {
+        userDispatch(updateUserName('name'));
       }, [userDispatch]);
 
-      return <p data-testid="have-id">{haveId ? 'true' : 'false'}</p>;
+      return (
+        <div>
+          <p data-testid="id">{id}</p>
+          <p data-testid="name">{name}</p>
+          <p data-testid="loginCount">{loginCount}</p>
+        </div>
+      );
     };
 
-    const wrapper = mount(
-      <GlobalContextProvider>
-        <Container />
-      </GlobalContextProvider>
-    );
+    testOnCSR(() => {
+      const renderResult = render(
+        <GlobalContextProvider>
+          <Container />
+        </GlobalContextProvider>
+      );
 
-    expect(wrapper.find(testId('have-id')).text()).toBe('true');
+      expect(renderResult.getByTestId('id').textContent).toBe('');
+      expect(renderResult.getByTestId('name').textContent).toBe('name');
+      expect(renderResult.getByTestId('loginCount').textContent).toBe('0');
+    });
+
+    testOnSSR(() => {
+      const innerElement = renderToString(
+        <GlobalContextProvider>
+          <Container />
+        </GlobalContextProvider>
+      );
+
+      const container = document.createElement('div');
+      container.innerHTML = innerElement;
+
+      expect(getByTestId(container, 'id').textContent).toBe('');
+      expect(getByTestId(container, 'name').textContent).toBe('name');
+      expect(getByTestId(container, 'loginCount').textContent).toBe('0');
+    });
   });
 });

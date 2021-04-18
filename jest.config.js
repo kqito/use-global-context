@@ -1,5 +1,4 @@
 module.exports = {
-  setupFilesAfterEnv: ['<rootDir>setupTests.js'],
   verbose: true,
   collectCoverage: true,
   coverageDirectory: './coverage/',
