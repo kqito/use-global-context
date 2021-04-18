@@ -6,6 +6,8 @@ import pkg from './package.json';
 
 const { presets } = require('./babel.config');
 
+const extensions = ['.js', '.jsx', '.es6', '.es', '.mjs', '.ts', '.tsx'];
+
 export default {
   input: 'src/index.ts',
   output: [
@@ -21,15 +23,15 @@ export default {
   plugins: [
     commonjs(),
     resolve({
-      extensions: ['.mjs', '.js', '.json', '.node', '.ts', '.tsx'],
+      extensions,
     }),
     typescript({
       tsconfigOverride: {
-        exclude: ['src/**/*.test.ts', 'src/**/*.test.tsx'],
+        exclude: ['__tests__', 'src/**/*.test.ts', 'src/**/*.test.tsx'],
       },
     }),
     babel({
-      extensions: ['.js', '.jsx', '.es6', '.es', '.mjs', 'ts', 'tsx'],
+      extensions,
       babelHelpers: 'bundled',
       presets,
       exclude: 'node_modules/**',

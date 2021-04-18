@@ -1,0 +1,1 @@
+export { mergeInitialState } from './mergeInitialState';

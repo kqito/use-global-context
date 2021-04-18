@@ -1,6 +1,6 @@
 {
   "name": "use-global-context",
-  "version": "0.7.2",
+  "version": "0.7.3",
   "description": "A new way to use “useContext” better",
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
@@ -8,9 +8,7 @@
   "scripts": {
     "build": "npm-run-all -s type clean build:rollup",
     "build:rollup": "rollup -c",
-    "test": "npm-run-all -s test:client test:server",
-    "test:client": "cross-env NODE_ENV=TEST jest",
-    "test:server": "cross-env NODE_ENV=TEST USE_GLOBAL_CONTEXT_TEST_MODE=server jest",
+    "test": "cross-env NODE_ENV=TEST jest",
     "type": "tsc --noEmit",
     "format": "npm-run-all -s format:*",
     "format:fix": "prettier --write './src/**/*.{ts,tsx,js,jsx,json}'",
@@ -50,16 +48,15 @@
     "@rollup/plugin-babel": "^5.3.0",
     "@rollup/plugin-commonjs": "^18.0.0",
     "@rollup/plugin-node-resolve": "^11.2.1",
-    "@types/enzyme": "^3.10.8",
+    "@testing-library/dom": "^7.30.3",
+    "@testing-library/react": "^11.2.6",
     "@types/jest": "^26.0.22",
     "@types/react": "^17.0.3",
     "@types/react-dom": "^17.0.3",
     "@typescript-eslint/eslint-plugin": "^4.20.0",
     "@typescript-eslint/parser": "^4.20.0",
-    "@wojtekmaj/enzyme-adapter-react-17": "^0.6.0",
     "babel-jest": "^26.6.3",
     "cross-env": "^7.0.3",
-    "enzyme": "^3.11.0",
     "eslint": "^7.23.0",
     "eslint-config-airbnb": "^18.2.1",
     "eslint-config-prettier": "^8.1.0",
@@ -86,6 +83,6 @@
     "typescript": "^4.2.3"
   },
   "peerDependencies": {
-    "react": ">=16.8.0"
+    "react": "^16.8.0 || ^17.0.0"
   }
 }

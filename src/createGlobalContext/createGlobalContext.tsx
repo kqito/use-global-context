@@ -11,13 +11,13 @@ export type CreateGlobalContextArgs = {
   [partial: string]: {
     reducer: AnyReducer;
     initialState: any;
-    initializer?: any;
   };
 };
 
 export type CreateGlobalContextResult<T extends CreateGlobalContextArgs> = [
   UseSelector<GlobalContextValue<T>>,
-  React.FC
+  React.FC,
+  () => GlobalContextValue<T>['state']
 ];
 
 export type AnyReducer<S = any, A = any> =
@@ -55,9 +55,11 @@ export const createGlobalContext = <T extends CreateGlobalContextArgs>(
     dispatch: {},
   } as GlobalContextValue<T>);
   const useGlobalContext = createStore(context, subscription);
+  const getStore = () => subscription.getStore().state;
   const { Provider } = context;
 
   const GlobalContextProvider: React.FC = ({ children }) => {
+    const store = useMemo(() => subscription.getStore(), []);
     useMemo(() => {
       entries(args).forEach(([partial, { initialState }]) => {
         const state = initialState;
@@ -68,15 +70,8 @@ export const createGlobalContext = <T extends CreateGlobalContextArgs>(
           args[partial].reducer
         );
 
-        const newState: Partial<GlobalContextValue<T>['state']> = {};
-        const newDispatch: Partial<GlobalContextValue<T>['dispatch']> = {};
-        newState[partial] = state;
-        newDispatch[partial] = dispatch;
-
-        subscription.updateStore({
-          newState,
-          newDispatch,
-        });
+        subscription.setState(partial, state);
+        subscription.setDispatchs(partial, dispatch);
       });
 
       return subscription.getStore;
@@ -93,8 +88,8 @@ export const createGlobalContext = <T extends CreateGlobalContextArgs>(
       };
     }, []);
 
-    return <Provider value={subscription.getStore()}>{children}</Provider>;
+    return <Provider value={store}>{children}</Provider>;
   };
 
-  return [useGlobalContext, GlobalContextProvider];
+  return [useGlobalContext, GlobalContextProvider, getStore];
 };

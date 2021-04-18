@@ -5,5 +5,5 @@ export type {
   GlobalContextValue,
 } from './createGlobalContext';
 
-// createStore API
-export { createStore } from './createStore';
+// mergeInitialState API
+export { mergeInitialState } from './mergeInitialState';

@@ -25,8 +25,6 @@ However, it can lead to unnecessary renders if you don't split the context with 
 
 This library is intended to prevent unnecessary renders with selector, which is a problem with the context API.
 
-And This library is also kqito's own test experimental implementation for [RCF #119](https://github.com/reactjs/rfcs/pull/119).
-
 ## Installation
 You can install the package from npm.
 ```
@@ -85,7 +83,7 @@ import {
   initialCounterState,
 } from "./reducer/counter";
 
-export const [useGlobalContext, GlobalContextProvider] = createGlobalContext({
+export const [ useGlobalContext, GlobalContextProvider ] = createGlobalContext({
   counter: {
     reducer: counterReducer,
     initialState: initialCounterState
@@ -120,6 +118,11 @@ const CounterButton = () => {
 ```
 
 
+## Examples
+### [createGlobalContext API example](https://codesandbox.io/s/use-global-context-example-xfdxc "CodeSandBox")
+This is an example of a counter app that uses the `createGlobalContext` API.
+
+
 ## API
 ### `createGlobalContext` API
 `createGlobalContext` is an API that generate useGlobalContext hooks with each reducer and initialState of the argument.
@@ -131,7 +134,7 @@ import { counterReducer, counterInitialState } from './reducer/counter'
 import { messageReducer, messageInitialState } from './reducer/message'
 import { appReducer, appInitialState } from './reducer/app'
 
-export const [useGlobalContext, GlobalContextProvider] = createGlobalContext({
+export const [ useGlobalContext, GlobalContextProvider ] = createGlobalContext({
   counter: {
     reducer: counterReducer,
     initialState: counterInitialState,
@@ -211,7 +214,7 @@ const contextValue = {
   },
 }
 
-const [useGlobalContext, GlobalContextProvider] = createGlobalContext(contextValue);
+const [ useGlobalContext, GlobalContextProvider ] = createGlobalContext(contextValue);
 
 // You can define like this !!
 type GlobalContextValue = GlobalContextValue<typeof contextValue>;
@@ -221,13 +224,6 @@ const appNameSelector = (state: GlobalContextValue) => state.app.name
 const appName = useGlobalContext(appNameSelector)
 ```
 
-
-## Examples
-### [createGlobalContext API example](https://codesandbox.io/s/use-global-contextexamplecreateusereducercontext-xfdxc "CodeSandBox")
-This is an example of a counter app that uses the `createGlobalContext` API.
-
-
-------------
 
 ## License
 [MIT © kqito](./LICENSE)
