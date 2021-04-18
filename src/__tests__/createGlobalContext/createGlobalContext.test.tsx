@@ -9,9 +9,9 @@ import {
   GlobalContextValue,
   mergeInitialState,
 } from '../../index';
-import { updateUserName } from './actions/user';
-import { userReducerArgs } from './reducer/user';
-import { counterReducerArgs } from './reducer/counter';
+import { updateUserName } from '../utils/actions/user';
+import { userReducerArgs } from '../utils/reducer/user';
+import { counterReducerArgs } from '../utils/reducer/counter';
 import * as isomorphicHooks from '../../core/useIsomorphicLayoutEffect';
 
 type ContextValue = GlobalContextValue<typeof contextValue>;

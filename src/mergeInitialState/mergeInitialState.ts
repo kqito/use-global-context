@@ -5,7 +5,7 @@ import {
 
 export const mergeInitialState = <T extends CreateGlobalContextArgs>(
   target: T,
-  source?: GlobalContextValue<T>['state']
+  source?: Partial<GlobalContextValue<T>['state']>
 ): T => {
   const targetKeys = Object.keys(target) as [keyof T];
 
