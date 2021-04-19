@@ -11,19 +11,19 @@ import {
 } from '../../index';
 import { updateUserName } from '../utils/actions/user';
 import { userReducerArgs } from '../utils/reducer/user';
-import { counterReducerArgs } from '../utils/reducer/counter';
+import { applicationReducerArgs } from '../utils/reducer/application';
 import * as isomorphicHooks from '../../core/useIsomorphicLayoutEffect';
 
 type ContextValue = GlobalContextValue<typeof contextValue>;
 
 const contextValue = {
   user: userReducerArgs,
-  counter: counterReducerArgs,
+  application: applicationReducerArgs,
 };
 
 const initialState = {
   user: userReducerArgs.initialState,
-  counter: counterReducerArgs.initialState,
+  application: applicationReducerArgs.initialState,
 };
 
 const useEffectMock = jest.fn();
@@ -60,7 +60,9 @@ describe('createGlobalContext', () => {
 
     const Container = () => {
       const globalState = useGlobalContext(({ state }) => state);
-      const counter = useGlobalContext(({ state }) => state.counter);
+      const isLoaded = useGlobalContext(
+        ({ state }) => state.application.isLoaded
+      );
       const user = useGlobalContext(({ state }) => state.user);
       const id = useGlobalContext(({ state }) => state.user.id);
       const loginCount = useGlobalContext(({ state }) => state.user.loginCount);
@@ -70,7 +72,7 @@ describe('createGlobalContext', () => {
       const stringValue = useGlobalContext(() => '');
 
       expect(globalState).toStrictEqual(initialState);
-      expect(counter).toBe(initialState.counter);
+      expect(isLoaded).toBe(initialState.application.isLoaded);
       expect(user).toBe(initialState.user);
       expect(id).toBe(initialState.user.id);
       expect(loginCount).toBe(initialState.user.loginCount);
@@ -101,15 +103,18 @@ describe('createGlobalContext', () => {
 
       const globalDispatch = useGlobalContext(({ dispatch }) => dispatch);
       const userDispatch = useGlobalContext(({ dispatch }) => dispatch.user);
-      const counterDispatch = useGlobalContext(
-        ({ dispatch }) => dispatch.counter
+      const applicationDispatch = useGlobalContext(
+        ({ dispatch }) => dispatch.application
       );
 
-      expect(Object.keys(globalDispatch)).toStrictEqual(['user', 'counter']);
+      expect(Object.keys(globalDispatch)).toStrictEqual([
+        'user',
+        'application',
+      ]);
       expect(typeof globalDispatch.user).toBe('function');
-      expect(typeof globalDispatch.counter).toBe('function');
+      expect(typeof globalDispatch.application).toBe('function');
       expect(typeof userDispatch).toBe('function');
-      expect(typeof counterDispatch).toBe('function');
+      expect(typeof applicationDispatch).toBe('function');
 
       userDispatch(updateUserName('name'));
 
@@ -150,6 +155,66 @@ describe('createGlobalContext', () => {
     });
   });
 
+  describe('Without actions', () => {
+    const [useGlobalContext, GlobalContextProvider] = createGlobalContext(
+      contextValue
+    );
+
+    const Container = () => {
+      const isLoaded = useGlobalContext(
+        ({ state }) => state.application.isLoaded
+      );
+
+      const globalDispatch = useGlobalContext(({ dispatch }) => dispatch);
+      const userDispatch = useGlobalContext(({ dispatch }) => dispatch.user);
+      const applicationDispatch = useGlobalContext(
+        ({ dispatch }) => dispatch.application
+      );
+
+      expect(Object.keys(globalDispatch)).toStrictEqual([
+        'user',
+        'application',
+      ]);
+      expect(typeof globalDispatch.user).toBe('function');
+      expect(typeof globalDispatch.application).toBe('function');
+      expect(typeof userDispatch).toBe('function');
+      expect(typeof applicationDispatch).toBe('function');
+
+      useEffectMock(() => {
+        applicationDispatch();
+      }, [applicationDispatch]);
+
+      return (
+        <div>
+          <p data-testid="isLoaded">{isLoaded ? 'true' : 'false'}</p>
+        </div>
+      );
+    };
+
+    testOnCSR(() => {
+      const renderResult = render(
+        <GlobalContextProvider>
+          <Container />
+        </GlobalContextProvider>
+      );
+
+      expect(renderResult.getByTestId('isLoaded').textContent).toBe('true');
+    });
+
+    testOnSSR(() => {
+      const innerElement = renderToString(
+        <GlobalContextProvider>
+          <Container />
+        </GlobalContextProvider>
+      );
+
+      const container = document.createElement('div');
+      container.innerHTML = innerElement;
+
+      expect(getByTestId(container, 'isLoaded').textContent).toBe('true');
+    });
+  });
+
   describe('GetState', () => {
     const ssrState: ContextValue['state'] = {
       user: {
@@ -157,7 +222,7 @@ describe('createGlobalContext', () => {
         name: '',
         loginCount: 0,
       },
-      counter: { counter: 100 },
+      application: { isLoaded: true },
     };
 
     const [
