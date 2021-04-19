@@ -10,7 +10,7 @@ import { UseSelector } from '../core/useSelector';
 export type CreateGlobalContextArgs = {
   [partial: string]: {
     reducer: AnyReducer;
-    initialState: any;
+    initialState: Record<string, any>;
   };
 };
 
