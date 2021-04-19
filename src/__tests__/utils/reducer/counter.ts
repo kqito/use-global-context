@@ -1,9 +1,12 @@
 import React from 'react';
 
-const initialState = 0;
+const initialState = { counter: 0 };
 
-const withoutReducer: React.ReducerWithoutAction<number> = (count) => count + 1;
-
+const withoutReducer: React.ReducerWithoutAction<typeof initialState> = ({
+  counter,
+}) => ({
+  counter: counter + 1,
+});
 export const counterReducerArgs = {
   reducer: withoutReducer,
   initialState,

@@ -157,7 +157,7 @@ describe('createGlobalContext', () => {
         name: '',
         loginCount: 0,
       },
-      counter: 100,
+      counter: { counter: 100 },
     };
 
     const [

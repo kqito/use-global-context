@@ -3,9 +3,12 @@ import {
   GlobalContextValue,
 } from '../createGlobalContext';
 
-export const mergeInitialState = <T extends CreateGlobalContextArgs>(
+export const mergeInitialState = <
+  T extends CreateGlobalContextArgs,
+  S extends GlobalContextValue<T>['state']
+>(
   target: T,
-  source?: Partial<GlobalContextValue<T>['state']>
+  source?: { [P in keyof S]?: Partial<S[keyof S]> }
 ): T => {
   const targetKeys = Object.keys(target) as [keyof T];
 
@@ -13,12 +16,14 @@ export const mergeInitialState = <T extends CreateGlobalContextArgs>(
 
   targetKeys.forEach((key) => {
     const targetPartial = target[key];
-    const newInitialState =
-      (source && source[key]) ?? targetPartial.initialState;
+    const sourceInitialState = source?.[key];
 
     newTarget[key] = {
       ...targetPartial,
-      initialState: newInitialState,
+      initialState: {
+        ...targetPartial.initialState,
+        ...sourceInitialState,
+      },
     };
   });
 

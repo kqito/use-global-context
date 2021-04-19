@@ -11,7 +11,6 @@ describe('mergeInitialState', () => {
 
     const result = mergeInitialState(contextValue, {
       user: {
-        ...userReducerArgs.initialState,
         loginCount: 100,
       },
     });
