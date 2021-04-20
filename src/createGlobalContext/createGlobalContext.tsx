@@ -46,14 +46,18 @@ export type GlobalContextValue<T extends CreateGlobalContextArgs> = {
   };
 };
 
+const initialStore = {
+  state: {},
+  dispatch: {},
+};
+
 export const createGlobalContext = <T extends CreateGlobalContextArgs>(
   args: T
 ): CreateGlobalContextResult<T> => {
   const context = createBaseContext<GlobalContextValue<T>>();
-  const subscription = new Subscription<GlobalContextValue<T>>({
-    state: {},
-    dispatch: {},
-  } as GlobalContextValue<T>);
+  const subscription = new Subscription<GlobalContextValue<T>>(
+    initialStore as GlobalContextValue<T>
+  );
   const useGlobalContext = createStore(context, subscription);
   const getStore = () => subscription.getStore().state;
   const { Provider } = context;
@@ -61,6 +65,7 @@ export const createGlobalContext = <T extends CreateGlobalContextArgs>(
   const GlobalContextProvider: React.FC = ({ children }) => {
     const store = useMemo(() => subscription.getStore(), []);
     useMemo(() => {
+      subscription.reset(initialStore as GlobalContextValue<T>);
       entries(args).forEach(([partial, { initialState }]) => {
         const state = initialState;
 
@@ -81,10 +86,7 @@ export const createGlobalContext = <T extends CreateGlobalContextArgs>(
       subscription.trySubscribe();
 
       return () => {
-        subscription.reset({
-          state: {},
-          dispatch: {},
-        } as GlobalContextValue<T>);
+        subscription.reset(initialStore as GlobalContextValue<T>);
       };
     }, []);
 
