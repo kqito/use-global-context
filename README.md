@@ -21,9 +21,9 @@ Use-global-context is a new way to use <a href="https://reactjs.org/docs/hooks-r
 ## Why
 The [`context API`](https://reactjs.org/docs/context.html) allows you to create a simple store.
 
-However, it can lead to unnecessary renders if you don't split the context with proper granularity. It also doesn't have a feature like redux's useSelector. That means you have to memo. Please see [the solutions](https://github.com/facebook/react/issues/15156#issuecomment-474590693).
+However, it can lead to unnecessary renders if you don't split the context with proper granularity. It also doesn't have a feature like redux's useSelector. That means you have to memo. Please see [the basic solutions](https://github.com/facebook/react/issues/15156#issuecomment-474590693).
 
-This library is intended to prevent unnecessary renders with selector, which is a problem with the context API.
+This library is intended to prevent unnecessary renders with selector, which is a problem with the context API and easily manage global state.
 
 ## Installation
 You can install the package from npm.
@@ -134,7 +134,7 @@ import { counterReducer, counterInitialState } from './reducer/counter'
 import { messageReducer, messageInitialState } from './reducer/message'
 import { appReducer, appInitialState } from './reducer/app'
 
-export const [ useGlobalContext, GlobalContextProvider ] = createGlobalContext({
+export const [ useGlobalContext, GlobalContextProvider, getStore ] = createGlobalContext({
   counter: {
     reducer: counterReducer,
     initialState: counterInitialState,
@@ -146,8 +146,26 @@ export const [ useGlobalContext, GlobalContextProvider ] = createGlobalContext({
 });
 ```
 
-You can use `useGlobalContext` hooks as follows.
+### `useGlobalContext` hooks
+```js
+const state = useGlobalContext(selector, equalityFunction);
+```
 
+this hooks is for Get the state from `GlobalContextProvider`.
+
+### Arguments
+- `selector` (type: `(store: Store) => SelectedStore`)
+  - Specifies the value to be extracted from the store.
+
+- `equalityFunction` (type: `((a: any, b: any) => boolean) | undefined`)
+  - Specifies how to compare whether to re-render or not. The default is to compare with `===`.
+
+
+### Returns
+- `state` (type: `SelectedStore`)
+  - Return value of the function specified by `selector`.
+
+### Usage
 ```javascript
 const state = useGlobalContext(({ state, dispatch }) => state);
 // {
@@ -162,16 +180,15 @@ const state = useGlobalContext(({ state, dispatch }) => state);
 //   }
 // }
 
+const count = useGlobalContext(({ state, dispatch }) => state.counter.count);
+// 100
 
-const counter = useGlobalContext(({ state, dispatch }) => state.counter);
+const counterObject = useGlobalContext(({ state, dispatch }) => state.counter, someDeepEqualFunction);
 // {
 //   count: 100,
 //   error: null,
 //   status: null,
 // }
-
-const count = useGlobalContext(({ state, dispatch }) => state.counter.count);
-// 100
 
 const dispatch = useGlobalContext(({ state, dispatch }) => dispatch)
 // Each of the dispatch functions
@@ -183,6 +200,98 @@ const dispatch = useGlobalContext(({ state, dispatch }) => dispatch)
 
 const counterDispatch = useGlobalContext(({ state, dispatch }) => dispatch.counter);
 // counter: ƒ dispatchAction,
+```
+
+### `GlobalContextProvider`
+```js
+() => (
+  <GlobalContextProvider>
+    {children}
+  </GlobalContextProvider>
+)
+```
+
+`GlobalContextProvider` is the provider that stores for the `useGlobalContext`.
+
+### `getStore`
+```js
+const storeValue = getStore()
+```
+
+Get the value of the store. This function is useful when you want the browser to inherit the value of the SSRed state.
+
+### Returns
+- `storeValue`
+  - The value of the store.
+
+### Usage
+```javascript
+const contextValue = {
+  counter: {
+    reducer: counterReducer,
+    initialState: {
+      count: 0
+    }
+  },
+}
+
+const [
+  useGlobalContext,
+  GlobalContextProvider,
+  getStore
+] = createGlobalContext(contextValue);
+
+// You can get the value of store.
+const store = getStore()
+// {
+//   counter: {
+//     count: 0
+//   }
+// }
+```
+
+### `mergeInitialState` API
+```js
+const mergedInitialState = mergedInitialState(target, source)
+```
+
+API to merge specific initial states for props passed to createGlobalContext.
+This API is useful for inheriting the value of the store from the SSR in the browser.
+
+### Arguments
+- `target` (type: `CreateGlobalContextArgs`)
+  - Specifies the value of the base context.
+
+- `source`
+  - Specifies the state to merge.
+
+
+### Returns
+- `mergedInitialState` (type: `CreateGlobalContextArgs`)
+  - Value obtained by merging the value of `source` with that of `target`
+
+### Usage
+```javascript
+const contextValue = {
+  counter: {
+    reducer: counterReducer,
+    initialState: {
+      count: 0
+    }
+  },
+}
+
+const ssrState = {
+  counter: {
+    count: 100
+  }
+}
+
+// The initial value of count will be set to 100.
+const [
+  useGlobalContext,
+  GlobalContextProvider,
+] = createGlobalContext(mergeInitialState(contextValue, ssrState));
 ```
 
 ## TypeScript
