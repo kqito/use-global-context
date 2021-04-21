@@ -1,11 +1,11 @@
 import {
   GlobalContextValue,
-  CreateGlobalContextArgs,
+  CreateGlobalContextReducers,
 } from './createGlobalContext';
 import { Subscription } from '../core/subscription';
 import { createUseSelector } from '../core/useSelector';
 
-export const createStore = <T extends CreateGlobalContextArgs>(
+export const createStore = <T extends CreateGlobalContextReducers>(
   context: React.Context<GlobalContextValue<T>>,
   subscription: Subscription<GlobalContextValue<T>>
 ) => {

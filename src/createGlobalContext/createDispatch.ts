@@ -3,10 +3,10 @@ import {
   ReducerDispatch,
   State,
   GlobalContextValue,
-  CreateGlobalContextArgs,
+  CreateGlobalContextReducers,
 } from './createGlobalContext';
 
-export const createDispatch = <T extends CreateGlobalContextArgs>(
+export const createDispatch = <T extends CreateGlobalContextReducers>(
   subscription: Subscription<GlobalContextValue<T>>,
   partial: keyof State<T>,
   reducer: T[keyof T]['reducer']

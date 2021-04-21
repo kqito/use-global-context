@@ -1,5 +1,6 @@
 export { createGlobalContext } from './createGlobalContext';
 export type {
-  CreateGlobalContextArgs,
+  CreateGlobalContextReducers,
   GlobalContextValue,
 } from './createGlobalContext';
+export type { GlobalContextProviderProps } from './createProvider';
