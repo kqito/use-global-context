@@ -17,6 +17,7 @@ Use-global-context is a new way to use <a href="https://reactjs.org/docs/hooks-r
 - `useSelector` function.
 - Prevents the unnecessary renders.
 - Support for SSR.
+- No dependencies.
 
 ## Why
 The [`context API`](https://reactjs.org/docs/context.html) allows you to create a simple store.
@@ -119,7 +120,7 @@ const CounterButton = () => {
 
 
 ## Examples
-### [createGlobalContext API example](https://codesandbox.io/s/use-global-context-example-xfdxc "CodeSandBox")
+### [Simple count application](https://codesandbox.io/s/use-global-context-example-xfdxc "CodeSandBox")
 This is an example of a counter app that uses the `createGlobalContext` API.
 
 
@@ -212,6 +213,10 @@ const counterDispatch = useGlobalContext(({ state, dispatch }) => dispatch.count
 ```
 
 `GlobalContextProvider` is the provider that stores for the `useGlobalContext`.
+
+### Props
+- `store` (type: `Store | undefined`)
+  - You can specify a value to override the store whose initial state is createGlobalContext. This API is useful for inheriting store values from SSRs in the browser.
 
 ### `getStore`
 ```js
