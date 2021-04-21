@@ -215,7 +215,7 @@ const counterDispatch = useGlobalContext(({ state, dispatch }) => dispatch.count
 `GlobalContextProvider` is the provider that stores for the `useGlobalContext`.
 
 ### Props
-- `store` (type: `Store | undefined`)
+- `state` (type: `PartialState<CreateGlobalContextReducers> | undefined`)
   - You can specify a value to override the store whose initial state is createGlobalContext. This API is useful for inheriting store values from SSRs in the browser.
 
 ### `getStore`
@@ -264,15 +264,15 @@ API to merge specific initial states for props passed to createGlobalContext.
 This API is useful for inheriting the value of the store from the SSR in the browser.
 
 ### Arguments
-- `target` (type: `CreateGlobalContextArgs`)
+- `target` (type: `CreateGlobalContextReducers`)
   - Specifies the value of the base context.
 
-- `source`
+- `source` (type: `PartialState<CreateGlobalContextReducers> | undefined`)
   - Specifies the state to merge.
 
 
 ### Returns
-- `mergedInitialState` (type: `CreateGlobalContextArgs`)
+- `mergedInitialState` (type: `CreateGlobalContextReducers`)
   - Value obtained by merging the value of `source` with that of `target`
 
 ### Usage
