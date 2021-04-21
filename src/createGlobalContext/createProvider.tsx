@@ -5,18 +5,19 @@ import { mergeInitialState } from '../mergeInitialState';
 import { entries } from '../utils/entries';
 import { createDispatch } from './createDispatch';
 import {
-  CreateGlobalContextReducers,
+  GlobalContextReducers,
   GlobalContextValue,
-} from './createGlobalContext';
+  PartialState,
+  State,
+} from './type';
 
 export type GlobalContextProviderProps<
-  T extends CreateGlobalContextReducers,
-  S = GlobalContextValue<T>['state']
+  T extends GlobalContextReducers
 > = Readonly<{
-  state?: { [P in keyof S]?: Partial<S[P]> };
+  state?: PartialState<T>;
 }>;
 
-export const createProvider = <T extends CreateGlobalContextReducers>({
+export const createProvider = <T extends GlobalContextReducers>({
   reducers,
   subscription,
   initialStore,
@@ -34,7 +35,7 @@ export const createProvider = <T extends CreateGlobalContextReducers>({
     const store = useMemo(() => subscription.getStore(), []);
     useMemo(() => {
       const mergedReducers = state
-        ? mergeInitialState<T, GlobalContextValue<T>['state']>(reducers, state)
+        ? mergeInitialState<T>(reducers, state)
         : reducers;
       subscription.reset(initialStore);
       entries(mergedReducers).forEach(([partial, { initialState }]) => {
@@ -57,7 +58,7 @@ export const createProvider = <T extends CreateGlobalContextReducers>({
       subscription.trySubscribe();
 
       return () => {
-        subscription.reset(initialStore as GlobalContextValue<T>);
+        subscription.reset(initialStore);
       };
     }, []);
 

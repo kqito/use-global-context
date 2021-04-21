@@ -1,14 +1,13 @@
 import { Subscription } from '../core/subscription';
 import {
-  ReducerDispatch,
-  State,
+  GlobalContextReducers,
   GlobalContextValue,
-  CreateGlobalContextReducers,
-} from './createGlobalContext';
+  ReducerDispatch,
+} from './type';
 
-export const createDispatch = <T extends CreateGlobalContextReducers>(
+export const createDispatch = <T extends GlobalContextReducers>(
   subscription: Subscription<GlobalContextValue<T>>,
-  partial: keyof State<T>,
+  partial: keyof T,
   reducer: T[keyof T]['reducer']
 ): ReducerDispatch<typeof reducer> => {
   const dispatch = (action?: React.ReducerAction<typeof reducer>): void => {
