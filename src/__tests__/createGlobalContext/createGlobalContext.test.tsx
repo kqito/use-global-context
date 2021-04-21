@@ -397,4 +397,81 @@ describe('createGlobalContext', () => {
       expect(getByTestId(container, 'loginCount').textContent).toBe('0');
     });
   });
+
+  describe('Pass state props of "GlobalContextProvider"', () => {
+    const ssrState: ContextValue['state'] = {
+      user: {
+        id: 'id',
+        name: '',
+        loginCount: 0,
+      },
+      application: { isLoaded: true },
+    };
+
+    const [
+      useGlobalContext,
+      GlobalContextProvider,
+      getStore,
+    ] = createGlobalContext(contextValue);
+
+    const Container = () => {
+      const id = useGlobalContext(({ state }) => state.user.id);
+      const name = useGlobalContext(({ state }) => state.user.name);
+      const loginCount = useGlobalContext(({ state }) => state.user.loginCount);
+      const userDispatch = useGlobalContext(({ dispatch }) => dispatch.user);
+
+      useEffectMock(() => {
+        userDispatch(updateUserName('name'));
+      }, [userDispatch]);
+
+      return (
+        <div>
+          <p data-testid="id">{id}</p>
+          <p data-testid="name">{name}</p>
+          <p data-testid="loginCount">{loginCount}</p>
+        </div>
+      );
+    };
+
+    testOnCSR(() => {
+      const renderResult = render(
+        <GlobalContextProvider state={ssrState}>
+          <Container />
+        </GlobalContextProvider>
+      );
+
+      expect(renderResult.getByTestId('id').textContent).toBe('id');
+      expect(renderResult.getByTestId('name').textContent).toBe('name');
+      expect(renderResult.getByTestId('loginCount').textContent).toBe('0');
+      expect(getStore()).toStrictEqual({
+        ...ssrState,
+        user: {
+          ...ssrState.user,
+          name: 'name',
+        },
+      });
+    });
+
+    testOnSSR(() => {
+      const innerElement = renderToString(
+        <GlobalContextProvider state={ssrState}>
+          <Container />
+        </GlobalContextProvider>
+      );
+
+      const container = document.createElement('div');
+      container.innerHTML = innerElement;
+
+      expect(getByTestId(container, 'id').textContent).toBe('id');
+      expect(getByTestId(container, 'name').textContent).toBe('name');
+      expect(getByTestId(container, 'loginCount').textContent).toBe('0');
+      expect(getStore()).toStrictEqual({
+        ...ssrState,
+        user: {
+          ...ssrState.user,
+          name: 'name',
+        },
+      });
+    });
+  });
 });

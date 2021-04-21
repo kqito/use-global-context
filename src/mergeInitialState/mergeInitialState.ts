@@ -1,14 +1,9 @@
-import {
-  CreateGlobalContextArgs,
-  GlobalContextValue,
-} from '../createGlobalContext';
+import { GlobalContextReducers } from '../createGlobalContext';
+import { PartialState } from '../createGlobalContext/type';
 
-export const mergeInitialState = <
-  T extends CreateGlobalContextArgs,
-  S extends GlobalContextValue<T>['state']
->(
+export const mergeInitialState = <T extends GlobalContextReducers>(
   target: T,
-  source?: { [P in keyof S]?: Partial<S[keyof S]> }
+  source?: PartialState<T>
 ): T => {
   const targetKeys = Object.keys(target) as [keyof T];
 

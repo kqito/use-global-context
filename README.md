@@ -17,6 +17,7 @@ Use-global-context is a new way to use <a href="https://reactjs.org/docs/hooks-r
 - `useSelector` function.
 - Prevents the unnecessary renders.
 - Support for SSR.
+- No dependencies.
 
 ## Why
 The [`context API`](https://reactjs.org/docs/context.html) allows you to create a simple store.
@@ -119,7 +120,7 @@ const CounterButton = () => {
 
 
 ## Examples
-### [createGlobalContext API example](https://codesandbox.io/s/use-global-context-example-xfdxc "CodeSandBox")
+### [Simple count application](https://codesandbox.io/s/use-global-context-example-xfdxc "CodeSandBox")
 This is an example of a counter app that uses the `createGlobalContext` API.
 
 
@@ -213,6 +214,10 @@ const counterDispatch = useGlobalContext(({ state, dispatch }) => dispatch.count
 
 `GlobalContextProvider` is the provider that stores for the `useGlobalContext`.
 
+### Props
+- `state` (type: `PartialState<GlobalContextReducers> | undefined`)
+  - You can specify a value to override the store whose initial state is createGlobalContext. This API is useful for inheriting store values from SSRs in the browser.
+
 ### `getStore`
 ```js
 const storeValue = getStore()
@@ -259,15 +264,15 @@ API to merge specific initial states for props passed to createGlobalContext.
 This API is useful for inheriting the value of the store from the SSR in the browser.
 
 ### Arguments
-- `target` (type: `CreateGlobalContextArgs`)
+- `target` (type: `GlobalContextReducers`)
   - Specifies the value of the base context.
 
-- `source`
+- `source` (type: `PartialState<GlobalContextReducers> | undefined`)
   - Specifies the state to merge.
 
 
 ### Returns
-- `mergedInitialState` (type: `CreateGlobalContextArgs`)
+- `mergedInitialState` (type: `GlobalContextReducers`)
   - Value obtained by merging the value of `source` with that of `target`
 
 ### Usage
