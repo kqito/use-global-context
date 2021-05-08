@@ -1,9 +1,6 @@
 import { createContext } from 'react';
+import { Store } from './store';
 
-export const createBaseContext = <S,>() => {
-  const context = createContext<S>(null as any, () => 0);
+export const globalContext = createContext<Store<any>>(null as any, () => 0);
 
-  context.displayName = 'GlobalContext';
-
-  return context;
-};
+globalContext.displayName = 'GlobalContext';

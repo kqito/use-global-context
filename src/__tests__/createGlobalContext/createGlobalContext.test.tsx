@@ -228,7 +228,7 @@ describe('createGlobalContext', () => {
     const [
       useGlobalContext,
       GlobalContextProvider,
-      getStore,
+      stateController,
     ] = createGlobalContext(mergeInitialState(contextValue, ssrState));
 
     const Container = () => {
@@ -260,7 +260,7 @@ describe('createGlobalContext', () => {
       expect(renderResult.getByTestId('id').textContent).toBe('id');
       expect(renderResult.getByTestId('name').textContent).toBe('name');
       expect(renderResult.getByTestId('loginCount').textContent).toBe('0');
-      expect(getStore()).toStrictEqual({
+      expect(stateController.getState()).toStrictEqual({
         ...ssrState,
         user: {
           ...ssrState.user,
@@ -282,7 +282,7 @@ describe('createGlobalContext', () => {
       expect(getByTestId(container, 'id').textContent).toBe('id');
       expect(getByTestId(container, 'name').textContent).toBe('name');
       expect(getByTestId(container, 'loginCount').textContent).toBe('0');
-      expect(getStore()).toStrictEqual({
+      expect(stateController.getState()).toStrictEqual({
         ...ssrState,
         user: {
           ...ssrState.user,
@@ -411,7 +411,7 @@ describe('createGlobalContext', () => {
     const [
       useGlobalContext,
       GlobalContextProvider,
-      getStore,
+      stateController,
     ] = createGlobalContext(contextValue);
 
     const Container = () => {
@@ -434,8 +434,10 @@ describe('createGlobalContext', () => {
     };
 
     testOnCSR(() => {
+      stateController.setState(ssrState);
+
       const renderResult = render(
-        <GlobalContextProvider state={ssrState}>
+        <GlobalContextProvider>
           <Container />
         </GlobalContextProvider>
       );
@@ -443,7 +445,7 @@ describe('createGlobalContext', () => {
       expect(renderResult.getByTestId('id').textContent).toBe('id');
       expect(renderResult.getByTestId('name').textContent).toBe('name');
       expect(renderResult.getByTestId('loginCount').textContent).toBe('0');
-      expect(getStore()).toStrictEqual({
+      expect(stateController.getState()).toStrictEqual({
         ...ssrState,
         user: {
           ...ssrState.user,
@@ -453,8 +455,10 @@ describe('createGlobalContext', () => {
     });
 
     testOnSSR(() => {
+      stateController.setState(ssrState);
+
       const innerElement = renderToString(
-        <GlobalContextProvider state={ssrState}>
+        <GlobalContextProvider>
           <Container />
         </GlobalContextProvider>
       );
@@ -465,7 +469,7 @@ describe('createGlobalContext', () => {
       expect(getByTestId(container, 'id').textContent).toBe('id');
       expect(getByTestId(container, 'name').textContent).toBe('name');
       expect(getByTestId(container, 'loginCount').textContent).toBe('0');
-      expect(getStore()).toStrictEqual({
+      expect(stateController.getState()).toStrictEqual({
         ...ssrState,
         user: {
           ...ssrState.user,

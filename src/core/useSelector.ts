@@ -1,5 +1,5 @@
-import React, { useContext, useRef, useReducer } from 'react';
-import { Subscription } from './subscription';
+import { useContext, useRef, useReducer } from 'react';
+import { globalContext } from './context';
 import { useIsomorphicLayoutEffect } from './useIsomorphicLayoutEffect';
 import { devlog } from '../utils/devlog';
 
@@ -10,15 +10,14 @@ export type UseSelector<Store> = <SelectedStore>(
 type EqualityFunction = (a: any, b: any) => boolean;
 const refEquality: EqualityFunction = (a: any, b: any) => a === b;
 
-export const createUseSelector = <Store>(
-  context: React.Context<Store>,
-  subscription: Subscription
-): UseSelector<Store> => {
+export const createUseSelector = <Store>(): UseSelector<Store> => {
   function useSelector<SelectedStore>(
     selector: (store: Store) => SelectedStore,
     equalityFunction?: EqualityFunction
   ) {
-    const store = useContext(context);
+    const contextValue = useContext(globalContext);
+    const store = contextValue.getStore() as any;
+    const subscription = contextValue.getSubscription();
     const [, forceRender] = useReducer((s) => s + 1, 0);
 
     let selectedStore: SelectedStore;
@@ -66,7 +65,7 @@ export const createUseSelector = <Store>(
       return () => {
         subscription.deleteListener(refresh);
       };
-    }, [context, subscription]);
+    }, [subscription]);
 
     return selectedStore;
   }

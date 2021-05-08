@@ -1,33 +1,33 @@
-import { createBaseContext } from '../core/context';
+import { FC } from 'react';
+import { Store } from '../core/store';
 import { Subscription } from '../core/subscription';
 import { createUseSelector, UseSelector } from '../core/useSelector';
-import { createProvider, GlobalContextProviderProps } from './createProvider';
-import { GlobalContextReducers, GlobalContextValue, State } from './type';
+import { createProvider } from './createProvider';
+import { GlobalContextReducers, GlobalContextValue } from './type';
+
+interface StateController<T extends GlobalContextReducers> {
+  getState: () => Store<T>['state'];
+  setState: Store<T>['setState'];
+}
 
 export type CreateGlobalContextResult<T extends GlobalContextReducers> = [
   UseSelector<GlobalContextValue<T>>,
-  React.FC<GlobalContextProviderProps<T>>,
-  () => State<T>
+  FC,
+  StateController<T>
 ];
 
 export const createGlobalContext = <T extends GlobalContextReducers>(
   reducers: T
 ): CreateGlobalContextResult<T> => {
-  const initialStore = {
-    state: {},
-    dispatch: {},
-  } as GlobalContextValue<T>;
+  const subscription = new Subscription<GlobalContextValue<T>>();
+  const store = new Store(reducers, subscription);
+  const useGlobalContext = createUseSelector<GlobalContextValue<T>>();
+  const GlobalContextProvider = createProvider(store);
 
-  const context = createBaseContext<GlobalContextValue<T>>();
-  const subscription = new Subscription<GlobalContextValue<T>>(initialStore);
-  const useGlobalContext = createUseSelector(context, subscription);
-  const getStore = () => subscription.getStore().state;
-  const GlobalContextProvider = createProvider({
-    reducers,
-    subscription,
-    initialStore,
-    ContextProvider: context.Provider,
-  });
+  const stateController = {
+    getState: () => store.getStore().state,
+    setState: store.setState,
+  };
 
-  return [useGlobalContext, GlobalContextProvider, getStore];
+  return [useGlobalContext, GlobalContextProvider, stateController];
 };

@@ -23,13 +23,15 @@ export type State<T extends GlobalContextReducers> = {
   [P in keyof T]: T[P]['initialState'];
 };
 
+export type Dispatch<T extends GlobalContextReducers> = {
+  [P in keyof T]: ReducerDispatch<T[P]['reducer']>;
+};
+
 export type PartialState<T extends GlobalContextReducers> = {
   [P in keyof State<T>]?: Partial<State<T>[P]>;
 };
 
 export type GlobalContextValue<T extends GlobalContextReducers> = {
   state: State<T>;
-  dispatch: {
-    [P in keyof T]: ReducerDispatch<T[P]['reducer']>;
-  };
+  dispatch: Dispatch<T>;
 };
