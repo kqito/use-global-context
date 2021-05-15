@@ -1,64 +1,21 @@
-import { Provider, useMemo } from 'react';
+import { FC } from 'react';
+import { globalContext } from '../core/context';
+import { Store } from '../core/store';
 import { Subscription } from '../core/subscription';
 import { useIsomorphicLayoutEffect } from '../core/useIsomorphicLayoutEffect';
-import { mergeInitialState } from '../mergeInitialState';
-import { entries } from '../utils/entries';
-import { createDispatch } from './createDispatch';
-import {
-  GlobalContextReducers,
-  GlobalContextValue,
-  PartialState,
-  State,
-} from './type';
+import { GlobalContextReducers } from './type';
 
-export type GlobalContextProviderProps<
-  T extends GlobalContextReducers
-> = Readonly<{
-  state?: PartialState<T>;
-}>;
+const ContextProvider = globalContext.Provider;
 
-export const createProvider = <T extends GlobalContextReducers>({
-  reducers,
-  subscription,
-  initialStore,
-  ContextProvider,
-}: {
-  reducers: T;
-  subscription: Subscription<GlobalContextValue<T>>;
-  initialStore: GlobalContextValue<T>;
-  ContextProvider: Provider<GlobalContextValue<T>>;
-}) => {
-  const GlobalContextProvider: React.FC<GlobalContextProviderProps<T>> = ({
-    state,
-    children,
-  }) => {
-    const store = useMemo(() => subscription.getStore(), []);
-    useMemo(() => {
-      const mergedReducers = state
-        ? mergeInitialState<T>(reducers, state)
-        : reducers;
-      subscription.reset(initialStore);
-      entries(mergedReducers).forEach(([partial, { initialState }]) => {
-        const partialState = initialState;
-
-        const dispatch = createDispatch(
-          subscription,
-          partial,
-          reducers[partial].reducer
-        );
-
-        subscription.setState(partial, partialState);
-        subscription.setDispatchs(partial, dispatch);
-      });
-
-      return subscription.getStore;
-    }, [state]);
-
+export const createProvider = <R extends GlobalContextReducers>(
+  store: Store<R>
+) => {
+  const GlobalContextProvider: FC = ({ children }) => {
     useIsomorphicLayoutEffect(() => {
-      subscription.trySubscribe();
+      store.trySubscribe();
 
       return () => {
-        subscription.reset(initialStore);
+        store.reset(new Subscription());
       };
     }, []);
 

@@ -1,6 +1,6 @@
 {
   "name": "use-global-context",
-  "version": "0.7.5",
+  "version": "0.8.0",
   "description": "A new way to use “useContext” better",
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
