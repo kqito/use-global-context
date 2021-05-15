@@ -214,20 +214,8 @@ const counterDispatch = useGlobalContext(({ state, dispatch }) => dispatch.count
 
 `GlobalContextProvider` is the provider that stores for the `useGlobalContext`.
 
-### Props
-- `state` (type: `PartialState<GlobalContextReducers> | undefined`)
-  - You can specify a value to override the store whose initial state is createGlobalContext. This API is useful for inheriting store values from SSRs in the browser.
-
 ### `stateController`
-```js
-const storeValue = stateController.getState()
-```
-
-Get the value of the store. This function is useful when you want the browser to inherit the value of the SSRed state.
-
-### Returns
-- `storeValue`
-  - The value of the store.
+stateController included some function that manage state value of useGlobalConext.
 
 ### Usage
 ```javascript
@@ -253,6 +241,11 @@ const store = stateController.getState()
 //     count: 0
 //   }
 // }
+
+// You can override the state.
+stateController.setState({
+  counter: 100
+})
 ```
 
 ### `mergeInitialState` API
